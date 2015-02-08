@@ -1,0 +1,17 @@
+/*
+
+Your custom css
+
+
+*/
+
+.centre-width {
+	width:70%;
+	margin-left:auto;
+	margin-right:auto;
+}
+
+
+.mk-flipbox-container.flip-horizontal .mk-flipbox-front {
+	border:1px solid #e5e5e5;
+}
