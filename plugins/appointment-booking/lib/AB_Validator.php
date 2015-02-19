@@ -30,7 +30,7 @@ class AB_Validator {
                 $this->errors[$field] = __( '* Invalid phone number', 'ab' );
             }
         } elseif ( $required ) {
-            $this->errors[$field] = __( '* Please tell us your phone', 'ab' );
+            $this->errors[$field] = __( '* Please tell us your Skype ID', 'ab' );
         }
     }
 
