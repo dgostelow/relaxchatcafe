@@ -1,5 +1,7 @@
 jQuery(function($) {
     var $no_result = $('#ab_services_wrapper .no-result');
+    // Remember user choice in the modal dialog.
+    var update_staff_choice = null;
 
     // On new category form submit.
     $('#new-category-form').on('submit', function(event) {
@@ -117,16 +119,18 @@ jQuery(function($) {
         // On blur of input in editable cell.
         .on('blur', '.editable-cell input.value', function() {
             var $this = $(this),
-                field = $this.attr('name'),
-                value = $this.attr('value'),
-                id    = $this.parents('.service-row').attr('id');
-            if (value) {
-                var data = { action: 'ab_update_service_value', id: id };
-                data[field] = value;
-                $.post(ajaxurl, data, function(response) {
-                    $this.hide();
-                    $this.prev('.displayed-value').text(value).show();
-                });
+                field = $this.attr('name');
+
+            if ( field == 'capacity' || field == 'price' ) {
+                if ( update_staff_choice !== null ) {
+                    updateService($this, update_staff_choice);
+                }
+                else {
+                    $modal.data('input', $this).modal('show');
+                }
+            }
+            else {
+                updateService($this, false);
             }
         })
 
@@ -247,9 +251,39 @@ jQuery(function($) {
             });
         });
 
+    // Modal window events.
+    var $modal = $('#ab-staff-update');
+    $modal
+        .on('click', '.ab-yes', function() {
+            $modal.modal('hide');
+            if ( $('#ab-remember-my-choice').prop('checked') ) {
+                update_staff_choice = true;
+            }
+            updateService($modal.data('input'), true);
+        })
+        .on('click', '.ab-no', function() {
+            if ( $('#ab-remember-my-choice').prop('checked') ) {
+                update_staff_choice = false;
+            }
+            updateService($modal.data('input'), false);
+        });
+
+    function updateService($input, update_staff) {
+        var field = $input.attr('name'),
+            value = $input.attr('value'),
+            id    = $input.parents('.service-row').attr('id');
+        var data = { action: 'ab_update_service_value', id: id, update_staff: update_staff ? 1 : 0 };
+        data[field] = value;
+        $.post(ajaxurl, data, function(response) {
+            $input.hide();
+            $input.prev('.displayed-value').text(value).show();
+        });
+    }
+
     function refreshList(response) {
         var $list = $('#ab-services-list');
         $list.html(response);
+        makeServicesSortable();
         doNotCloseDropDowns();
         initColorPicker($list.find('.service-color'));
         initPopovers();
@@ -291,8 +325,62 @@ jQuery(function($) {
     initColorPicker($('.service-color'));
     initPopovers();
 
-    $.ajaxSetup({
+/*    $.ajaxSetup({
         mode: 'abort',
         port: 'ab_service'
+    });*/
+
+
+    var $category = $('ul#ab-category-item-list');
+    $category.sortable({
+        axis   : 'y',
+        handle : '.ab-handle',
+        update : function( event, ui ) {
+            var data = [];
+            $category.children('li').each(function() {
+                var $this = $(this);
+                var position = $this.data('id');
+                data.push(position);
+            });
+            $.ajax({
+                type : 'POST',
+                url  : ajaxurl,
+                data : { action: 'ab_update_category_position', position: data }
+            });
+        }
     });
+
+    function makeServicesSortable() {
+        if ($('.ab-main-category-item').hasClass('ab-active')) {
+            var $services = $('#services_list tbody'),
+                fixHelper = function(e, ui) {
+                    ui.children().each(function() {
+                        $(this).width($(this).width());
+                    });
+                    return ui;
+                };
+            $services.sortable({
+                helper : fixHelper,
+                axis   : 'y',
+                handle : '.ab-handle',
+                update : function( event, ui ) {
+                    var data = [];
+                    $services.children('tr').each(function() {
+                        data.push($(this).data('id'));
+                    });
+                    $.ajax({
+                        type : 'POST',
+                        url  : ajaxurl,
+                        data : { action: 'ab_update_services_position', position: data }
+                    });
+                }
+            });
+        }
+        else {
+            $('#services_list .ab-handle').hide();
+        }
+    }
+
+    makeServicesSortable();
+
 });

@@ -1,5 +1,4 @@
-<?php
-if (!defined('ABSPATH')) exit; // Exit if accessed directly
+<?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 class AB_Google {
 
@@ -77,7 +76,7 @@ class AB_Google {
      */
     public function createEvent(AB_Appointment $appointment)
     {
-        if ($this->valid){
+        if ( $this->valid && in_array( $this->getCalendarAccess(), array('writer', 'owner') ) ){
             $this->event = new Google_Service_Calendar_Event();
 
             $this->handleEventData($appointment);
@@ -99,7 +98,7 @@ class AB_Google {
      */
     public function updateEvent(AB_Appointment $appointment)
     {
-        if ($this->valid){
+        if ( $this->valid && in_array( $this->getCalendarAccess(), array('writer', 'owner') ) ) {
             try {
                 $this->event = $this->service->events->get($this->getCalendarID(), $appointment->get('google_event_id'));
             } catch (Exception $e) {
@@ -122,25 +121,33 @@ class AB_Google {
     {
         $start_datetime = new Google_Service_Calendar_EventDateTime();
         $start_datetime->setDateTime(
-            DateTime::createFromFormat("Y-m-d H:i:s", $appointment->get('start_date'), new DateTimeZone(get_option('timezone_string') ? get_option('timezone_string') : timezone_name_from_abbr('', get_option('gmt_offset') * 3600, 0)))
+            DateTime::createFromFormat("Y-m-d H:i:s", $appointment->get('start_date'), new DateTimeZone($this->get_timezone_string()))
                 ->format(DateTime::RFC3339)
         );
 
         $end_datetime = new Google_Service_Calendar_EventDateTime();
         $end_datetime->setDateTime(
-            DateTime::createFromFormat("Y-m-d H:i:s", $appointment->get('end_date'), new DateTimeZone(get_option('timezone_string') ? get_option('timezone_string') : timezone_name_from_abbr('', get_option('gmt_offset') * 3600, 0)))
+            DateTime::createFromFormat("Y-m-d H:i:s", $appointment->get('end_date'), new DateTimeZone($this->get_timezone_string()))
                 ->format(DateTime::RFC3339)
         );
 
         $description = '';
         foreach ($appointment->getCustomerAppointments() as $ca) {
             $description .= sprintf(
-                "%s: %s\n%s: %s\n%s: %s\n%s: %s\n\n",
+                "%s: %s\n%s: %s\n%s: %s\n",
                 __( 'Name', 'ab' ), $ca->customer->get( 'name' ),
                 __( 'Email', 'ab' ), $ca->customer->get( 'email' ),
-                __( 'Phone', 'ab' ), $ca->customer->get( 'phone' ),
-                __( 'Notes', 'ab' ), $ca->get( 'notes' )
+                __( 'Phone', 'ab' ), $ca->customer->get( 'phone' )
             );
+
+            foreach ($ca->getCustomFields() as $custom_field) {
+                $description .= sprintf(
+                    "%s: %s\n",
+                    $custom_field[ 'label' ], $custom_field[ 'value' ]
+                );
+            }
+
+            $description .= PHP_EOL;
         }
 
         $service = new AB_Service();
@@ -169,32 +176,65 @@ class AB_Google {
         $result = array();
 
         if ($this->valid){
-            $events = $this->service->events->listEvents($this->getCalendarID());
+            $calendar_access = $this->getCalendarAccess();
+
+            $timeMax = clone $startDate;
+            $timeMax = $timeMax->modify('-1 day')->format(DateTime::RFC3339);
+
+            $events = $this->service->events->listEvents($this->getCalendarID(), array(
+                'singleEvents'  => true,
+                'orderBy'       => 'startTime',
+                'timeMin'       => $timeMax,
+                'timeZone'      => $this->get_timezone_string()
+            ));
 
             while (true) {
                 foreach ($events->getItems() as $event) {
                     /** @var Google_Service_Calendar_Event $event */
-                    $eventFeedTimeStartDate = new DateTime($event->getStart()->dateTime);
-                    $eventFeedTimeEndDate = new DateTime($event->getEnd()->dateTime);
 
-                    // check if event intersect with out datetime interval and if it was created not by bookly
                     if (
-                        $eventFeedTimeEndDate > $startDate &&
-                        (!is_array($event->getExtendedProperties()->private) ||!array_key_exists('service_id', $event->getExtendedProperties()->private))
-                    ) {
-                        $event = new StdClass();
-                        $event->staff_id = $this->staff->get('id');
-                        $event->start_date = $eventFeedTimeStartDate->format('Y:m:d H:i:s');
-                        $event->end_date = $eventFeedTimeEndDate->format('Y:m:d H:i:s');
-                        $event->capacity = 1;
-                        $event->number_of_bookings = 1;
+                        $event->getStatus() !== 'cancelled' &&
+                        ($calendar_access == 'freeBusyReader' || ($event->getExtendedProperties() === null || $event->getExtendedProperties()->private === null || !array_key_exists('service_id', $event->getExtendedProperties()->private)))
+                    ){
+                        if ($event->getStart()->dateTime == null) {
+                            $eventFeedTimeStartDate = new DateTime($event->getStart()->date);
+                            $eventFeedTimeEndDate = new DateTime($event->getEnd()->date);
+                        }else{
+                            $eventFeedTimeStartDate = new DateTime($event->getStart()->dateTime);
+                            $eventFeedTimeEndDate = new DateTime($event->getEnd()->dateTime);
+                        }
 
-                        $result[] = $event;
+                        // check if event intersect with out datetime interval and if it was created not by bookly
+                        if ($eventFeedTimeEndDate > $startDate) {
+                            for ($loop_start = $eventFeedTimeStartDate; $loop_start < $eventFeedTimeEndDate; $loop_start->modify('+1 day')->setTime(0, 0, 0)){
+                                if ($loop_start->format('Y:m:d') < $eventFeedTimeEndDate->format('Y:m:d')) {
+                                    $loop_end = clone $loop_start;
+                                    $loop_end->setTime(23, 59 ,59);
+                                }else{
+                                    $loop_end = $eventFeedTimeEndDate;
+                                }
+
+                                $ab_event = new StdClass();
+                                $ab_event->staff_id = $this->staff->get('id');
+                                $ab_event->start_date = $loop_start->format('Y:m:d H:i:s');
+                                $ab_event->end_date = $loop_end->format('Y:m:d H:i:s');
+                                $ab_event->capacity = 1;
+                                $ab_event->number_of_bookings = 1;
+
+                                $result[] = $ab_event;
+                            }
+                        }
                     }
                 }
 
                 if ($events->getNextPageToken()) {
-                    $events = $this->service->events->listEvents($this->getCalendarID(), array('pageToken' => $events->getNextPageToken()));
+                    $events = $this->service->events->listEvents($this->getCalendarID(), array(
+                        'singleEvents'  => true,
+                        'orderBy'       => 'startTime',
+                        'timeMin'       => $timeMax,
+                        'timeZone'      => $this->get_timezone_string(),
+                        'pageToken'     => $events->getNextPageToken()
+                    ));
                 } else {
                     break;
                 }
@@ -275,15 +315,15 @@ class AB_Google {
      */
     public function delete($event_id)
     {
-        if (!$this->service) { return false; }
-
-        try {
-            $this->service->events->delete($this->getCalendarID(), $event_id);
-            return true;
-        } catch (Exception $e) {
-            $this->errors[] = $e->getMessage();
-            return false;
+        if ($this->service && in_array( $this->getCalendarAccess(), array('writer', 'owner') ) ) {
+            try {
+                $this->service->events->delete($this->getCalendarID(), $event_id);
+                return true;
+            } catch (Exception $e) {
+                $this->errors[] = $e->getMessage();
+            }
         }
+        return false;
     }
 
     /**
@@ -302,6 +342,13 @@ class AB_Google {
             return $this->staff->get('google_calendar_id');
         }
         return 'primary';
+    }
+
+    /**
+     * @return string [freeBusyReader, reader, writer, owner]
+     */
+    private function getCalendarAccess(){
+        return $this->service->calendarList->get($this->getCalendarID())->getAccessRole();
     }
 
     /**
@@ -326,5 +373,38 @@ class AB_Google {
 
     public static function generateRedirectURI(){
         return admin_url( 'admin.php' ) . '?page=ab-system-staff';
+    }
+
+    private function get_timezone_string() {
+        // if site timezone string exists, return it
+        if ( $timezone = get_option( 'timezone_string' ) ) {
+            return $timezone;
+        }
+
+        // get UTC offset, if it isn't set then return UTC
+        if ( 0 === ( $utc_offset = get_option( 'gmt_offset', 0 ) ) ) {
+            return 'UTC';
+        }
+
+        // adjust UTC offset from hours to seconds
+        $utc_offset *= 3600;
+
+        // attempt to guess the timezone string from the UTC offset
+        if ( $timezone = timezone_name_from_abbr( '', $utc_offset, 0 ) ) {
+            return $timezone;
+        }
+
+        // last try, guess timezone string manually
+        $is_dst = date( 'I' );
+
+        foreach ( timezone_abbreviations_list() as $abbr ) {
+            foreach ( $abbr as $city ) {
+                if ( $city['dst'] == $is_dst && $city['offset'] == $utc_offset )
+                    return $city['timezone_id'];
+            }
+        }
+
+        // fallback to UTC
+        return 'UTC';
     }
 }

@@ -1,6 +1,6 @@
 ;(function() {
 
-    var module = angular.module('customers', ['ui', 'newCustomerDialog', 'ngSanitize']);
+    var module = angular.module('customers', ['ui.utils', 'ui.date', 'newCustomerDialog', 'ngSanitize']);
 
     module.factory('dataSource', function($q, $rootScope) {
         var ds = {
@@ -175,7 +175,7 @@
          * @param customer
          */
         $scope.deleteCustomer = function(customer) {
-            if (confirm('Are you sure ?')) {
+            if (confirm(BooklyL10n['are_you_sure'])) {
                 jQuery.ajax({
                     url  : ajaxurl,
                     type : 'POST',

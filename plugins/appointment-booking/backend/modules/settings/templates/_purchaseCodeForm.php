@@ -1,9 +1,9 @@
 <?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly ?>
 <form enctype="multipart/form-data" method="post" action="<?php echo add_query_arg( 'type', '_purchase_code' ) ?>" class="ab-staff-form" id="purchase_code">
     <?php if ( isset ( $message_pc ) ) : ?>
-        <div class="alert">
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            <?php echo $message_pc ?>
+        <div style="margin: 0px!important;" class="updated below-h2">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            <p><?php echo $message_pc ?></p>
         </div>
     <?php endif ?>
 

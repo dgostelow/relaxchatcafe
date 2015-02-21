@@ -1,6 +1,14 @@
 jQuery(function ($) {
     // Resolve conflict between Bootstrap and jQuery UI in favor of jQuery UI.
-    $.fn.button.noConflict();
+    if (typeof $.fn.button.noConflict == 'function') {
+        $.fn.button.noConflict();
+    }
+    // Resolve the problem with Bootstrap modal window inside jQuery dialog.
+    $.widget("ui.dialog", $.ui.dialog, {
+        _allowInteraction: function (event) {
+            return true;
+        }
+    });
 
     var $week_calendar_wrapper            = $('#week_calendar_wrapper'),
         $week_calendar                    = $week_calendar_wrapper.find('.ab-calendar-element'),
@@ -99,8 +107,7 @@ jQuery(function ($) {
                     calEvent.start,
                     null,
                     calendar,
-                    'week',
-                    calEvent.notes
+                    'week'
                 );
             },
             eventClick: function(calEvent, element, dayFreeBusyManager, calendar, clickEvent) {
@@ -110,8 +117,7 @@ jQuery(function ($) {
                     calEvent.start,
                     calEvent.end,
                     calendar,
-                    'week',
-                    calEvent.notes
+                    'week'
                 );
             },
             data: (function() {
@@ -137,16 +143,14 @@ jQuery(function ($) {
                                     end   : new Date(value.end),
                                     title : value.title,
                                     desc  : value.desc,
-                                    color : value.color,
-                                    notes : value.notes ? value.notes : false
+                                    color : value.color
                                 };
                             });
                             var free_busys = $.map(response.freebusys, function(value) {
                                 return {
                                     start : new Date(value.start),
                                     end   : new Date(value.end),
-                                    free  : value.free,
-                                    notes : value.notes ? value.notes : false
+                                    free  : value.free
                                 };
                             });
 
@@ -202,8 +206,7 @@ jQuery(function ($) {
                                     title  : value.title,
                                     color  : value.color,
                                     desc   : value.desc,
-                                    userId : parseInt(value.userId, 10),
-                                    notes  : value.notes ? value.notes : false
+                                    userId : parseInt(value.userId, 10)
                                 };
                             });
                             var free_busys = $.map(response.freebusys, function(value) {
@@ -211,8 +214,7 @@ jQuery(function ($) {
                                     start  : new Date(value.start),
                                     end    : new Date(value.end),
                                     free   : value.free,
-                                    userId : parseInt(value.userId, 10),
-                                    notes  : value.notes ? value.notes : false
+                                    userId : parseInt(value.userId, 10)
                                 };
                             });
 
@@ -255,8 +257,7 @@ jQuery(function ($) {
                     calEvent.start,
                     null,
                     calendar,
-                    'day',
-                    calEvent.notes
+                    'day'
                 );
             },
             eventClick: function(calEvent, element, dayFreeBusyManager, calendar, clickEvent) {
@@ -266,8 +267,7 @@ jQuery(function ($) {
                     calEvent.start,
                     calEvent.end,
                     calendar,
-                    'day',
-                    calEvent.notes
+                    'day'
                 );
             }
         };

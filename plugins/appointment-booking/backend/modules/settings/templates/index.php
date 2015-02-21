@@ -4,6 +4,7 @@
     <div class="ab-left-bar">
         <div id="ab_settings_general" class="ab-left-tab <?php echo ( ! isset( $_GET[ 'type' ] ) || $_GET[ 'type' ] == '_general' ) ? 'ab-active' : ''  ?>"><?php _e( 'General','ab' ) ?></div>
         <div id="ab_settings_company" class="ab-left-tab <?php echo isset( $_GET['type'] ) && $_GET['type'] == '_company' ? 'ab-active' : ''  ?>"><?php _e( 'Company','ab' ) ?></div>
+        <div id="ab_settings_google_calendar" class="ab-left-tab <?php echo isset( $_GET['type'] ) && $_GET['type'] == '_google_calendar' ? 'ab-active' : ''  ?>"><?php _e( 'Google Calendar','ab' ) ?></div>
         <div id="ab_settings_payments" class="ab-left-tab <?php echo isset( $_GET['type'] ) && $_GET['type'] == '_payments' ? 'ab-active' : ''  ?>"><?php _e( 'Payments','ab' ) ?></div>
         <div id="ab_settings_hours" class="ab-left-tab <?php echo isset( $_GET['type'] ) && $_GET['type'] == '_hours' ? 'ab-active' : ''  ?>"><?php _e( 'Business hours','ab' ) ?></div>
         <div id="ab_settings_holidays" class="ab-left-tab <?php echo isset( $_GET['type'] ) && $_GET['type'] == '_holidays' ? 'ab-active' : ''  ?>"><?php _e( 'Holidays','ab' ) ?></div>
@@ -15,6 +16,9 @@
         </div>
         <div id="company-form" class="<?php echo ( isset( $_GET['type'] ) && $_GET['type'] == '_company' ) ? '' : 'hidden' ?>">
             <?php include '_companyForm.php' ?>
+        </div>
+        <div id="google-calendar-form" class="<?php echo ( isset( $_GET['type'] ) && $_GET['type'] == '_google_calendar' ) ? '' : 'hidden' ?>">
+            <?php include '_googleCalendarForm.php' ?>
         </div>
         <div id="payments-form" class="<?php echo ( isset( $_GET['type'] ) && $_GET['type'] == '_payments' ) ? '' : 'hidden' ?>">
             <?php include '_paymentsForm.php' ?>

@@ -1,9 +1,4 @@
-<?php
-
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
-
-include 'lib/AB_UserBookingData.php';
-include 'lib/AB_AvailableTime.php';
+<?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 /**
  * Class AB_BookingController
@@ -16,51 +11,87 @@ class AB_BookingController extends AB_Controller {
         );
     }
 
+    /**
+     * Render Bookly shortcode.
+     *
+     * @param $attributes
+     * @return string
+     */
     public function renderShortCode( $attributes ) {
-        $this->form_id = uniqid();
-        $userData = new AB_UserBookingData( $this->form_id );
-        $userData->load();
+        static $assets_printed = false;
 
-        $this->attributes        = json_encode(is_array( $attributes ) ? $attributes : array() );
-        $this->booking_finished  = $userData->getBookingFinished();
-        $this->booking_cancelled = $userData->getBookingCancelled();
+        if ( !$assets_printed ) {
+            $assets_printed = true;
+            // The styles and scripts are registered in AB_Frontend.php
+            wp_print_styles('ab-reset');
+            wp_print_styles('ab-picker-date');
+            wp_print_styles('ab-picker-classic-date');
+            wp_print_styles('ab-picker');
+            wp_print_styles('ab-ladda-themeless');
+            wp_print_styles('ab-ladda-min');
+            wp_print_styles('ab-core');
+            wp_print_styles('ab-columnizer');
 
-        if ( $this->booking_finished ) {
-            $userData->clean();
-        } elseif ( isset( $_COOKIE[ 'first_step' ] ) ) {
-            $cookie_data = json_decode( stripslashes( $_COOKIE[ 'first_step' ] ) );
-            $form_id = $cookie_data->form_id;
-
-            if ( isset( $_SESSION[ 'appointment_booking' ][ $form_id ],
-                $_SESSION[ 'appointment_booking' ][ $form_id ][ 'finished' ] ) &&
-                $_SESSION[ 'appointment_booking' ][ $form_id ][ 'finished' ] === true
-            ) {
-                $userData->clean();
-                $this->booking_finished = true;
+            wp_print_scripts('ab-spin');
+            wp_print_scripts('ab-ladda');
+            wp_print_scripts('bookly');
+            wp_print_scripts('ab-picker');
+            wp_print_scripts('ab-picker-date');
+            wp_print_scripts('ab-hammer');
+            // Android animation
+            if (stripos(strtolower($_SERVER['HTTP_USER_AGENT']), 'android') !== false) {
+                wp_print_scripts('ab-jquery-animate-enhanced');
             }
         }
 
-        if ( $this->booking_cancelled ) {
-            $userData->clean();
-        } elseif ( isset( $_COOKIE[ 'first_step' ] ) ) {
-            $cookie_data = json_decode( stripslashes( $_COOKIE[ 'first_step' ] ) );
-            $form_id = $cookie_data->form_id;
-
-            if ( isset( $_SESSION[ 'appointment_booking' ][ $form_id ],
-                $_SESSION[ 'appointment_booking' ][ $form_id ][ 'cancelled' ] ) &&
-                $_SESSION[ 'appointment_booking' ][ $form_id ][ 'cancelled' ] === true
-            ) {
-                $userData->clean();
-                $this->booking_cancelled = true;
-
+        // Find bookings with any of paypal statuses
+        $this->booking_finished = $this->booking_cancelled = false;
+        $this->form_id = uniqid();
+        if ( isset($_SESSION[ 'appointment_booking' ] ) ) {
+            foreach ( $_SESSION[ 'appointment_booking' ] as $appointment_id => $appointment ) {
+                if ( isset( $appointment[ 'cancelled' ] ) && $appointment[ 'cancelled' ] ) {
+                    $_SESSION[ 'appointment_booking' ][ $appointment_id ][ 'cancelled' ] = false;
+                    $this->form_id = $appointment_id;
+                    $this->booking_cancelled = true;
+                    break;
+                } elseif ( isset( $appointment[ 'finished' ] ) && $appointment[ 'finished' ] ) {
+                    $_SESSION[ 'appointment_booking' ][ $appointment_id ][ 'finished' ] = false;
+                    $this->form_id = $appointment_id;
+                    $this->booking_finished = true;
+                    break;
+                }
             }
+        }
+
+        $userData = new AB_UserBookingData( $this->form_id );
+        $userData->load();
+
+        $this->attributes = json_encode( array(
+            'hide_categories'    => @$attributes[ 'hide_categories' ]    ?: ( @$attributes[ 'ch' ]  ?: false ),
+            'category_id'        => @$attributes[ 'category_id' ]        ?: ( @$attributes[ 'cid' ] ?: false ),
+            'hide_services'      => @$attributes[ 'hide_services' ]      ?: ( @$attributes[ 'hs' ]  ?: false ),
+            'service_id'         => @$attributes[ 'service_id' ]         ?: ( @$attributes[ 'sid' ] ?: false ),
+            'hide_staff_members' => @$attributes[ 'hide_staff_members' ] ?: ( @$attributes[ 'he' ]  ?: false ),
+            'staff_member_id'    => @$attributes[ 'staff_member_id' ]    ?: ( @$attributes[ 'eid' ] ?: false ),
+            'hide_date_and_time' => @$attributes[ 'hide_date_and_time' ] ?: ( @$attributes[ 'ha' ]  ?: false ),
+        ) );
+
+        if ( $this->booking_finished ) {
+            $userData->clean();
         }
 
         return $this->render( 'short_code', array(), false );
     }
 
+    /**
+     * Render first step.
+     *
+     * @return string JSON
+     */
     public function executeRenderService() {
         $form_id = $this->getParameter( 'form_id' );
+
+        $response = null;
 
         if ( $form_id ) {
             $configuration = new AB_BookingConfiguration();
@@ -74,18 +105,225 @@ class AB_BookingController extends AB_Controller {
             $this->userData->load();
             $this->_prepareProgressTracker( 1, $this->userData->getServicePrice() );
             $this->info_text = nl2br( esc_html( get_option( 'ab_appearance_text_info_first_step' ) ) );
-            echo json_encode( array(
-                'html'       => $this->render( 'service', array(), false ),
+            $response = array(
+                'status'     => 'success',
+                'html'       => $this->render( '1_service', array(), false ),
                 'categories' => $configuration->getCategories(),
                 'staff'      => $configuration->getStaff(),
                 'services'   => $configuration->getServices(),
                 'attributes' => $this->userData->hasData()
                     ? array(
-                        'sid'   => $this->userData->getServiceId(),
-                        'eid'   => $this->userData->getStaffId()
+                        'service_id'      => $this->userData->getServiceId(),
+                        'staff_member_id' => $this->userData->getStaffId()
                     )
                     : null
+            );
+        }
+
+        // Output JSON response.
+        if ( $response === null ) {
+            $response = array( 'status' => 'no-data' );
+        }
+        header( 'Content-Type: application/json' );
+        echo json_encode( $response );
+
+        exit (0);
+    }
+
+    /**
+     * Render second step.
+     *
+     * @return string JSON
+     */
+    public function executeRenderTime() {
+        $form_id = $this->getParameter( 'form_id' );
+
+        $response = null;
+
+        if ( $form_id ) {
+            $userData = new AB_UserBookingData( $form_id );
+            $userData->load();
+
+            if ( $userData->hasData() ) {
+                $availableTime = new AB_AvailableTime( $userData );
+
+                if ( get_option( 'ab_settings_use_client_time_zone' ) && $this->getParameter( 'client_time_zone_offset' ) ) {
+                    $availableTime->setClientTimeZoneOffset( $this->getParameter( 'client_time_zone_offset' ) );
+                }
+
+                $availableTime->load();
+                $this->time = $availableTime->getTime();
+                $this->_prepareProgressTracker( 2, $userData->getServicePrice() );
+                $this->info_text = $this->_prepareInfoText( 2, $userData );
+
+                // Set response.
+                $response = array(
+                    'status' => empty ( $this->time ) ? 'error' : 'success',
+                    'html'   => $this->render( '2_time', array(), false )
+                );
+            }
+        }
+
+        // Output JSON response.
+        if ( $response === null ) {
+            $response = array( 'status' => 'no-data' );
+        }
+        header( 'Content-Type: application/json' );
+        echo json_encode( $response );
+
+        exit (0);
+    }
+
+    /**
+     * Render third step.
+     *
+     * @return string JSON
+     */
+    public function executeRenderDetails() {
+        $form_id = $this->getParameter( 'form_id' );
+
+        $response = null;
+
+        if ( $form_id ) {
+            $userData = new AB_UserBookingData( $form_id );
+            $userData->load();
+
+            if ( $userData->hasData() ) {
+                $this->userData = $userData;
+                $this->info_text = $this->_prepareInfoText( 3, $userData );
+                $this->_prepareProgressTracker( 3, $userData->getServicePrice() );
+                $response = array(
+                    'status' => 'success',
+                    'html'   => $this->render( '3_details', array(
+                        'custom_fields' => json_decode( get_option( 'ab_custom_fields' ) )
+                    ), false )
+                );
+
+            }
+        }
+
+        // Output JSON response.
+        if ( $response === null ) {
+            $response = array( 'status' => 'no-data' );
+        }
+        header( 'Content-Type: application/json' );
+        echo json_encode( $response );
+
+        exit (0);
+    }
+
+    /**
+     * Render fourth step.
+     *
+     * @return string JSON
+     */
+    public function executeRenderPayment() {
+        $form_id = $this->getParameter( 'form_id' );
+
+        $response = null;
+
+        if ( $form_id ) {
+            $payment_disabled = AB_BookingConfiguration::isPaymentDisabled();
+
+            $this->userData = new AB_UserBookingData( $form_id );
+            $this->userData->load();
+            if ($this->userData->hasData()) {
+                if ($this->userData->getServicePrice() <= 0) {
+                    $payment_disabled = true;
+                }
+            }
+
+            if ( $payment_disabled == false ) {
+                $this->form_id = $form_id;
+                $this->info_text = nl2br( esc_html( get_option( 'ab_appearance_text_info_fourth_step' ) ) );
+                $this->info_text_coupon = $this->_prepareInfoText(4, $this->userData);
+
+                if ( $this->userData->hasData() ) {
+                    $employee = new AB_Staff();
+                    $employee->load( $this->userData->getStaffId() );
+
+                    $service = new AB_Service();
+                    $service->load( $this->userData->getServiceId() );
+
+                    $price = $this->getWpdb()->get_var( $this->getWpdb()->prepare( '
+                        SELECT price FROM ab_staff_service WHERE staff_id = %d AND service_id = %d',
+                        $employee->get( 'id' ), $service->get( 'id' )
+                    ) );
+
+                    // create a paypal object
+                    $paypal = new PayPal();
+                    $product = new stdClass();
+                    $product->name  = $service->get( 'title' );
+                    $product->desc  = $service->getTitleWithDuration();
+                    $product->price = $price;
+                    $product->qty   = 1;
+                    $paypal->addProduct($product);
+
+                    // get the products information from the $_POST and create the Product objects
+                    $this->paypal = $paypal;
+                    $this->_prepareProgressTracker( 4, $price );
+
+                    $paypal_error_msg = $this->userData->getBookingPayPalError();
+                    $this->userData->setBookingPayPalError('');
+
+                    // Set response.
+                    $response = array(
+                        'status' => 'success',
+                        'html'   => $this->render( '4_payment', array(
+                                'paypal_error_msg' => $paypal_error_msg
+                            ), false )
+                    );
+                }
+            }
+        }
+
+        // Output JSON response.
+        if ( $response === null ) {
+            $response = array( 'status' => 'no-data' );
+        }
+        header( 'Content-Type: application/json' );
+        echo json_encode( $response );
+
+        exit (0);
+    }
+
+    /**
+     * Render fifth step.
+     *
+     * @return string JSON
+     */
+    public function executeRenderComplete() {
+        $state = array (
+            'success' => nl2br( esc_html( get_option( 'ab_appearance_text_info_fifth_step' ) ) ),
+            'error' =>  __( '<h3>The selected time is not available anymore. Please, choose another time slot.</h3>', 'ab' )
+        );
+
+        $this->progress_tracker = intval( get_option( 'ab_appearance_show_progress_tracker' ) == 1 ) ? true : false;
+
+        // Show Progress Tracker if enabled in settings
+        if ( $this->progress_tracker ) {
+            $price = null;
+            if ($form_id  = $this->getParameter( 'form_id' ) ) {
+                $userData = new AB_UserBookingData($form_id);
+                $userData->load();
+
+                $price = $userData->getServicePrice();
+            }
+
+            $this->_prepareProgressTracker( 5, $price );
+            echo json_encode ( array (
+                'state' => $state,
+                'step'  => $this->progress_tracker
             ) );
+        } else {
+            echo json_encode ( array ( 'state' => $state ) );
+        }
+
+        if ( isset( $_SESSION[ 'appointment_booking' ] ) ) {
+            unset( $_SESSION[ 'appointment_booking' ] );
+        }
+        if ( isset( $_SESSION[ 'ab_payment_total' ] ) ) {
+            unset( $_SESSION[ 'ab_payment_total' ] );
         }
         exit;
     }
@@ -117,19 +355,6 @@ class AB_BookingController extends AB_Controller {
 
             if ( isset( $_SESSION[ 'appointment_booking' ][ $form_id ] ) ) {
                 $user_data = $_SESSION[ 'appointment_booking' ][ $form_id ];
-            } elseif ( isset( $_SESSION[ 'tmp_booking_data' ] ) ) {
-                $tmp_booking_data = AB_CommonUtils::getTemporaryBookingData();
-
-                if ( !empty( $tmp_booking_data ) ) {
-                    // check if appointment's time is still available
-                    if (!$this->findIntersections($tmp_booking_data['staff_id'], $tmp_booking_data['service_id'], $tmp_booking_data['booked_datetime'])) {
-                        // save appointment to DB
-                        $userBookingData = new AB_UserBookingData( $form_id );
-                        $userBookingData->loadTemporaryForLocalPayment();
-                        $userBookingData->save();
-                        $time_is_available = true;
-                    }
-                }
             }
 
             if ( ! empty ( $user_data ) ) {
@@ -138,11 +363,13 @@ class AB_BookingController extends AB_Controller {
                     // save appointment to DB
                     $userBookingData = new AB_UserBookingData( $form_id );
                     $userBookingData->load();
-                    if ( get_option( 'ab_settings_use_client_time_zone' ) && $this->getParameter( 'client_time_zone_offset' ) ) {
-                        $userBookingData->setClientTimeOffset( $this->getParameter( 'client_time_zone_offset' ) / 60 + get_option( 'gmt_offset' ) );
+                    if ($userBookingData->saveValidate()) {
+                        if (get_option('ab_settings_use_client_time_zone') && $this->getParameter('client_time_zone_offset')) {
+                            $userBookingData->setClientTimeOffset($this->getParameter('client_time_zone_offset') / 60 + get_option('gmt_offset'));
+                        }
+                        $userBookingData->save();
+                        $time_is_available = true;
                     }
-                    $userBookingData->save();
-                    $time_is_available = true;
                 }
             }
         }
@@ -195,50 +422,6 @@ class AB_BookingController extends AB_Controller {
     }
 
     /**
-     * Render second step.
-     *
-     * @return string JSON
-     */
-    public function executeRenderTime() {
-        $form_id = $this->getParameter( 'form_id' );
-
-        $response = null;
-
-        if ( $form_id ) {
-            $userData = new AB_UserBookingData( $form_id );
-            $userData->load();
-
-            if ( $userData->hasData() ) {
-                $availableTime = new AB_AvailableTime( $userData );
-
-                if ( get_option( 'ab_settings_use_client_time_zone' ) && $this->getParameter( 'client_time_zone_offset' ) ) {
-                    $availableTime->setClientTimeZoneOffset( $this->getParameter( 'client_time_zone_offset' ) );
-                }
-
-                $availableTime->load();
-                $this->time = $availableTime->getTime();
-                $this->_prepareProgressTracker( 2, $userData->getServicePrice() );
-                $this->info_text = $this->_prepareInfoText( 2, $userData );
-
-                // Set response.
-                $response = array(
-                    'status' => empty ( $this->time ) ? 'error' : 'success',
-                    'html'   => $this->render( 'time', array(), false )
-                );
-            }
-        }
-
-        // Output JSON response.
-        if ( $response === null ) {
-            $response = array( 'status' => 'no-data' );
-        }
-        //header( 'Content-Type: application/json' );
-        echo json_encode( $response );
-
-        exit (0);
-    }
-
-    /**
      * render Progress Tracker for Backend Appearance
      */
     public function executeRenderProgressTracker( ) {
@@ -266,6 +449,11 @@ class AB_BookingController extends AB_Controller {
             if ( $userData->hasData() ) {
                 $availableTime = new AB_AvailableTime( $userData );
                 $availableTime->setStartDate( $this->getParameter( 'start_date' ) );
+
+                if ( get_option( 'ab_settings_use_client_time_zone' ) && $this->getParameter( 'client_time_zone_offset' ) ) {
+                    $availableTime->setClientTimeZoneOffset( $this->getParameter( 'client_time_zone_offset' ) );
+                }
+
                 $availableTime->load();
 
                 if ( count( $availableTime->getTime() ) ) { // check, if there are available time
@@ -313,177 +501,6 @@ class AB_BookingController extends AB_Controller {
         echo json_encode( $response );
 
         exit (0);
-    }
-
-    public function executeRenderYourDetails() {
-        $form_id = $this->getParameter( 'form_id' );
-        if ( $form_id ) {
-            $userData = new AB_UserBookingData( $form_id );
-            $userData->load();
-
-            if ( $userData->hasData() ) {
-                $this->userData = $userData;
-                $this->info_text = $this->_prepareInfoText( 3, $userData );
-                $this->_prepareProgressTracker( 3, $userData->getServicePrice() );
-                $this->render( 'your_details' );
-            }
-        }
-        exit;
-    }
-
-    public function executeRenderPayment() {
-        $form_id = $this->getParameter( 'form_id' );
-
-        $response = null;
-
-        if ( $form_id ) {
-            $payment_disabled = AB_BookingConfiguration::isPaymentDisabled();
-
-            $this->userData = new AB_UserBookingData( $form_id );
-            $this->userData->load();
-            if ($this->userData->hasData()) {
-                if ($this->userData->getServicePrice() <= 0) {
-                    $payment_disabled = true;
-                }
-            }
-
-            if ( $payment_disabled == false ) {
-                $this->form_id = $form_id;
-                $this->info_text = nl2br( esc_html( get_option( 'ab_appearance_text_info_fourth_step' ) ) );
-                $this->info_text_coupon = $this->_prepareInfoText(4, $this->userData);
-
-                if ( $this->userData->hasData() ) {
-                    $employee = new AB_Staff();
-                    $employee->load( $this->userData->getStaffId() );
-
-                    $service = new AB_Service();
-                    $service->load( $this->userData->getServiceId() );
-
-                    $price = $this->getWpdb()->get_var( $this->getWpdb()->prepare( '
-                        SELECT price FROM ab_staff_service WHERE staff_id = %d AND service_id = %d',
-                            $employee->get( 'id' ), $service->get( 'id' )
-                    ) );
-
-                    // create a paypal object
-                    $paypal = new PayPal();
-                    $product = new stdClass();
-                    $product->name  = $service->get( 'title' );
-                    $product->desc  = $service->getTitleWithDuration();
-                    $product->price = $price;
-                    $product->qty   = 1;
-                    $paypal->addProduct($product);
-
-                    // get the products information from the $_POST and create the Product objects
-                    $this->paypal = $paypal;
-                    $this->_prepareProgressTracker( 4, $price );
-
-                    // Set response.
-                    $response = array(
-                        'status' => 'success',
-                        'html'   => $this->render( 'payment', array(), false )
-                    );
-                }
-                else if ( isset( $_SESSION[ 'tmp_booking_data' ] ) ) {
-                    $tmp_booking_data = AB_CommonUtils::getTemporaryBookingData();
-
-                    if ( !empty( $tmp_booking_data ) ) {
-                        $tmp_form_id = $tmp_booking_data[ 'form_id' ];
-                        if ( isset( $_SESSION[ 'appointment_booking' ][ $tmp_form_id ] ) &&
-                            $_SESSION[ 'appointment_booking' ][ $tmp_form_id ][ 'cancelled' ] === true
-                        ) {
-                            $employee = new AB_Staff();
-                            $employee->load( $tmp_booking_data[ 'staff_id' ][ 0 ] );
-
-                            $service = new AB_Service();
-                            $service->load( $tmp_booking_data[ 'service_id' ] );
-
-                            $price = $this->getWpdb()->get_var( $this->getWpdb()->prepare( '
-                                SELECT price FROM ab_staff_service WHERE staff_id = %d AND service_id = %d',
-                                    $employee->get( 'id' ), $service->get( 'id' )
-                            ) );
-
-                            // create a paypal object
-                            $paypal = new PayPal();
-                            $product = new stdClass();
-                            $product->name  = $service->get( 'title' );
-                            $product->desc  = $service->getTitleWithDuration();
-                            $product->price = $price;
-                            $product->qty   = 1;
-                            $paypal->addProduct($product);
-
-                            // get the products information from the $_POST and create the Product objects
-                            $this->paypal = $paypal;
-                            $this->_prepareProgressTracker( 4, $price );
-                            $error_msg = isset($_SESSION[ 'appointment_booking' ][$tmp_form_id]['paypal_error']) ? $_SESSION[ 'appointment_booking' ][$tmp_form_id]['paypal_error'] : "";
-                            unset($_SESSION[ 'appointment_booking' ][$tmp_form_id]['paypal_error']);
-
-                            // Set response.
-                            $response = array(
-                                'status' => 'success',
-                                'html'   => $this->render( 'payment', array( 'form_id' => $tmp_form_id, 'error_msg' =>  $error_msg), false )
-                            );
-                        }
-                    }
-                }
-            }
-        }
-
-        // Output JSON response.
-        if ( $response === null ) {
-            $response = array( 'status' => 'no-data' );
-        }
-        header( 'Content-Type: application/json' );
-        echo json_encode( $response );
-
-        exit (0);
-    }
-
-    public function executeRenderComplete() {
-        $state = array (
-            'success' => nl2br( esc_html( get_option( 'ab_appearance_text_info_fifth_step' ) ) ),
-            'error' =>  __( '<h3>The selected time is not available anymore. Please, choose another time slot.</h3>', 'ab' )
-        );
-
-        $this->progress_tracker = intval( get_option( 'ab_appearance_show_progress_tracker' ) == 1 ) ? true : false;
-
-        // Show Progress Tracker if enabled in settings
-        if ( $this->progress_tracker ) {
-            $price = null;
-            if ($form_id  = $this->getParameter( 'form_id' ) ) {
-                $userData = new AB_UserBookingData($form_id);
-                $userData->load();
-
-                $price = $userData->getServicePrice();
-            }
-
-            $this->_prepareProgressTracker( 5, $price );
-            echo json_encode ( array (
-                'state' => $state,
-                'step'  => $this->progress_tracker
-            ) );
-        } else {
-            echo json_encode ( array ( 'state' => $state ) );
-        }
-
-        if ( isset( $_SESSION[ 'appointment_booking' ] ) ) {
-            unset( $_SESSION[ 'appointment_booking' ] );
-        }
-        if ( isset( $_SESSION[ 'ab_payment_total' ] ) ) {
-            unset( $_SESSION[ 'ab_payment_total' ] );
-        }
-        if ( isset( $_SESSION[ 'tmp_booking_data' ] ) ) {
-            unset( $_SESSION[ 'tmp_booking_data' ] );
-        }
-        exit;
-    }
-
-    public function executeDestroyUserData() {
-        session_destroy();
-        if ( isset( $_COOKIE[ 'first_step' ] ) ) {
-            unset( $_COOKIE[ 'first_step' ] );
-            setcookie( 'first_step', '', time() - 3600 ); // empty value and old timestamp
-        }
-        exit;
     }
 
     /**
@@ -548,7 +565,8 @@ class AB_BookingController extends AB_Controller {
                         $price -= $price * $discount / 100;
                         $response = array(
                             'status' => 'success',
-                            'text'   => $this->_prepareInfoText(4, $userData, $price)
+                            'text'   => $this->_prepareInfoText(4, $userData, $price),
+                            'discount'   => $discount
                         );
                     } else {
                         $userData->setCoupon(NULL);

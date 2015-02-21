@@ -5,6 +5,9 @@
         <?php if ( $collection ) : ?>
             <?php foreach ($collection as $staff) : ?>
                 <li class="ab-staff-member" id="ab-list-staff-<?php echo $staff->id ?>" data-staff-id="<?php echo $staff->id ?>"<?php if ( $active_staff_id == $staff->id ): ?> data-active="true"<?php endif ?>>
+                    <span class="ab-handle">
+                        <i class="ab-inner-handle icon-move"></i>
+                    </span>
                     <?php if ($staff->avatar_url) : ?>
                         <img class="left ab-avatar" src="<?php echo $staff->avatar_url ?>" />
                     <?php else : ?>

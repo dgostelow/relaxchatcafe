@@ -1,25 +1,20 @@
-<?php
+<?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 /**
  * Class AB_Notifications
  */
 class AB_Notifications extends AB_Entity {
 
-    /**
-     * Constructor.
-     */
-    public function __construct() {
-        $this->table_name = 'ab_notifications';
-        $this->schema = array(
-            'id'        => array( 'format' => '%d' ),
-            'slug'      => array( 'format' => '%s', 'default' => '' ),
-            'active'    => array( 'format' => '%d', 'default' => 0 ),
-            'copy'      => array( 'format' => '%d', 'default' => 0 ),
-            'subject'   => array( 'format' => '%s', 'default' => '' ),
-            'message'   => array( 'format' => '%s', 'default' => '' ),
-        );
-        parent::__construct();
-    }
+    protected static $table_name = 'ab_notifications';
+
+    protected static $schema = array(
+        'id'        => array( 'format' => '%d' ),
+        'slug'      => array( 'format' => '%s', 'default' => '' ),
+        'active'    => array( 'format' => '%d', 'default' => 0 ),
+        'copy'      => array( 'format' => '%d', 'default' => 0 ),
+        'subject'   => array( 'format' => '%s', 'default' => '' ),
+        'message'   => array( 'format' => '%s', 'default' => '' ),
+    );
 
     public function getSubject() {
         return $this->get('subject');

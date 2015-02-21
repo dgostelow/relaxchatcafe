@@ -2,18 +2,47 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-include 'forms/AB_CategoryForm.php';
-include 'forms/AB_ServiceForm.php';
-
 /**
  * Class AB_ServiceController
  */
 class AB_ServiceController extends AB_Controller {
 
     /**
-     *
+     * Index page.
      */
     public function index() {
+        $this->enqueueStyles( array(
+            'wp' => array(
+                'wp-color-picker',
+            ),
+            'backend' => array(
+                'css/ab_style.css',
+                'bootstrap/css/bootstrap.min.css',
+            ),
+            'module' => array(
+                'css/service.css',
+            )
+        ) );
+
+        $this->enqueueScripts( array(
+            'wp' => array(
+                'wp-color-picker',
+            ),
+            'backend' => array(
+                'js/ab_popup.js' => array( 'jquery' ),
+                'bootstrap/js/bootstrap.min.js' => array( 'jquery' ),
+//                'js/jquery.ajaxQueue.js' => array( 'jquery' ),
+            ),
+            'module' => array(
+                'js/service.js' => array( 'jquery-ui-sortable', 'jquery' ),
+            )
+        ) );
+
+        wp_localize_script( 'ab-service.js', 'BooklyL10n', array(
+            'are_you_sure' => __( 'Are you sure?', 'ab' ),
+            'please_select_at_least_one_service' => __( 'Please select at least one service.', 'ab'),
+        ) );
+
         $this->staff_collection    = $this->getStaffCollection();
         $this->category_collection = $this->getCategoryCollection();
         $this->service_collection  = $this->getServiceCollection();
@@ -38,11 +67,12 @@ class AB_ServiceController extends AB_Controller {
         if ( !empty ( $_POST ) ) {
             $this->form->bind( $this->getPostParameters() );
             if ( $category = $this->form->save() ) {
-                echo "<div class='ab-category-item' data-id='{$category->id}'>
+                echo "<li class='ab-category-item' data-id='{$category->id}'>
+                    <span class='ab-handle'><i class='ab-inner-handle icon-move'></i></span>
                     <span class='left displayed-value'>{$category->name}</span>
                     <a href='#' class='left ab-hidden ab-edit'></a>
                     <input class=value type=text name=name value='{$category->name}' style='display: none' />
-                    <a href='#' class='left ab-hidden ab-delete'></a></div>";
+                    <a href='#' class='left ab-hidden ab-delete'></a></li>";
                 exit;
             }
         }
@@ -56,6 +86,32 @@ class AB_ServiceController extends AB_Controller {
         $form = new AB_CategoryForm();
         $form->bind( $this->getPostParameters() );
         $form->save();
+    }
+
+    /**
+     * Update category position.
+     */
+    public function executeUpdateCategoryPosition() {
+        $category_sorts = $this->getParameter( 'position' );
+        foreach ( $category_sorts as $position => $category_id ) {
+            $category_sort = new AB_Category();
+            $category_sort->load($category_id);
+            $category_sort->set( 'position', $position );
+            $category_sort->save();
+        }
+    }
+
+    /**
+     * Update services position.
+     */
+    public function executeUpdateServicesPosition() {
+        $services_sorts = $this->getParameter( 'position' );
+        foreach ( $services_sorts as $position => $service_ids ) {
+            $services_sort = new AB_Service();
+            $services_sort->load($service_ids);
+            $services_sort->set( 'position', $position );
+            $services_sort->save();
+        }
     }
 
     /**
@@ -106,9 +162,22 @@ class AB_ServiceController extends AB_Controller {
     }
 
     public function executeUpdateServiceValue() {
+        /** @var $wpdb  wpdb */
+        global $wpdb;
+
         $form = new AB_ServiceForm();
         $form->bind( $this->getPostParameters() );
         $form->save();
+
+        if ( $this->getParameter( 'update_staff', false ) ) {
+            if ( $this->getParameter( 'price' ) ) {
+                $wpdb->update('ab_staff_service', array('price' => $this->getParameter( 'price' )), array('service_id' => $this->getParameter( 'id' )));
+            }
+            if ( $this->getParameter( 'capacity' ) ) {
+                $wpdb->update('ab_staff_service', array('capacity' => $this->getParameter( 'capacity' )), array('service_id' => $this->getParameter( 'id' )));
+            }
+        }
+
     }
 
     /**
@@ -128,7 +197,7 @@ class AB_ServiceController extends AB_Controller {
      * @return mixed
      */
     private function getCategoryCollection() {
-        return $this->getWpdb()->get_results( "SELECT * FROM ab_category" );
+        return $this->getWpdb()->get_results( "SELECT * FROM ab_category ORDER BY position" );
     }
 
     /**
@@ -153,7 +222,7 @@ class AB_ServiceController extends AB_Controller {
                LEFT JOIN `ab_staff_service` `sts` ON `sts`.`service_id` = `s`.`id`
                LEFT JOIN `ab_staff` `st` ON `st`.`id` = `sts`.`staff_id`
              WHERE `s`.`category_id` = %d OR !%d
-             GROUP BY `s`.`id` ORDER BY ISNULL(`s`.`title`), `s`.`title`',
+             GROUP BY `s`.`id` ORDER BY ISNULL(`s`.`position`), `s`.`position`',
             $id,
             $id
         );

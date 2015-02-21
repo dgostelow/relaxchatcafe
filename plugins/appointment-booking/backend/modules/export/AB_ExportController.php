@@ -8,16 +8,28 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 class AB_ExportController extends AB_Controller {
 
     public function index() {
-        $path = dirname( __DIR__ );
-        wp_enqueue_style( 'ab-style', plugins_url( 'resources/css/ab_style.css', $path ) );
-        wp_enqueue_style( 'ab-bootstrap', plugins_url( 'resources/bootstrap/css/bootstrap.min.css', $path ) );
-        wp_enqueue_script( 'ab-bootstrap', plugins_url( 'resources/bootstrap/js/bootstrap.min.js', $path ), array( 'jquery' ) );
-        wp_enqueue_script( 'ab-date', plugins_url( 'resources/js/date.js', $path ), array( 'jquery' ) );
-        wp_enqueue_script( 'ab-daterangepicker-js', plugins_url( 'resources/js/daterangepicker.js', $path ), array( 'jquery' ) );
-        wp_enqueue_style( 'ab-daterangepicker-css', plugins_url( 'resources/css/daterangepicker.css', $path ) );
-        wp_enqueue_script( 'ab-bootstrap-select-js', plugins_url( 'resources/js/bootstrap-select.min.js', $path ));
-        wp_enqueue_style( 'ab-bootstrap-select-css', plugins_url( 'resources/css/bootstrap-select.min.css', $path ));
-        wp_localize_script( 'ab-daterangepicker-js', 'BooklyL10n', array(
+        /** @var WP_Locale $wp_locale */
+        global $wp_locale;
+
+        $this->enqueueStyles( array(
+            'backend' => array(
+                'css/ab_style.css',
+                'bootstrap/css/bootstrap.min.css',
+                'css/daterangepicker.css',
+                'css/bootstrap-select.min.css',
+            )
+        ) );
+
+        $this->enqueueScripts( array(
+            'backend' => array(
+                'bootstrap/js/bootstrap.min.js' => array( 'jquery' ),
+                'js/date.js' =>  array( 'jquery' ),
+                'js/daterangepicker.js' => array( 'jquery' ),
+                'js/bootstrap-select.min.js',
+            )
+        ) );
+
+        wp_localize_script( 'ab-daterangepicker.js', 'BooklyL10n', array(
             'today'        => __( 'Today', 'ab' ),
             'yesterday'    => __( 'Yesterday', 'ab' ),
             'last_7'       => __( 'Last 7 Days', 'ab' ),
@@ -29,29 +41,8 @@ class AB_ExportController extends AB_Controller {
             'clear'        => __( 'Clear', 'ab' ),
             'to'           => __( 'To', 'ab' ),
             'from'         => __( 'From', 'ab' ),
-            'month'        => array(
-                0      => __( 'January', 'ab' ),
-                1      => __( 'February', 'ab' ),
-                2      => __( 'March', 'ab' ),
-                3      => __( 'April', 'ab' ),
-                4      => __( 'May', 'ab' ),
-                5      => __( 'June', 'ab' ),
-                6      => __( 'July', 'ab' ),
-                7      => __( 'August', 'ab' ),
-                8      => __( 'September', 'ab' ),
-                9      => __( 'October', 'ab' ),
-                10     => __( 'November', 'ab' ),
-                11     => __( 'December', 'ab' )
-            ),
-            'day'          => array(
-                'Mon'  => __( 'Mon', 'ab' ),
-                'Tue'  => __( 'Tue', 'ab' ),
-                'Wed'  => __( 'Wed', 'ab' ),
-                'Thu'  => __( 'Thu', 'ab' ),
-                'Fri'  => __( 'Fri', 'ab' ),
-                'Sat'  => __( 'Sat', 'ab' ),
-                'Sun'  => __( 'Sun', 'ab' )
-            )
+            'months'       => array_values( $wp_locale->month ),
+            'days'         => array_values( $wp_locale->weekday_abbrev )
         ));
         $this->render( 'index' );
     }
@@ -59,57 +50,84 @@ class AB_ExportController extends AB_Controller {
     /**
      * Export Appointment to CSV
      */
-    public function executeExportToCSV ( ) {
+    public function executeExportToCSV() {
         $start_date = new DateTime( $this->getParameter( 'date_start' ) );
-        $start_date = $start_date->format('Y-m-d H:i:s');
+        $start_date = $start_date->format( 'Y-m-d H:i:s' );
         $end_date   = new DateTime( $this->getParameter( 'date_end' ) );
-        $end_date->modify( '+1 day' );
-        $end_date =  $end_date->format('Y-m-d H:i:s');
+        $end_date   = $end_date->modify( '+1 day' )->format( 'Y-m-d H:i:s' );
+        $delimiter  = $this->getParameter( 'delimiter', ',' );
 
-        header('Content-Type: text/csv; charset=' . (get_locale() == 'ru_RU') ? 'windows-1251': 'utf-8');
-        header('Content-Disposition: attachment; filename=appointment.csv');
+        header( 'Content-Type: text/csv; charset=utf-8' );
+        header( 'Content-Disposition: attachment; filename=Appointments.csv' );
 
-        if (get_locale() == 'ru_RU'){
-            $headings = array(
-                iconv('utf-8', 'windows-1251', __('Customer name', 'ab')),
-                iconv('utf-8', 'windows-1251', __('Service title', 'ab')),
-                iconv('utf-8', 'windows-1251', __('Start date', 'ab')),
-                iconv('utf-8', 'windows-1251', __('End date', 'ab')),
-                iconv('utf-8', 'windows-1251',  __('Notes', 'ab')));
-        }else{
-            $headings = array(
-                __('Customer name', 'ab'),
-                __('Service title', 'ab'),
-                __('Start date', 'ab'),
-                __('End date', 'ab'),
-                __('Notes', 'ab'));
+        $header = array(
+            __( 'Staff Member', 'ab' ),
+            __( 'Service', 'ab' ),
+            __( 'Booking Time', 'ab' ),
+            __( 'Duration', 'ab' ),
+            __( 'Price', 'ab' ),
+            __( 'Customer', 'ab' ),
+            __( 'Phone', 'ab' ),
+            __( 'Email', 'ab' ),
+        );
+
+        $custom_fields = array();
+        $fields_data = json_decode( get_option( 'ab_custom_fields' ) );
+        foreach ($fields_data as $field_data) {
+            $custom_fields[$field_data->id] = '';
+            $header[] = $field_data->label;
         }
-        $output = fopen('php://output', 'w');
-        fputcsv($output, $headings);
 
-        $appointments = $this->getWpdb()->get_results("
-        SELECT c.name AS customer_name,
+        $output = fopen( 'php://output', 'w' );
+        fwrite($output, pack("CCC",0xef,0xbb,0xbf));
+        fputcsv( $output, $header, $delimiter );
+
+        $appointments = $this->getWpdb()->get_results( "
+        SELECT st.full_name AS staff_name,
                s.title AS service_title,
                a.start_date AS start_date,
-               a.end_date AS end_date,
-               ca.notes AS notes
+               s.duration AS service_duration,
+               c.name AS customer_name,
+               c.phone AS customer_phone,
+               c.email AS customer_email,
+               p.total AS customer_payed,
+               ss.price AS staff_price,
+               ca.id as customer_appointment_id
         FROM ab_customer_appointment ca
         LEFT JOIN ab_appointment a ON a.id = ca.appointment_id
-        LEFT JOIN ab_service s ON a.service_id = s.id
-        LEFT JOIN ab_customer c ON ca.customer_id = c.id
+        LEFT JOIN ab_service s ON s.id = a.service_id
+        LEFT JOIN ab_staff st ON st.id = a.staff_id
+        LEFT JOIN ab_customer c ON c.id = ca.customer_id
+        LEFT JOIN ab_payment p ON p.customer_appointment_id = ca.id
+        LEFT JOIN ab_staff_service ss ON ss.staff_id = st.id AND ss.service_id = s.id
         WHERE a.start_date between '{$start_date}' AND '{$end_date}'
         ORDER BY a.start_date DESC
-        ", ARRAY_A);
+        ", ARRAY_A );
 
         foreach( $appointments as $appointment ) {
-            if (get_locale() == 'ru_RU'){
-                $appointment['customer_name'] = iconv('utf-8', 'windows-1251', $appointment['customer_name']);
-                $appointment['notes'] = iconv('utf-8', 'windows-1251', $appointment['notes']);
-                $appointment['service_title'] = iconv('utf-8', 'windows-1251', $appointment['service_title']);
+            $row_data = array(
+                $appointment['staff_name'],
+                $appointment['service_title'],
+                $appointment['start_date'],
+                AB_Service::durationToString( $appointment['service_duration'] ),
+                AB_CommonUtils::formatPrice( $appointment['customer_payed'] === null ? $appointment['staff_price'] : $appointment['customer_payed'] ),
+                $appointment['customer_name'],
+                $appointment['customer_phone'],
+                $appointment['customer_email'],
+            );
+
+            $customer_appointment = new AB_Customer_Appointment();
+            $customer_appointment->load($appointment['customer_appointment_id']);
+            foreach ($customer_appointment->getCustomFields() as $custom_field) {
+                $custom_fields[$custom_field['id']] = $custom_field['value'];
             }
-            fputcsv($output, $appointment);
+
+            fputcsv( $output, array_merge( $row_data, $custom_fields ), $delimiter );
+
+            $custom_fields = array_map(function() { return ''; }, $custom_fields);
         }
-        fclose($output);
+        fclose( $output );
+
         exit();
     }
 

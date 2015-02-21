@@ -1,8 +1,4 @@
-<?php
-
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
-
-include 'forms/AB_AppointmentForm.php';
+<?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 /**
  * Class AB_CalendarController
@@ -19,7 +15,6 @@ include 'forms/AB_AppointmentForm.php';
  * @property $staff_collection
  * @property $date_interval_not_available
  * @property $date_interval_warning
- * @property $notes
  */
 class AB_CalendarController extends AB_Controller  {
 
@@ -27,96 +22,65 @@ class AB_CalendarController extends AB_Controller  {
         return array('_this' => 'user');
     }
 
-    public function renderCalendar() {
-        wp_enqueue_style( 'ab-jquery-ui-css', plugins_url( 'resources/css/jquery-ui-1.10.4/jquery-ui.min.css', __FILE__ ) );
-        wp_enqueue_style( 'ab-weekcalendar', plugins_url( 'resources/css/jquery.weekcalendar.css', __FILE__ ) );
-        wp_enqueue_style( 'ab-calendar', plugins_url( 'resources/css/calendar.css', __FILE__ ) );
-        wp_enqueue_style( 'ab-chosen', plugins_url( 'resources/css/chosen.css', __FILE__ ) );
+    public function index() {
+        /** @var WP_Locale $wp_locale */
+        global $wp_locale;
 
-        wp_enqueue_style( 'ab-style', plugins_url( 'resources/css/ab_style.css', dirname( __DIR__ ) ) );
-        wp_enqueue_style( 'ab-bootstrap', plugins_url( 'resources/bootstrap/css/bootstrap.min.css', dirname( __DIR__ ) ) );
-        wp_enqueue_script( 'ab-bootstrap', plugins_url( 'resources/bootstrap/js/bootstrap.min.js', dirname( __DIR__ ) ), array( 'jquery' ) );
-        wp_enqueue_script( 'ab-date', plugins_url( 'resources/js/date.js', dirname( __DIR__ ) ), array( 'jquery' ) );
-        wp_enqueue_script( 'ab-chosen', plugins_url( 'resources/js/chosen.jquery.js', __FILE__ ) );
-
-        wp_enqueue_script(
-            'ab-weekcalendar',
-            plugins_url( 'resources/js/jquery.weekcalendar.js', __FILE__ ),
-            array(
-                'jquery',
-                'jquery-ui-widget',
-                'jquery-ui-dialog',
-                'jquery-ui-button',
-                'jquery-ui-draggable',
-                'jquery-ui-droppable',
-                'jquery-ui-resizable',
-                'jquery-ui-datepicker'
+        $this->enqueueStyles( array(
+            'module' => array(
+                'css/jquery-ui-1.10.4/jquery-ui.min.css',
+                'css/jquery.weekcalendar.css',
+                'css/calendar.css',
+                'css/chosen.css',
+            ),
+            'backend' => array(
+                'css/ab_style.css',
+                'bootstrap/css/bootstrap.min.css',
             )
-        );
-        wp_enqueue_script( 'ab-angularjs', plugins_url( 'resources/js/angular-1.0.6.min.js', dirname( __DIR__ ) ) );
-        wp_enqueue_script( 'ab-angularui', plugins_url( 'resources/js/angular-ui-0.4.0.min.js', dirname( __DIR__ ) ), array( 'ab-angularjs' ) );
-        wp_enqueue_script( 'ab-ng-app',  plugins_url( 'resources/js/ng-app.js', __FILE__ ), array( 'jquery', 'ab-angularjs', 'ab-angularui' ) );
-        wp_enqueue_script( 'ab-ng-new_customer_dialog', plugins_url( 'resources/js/ng-new_customer_dialog.js', dirname( __DIR__ ) ), array( 'jquery', 'ab-angularjs' ) );
-        wp_enqueue_script( 'ab-calendar_daypicker', plugins_url( 'resources/js/calendar_daypicker.js', __FILE__ ), array( 'jquery', 'ab-weekcalendar' ) );
-        wp_enqueue_script( 'ab-calendar_weekpicker', plugins_url( 'resources/js/calendar_weekpicker.js', __FILE__ ), array( 'jquery', 'ab-weekcalendar' ) );
-        wp_enqueue_script( 'ab-calendar', plugins_url( 'resources/js/calendar.js', __FILE__ ), array( 'jquery', 'ab-calendar_daypicker', 'ab-calendar_weekpicker', 'ab-ng-app', 'ab-weekcalendar' ) );
-        wp_localize_script( 'ab-weekcalendar', 'BooklyL10n', array(
+        ) );
+
+        $this->enqueueScripts( array(
+            'backend' => array(
+                'bootstrap/js/bootstrap.min.js' => array( 'jquery' ),
+                'js/date.js' => array( 'jquery' ),
+                'js/angular-1.3.11.min.js',
+                'js/angular-ui-date-0.0.7.js' => array( 'ab-angular-1.3.11.min.js' ),
+                'js/ng-new_customer_dialog.js' => array( 'jquery', 'ab-angular-1.3.11.min.js' ),
+            ),
+            'module' => array(
+                'js/chosen.jquery.js' => array( 'jquery' ),
+                'js/jquery.weekcalendar.js' => array(
+                    'jquery',
+                    'jquery-ui-widget',
+                    'jquery-ui-dialog',
+                    'jquery-ui-button',
+                    'jquery-ui-draggable',
+                    'jquery-ui-droppable',
+                    'jquery-ui-resizable',
+                    'jquery-ui-datepicker'
+                ),
+                'js/ng-app.js' => array( 'jquery', 'ab-angular-1.3.11.min.js', 'ab-angular-ui-date-0.0.7.js' ),
+                'js/calendar_daypicker.js'  => array( 'jquery', 'ab-jquery.weekcalendar.js' ),
+                'js/calendar_weekpicker.js' => array( 'jquery', 'ab-jquery.weekcalendar.js' ),
+                'js/calendar.js'  => array( 'jquery', 'ab-calendar_daypicker.js', 'ab-calendar_weekpicker.js', 'ab-ng-app.js', 'ab-jquery.weekcalendar.js' ),
+            )
+        ) );
+
+        wp_localize_script( 'ab-jquery.weekcalendar.js', 'BooklyL10n', array(
             'new_appointment'  => __( 'New appointment', 'ab' ),
             'edit_appointment' => __( 'Edit appointment', 'ab' ),
             'are_you_sure'     => __( 'Are you sure?', 'ab' ),
             'phone'            => __( 'Phone', 'ab' ),
             'email'            => __( 'Email', 'ab' ),
-            'timeslotsPerHour'  => 60 / get_option('ab_settings_time_slot_length'),
-            'shortMonths' => array(
-                __( 'Jan', 'ab' ),
-                __( 'Feb', 'ab' ),
-                __( 'Mar', 'ab' ),
-                __( 'Apr', 'ab' ),
-                __( 'May', 'ab' ),
-                __( 'Jun', 'ab' ),
-                __( 'Jul', 'ab' ),
-                __( 'Aug', 'ab' ),
-                __( 'Sep', 'ab' ),
-                __( 'Oct', 'ab' ),
-                __( 'Nov', 'ab' ),
-                __( 'Dec', 'ab' ),
-            ),
-            'longMonths' => array(
-                __( 'January', 'ab' ),
-                __( 'February', 'ab' ),
-                __( 'March', 'ab' ),
-                __( 'April', 'ab' ),
-                __( 'May', 'ab' ),
-                __( 'June', 'ab' ),
-                __( 'July', 'ab' ),
-                __( 'August', 'ab' ),
-                __( 'September', 'ab' ),
-                __( 'October', 'ab' ),
-                __( 'November', 'ab' ),
-                __( 'December', 'ab' )
-            ),
-            'shortDays' => array(
-                __( 'Sun', 'ab' ),
-                __( 'Mon', 'ab' ),
-                __( 'Tue', 'ab' ),
-                __( 'Wed', 'ab' ),
-                __( 'Thu', 'ab' ),
-                __( 'Fri', 'ab' ),
-                __( 'Sat', 'ab' )
-            ),
-            'longDays' => array(
-                __( 'Sunday', 'ab' ),
-                __( 'Monday', 'ab' ),
-                __( 'Tuesday', 'ab' ),
-                __( 'Wednesday', 'ab' ),
-                __( 'Thursday', 'ab' ),
-                __( 'Friday', 'ab' ),
-                __( 'Saturday', 'ab' ),
-            ),
-            'PM'         => __( 'PM', 'ab' ),
-            'AM'         => __( 'AM', 'ab' ),
-            'Week'       => __( 'Week', 'ab' ) . ': ',
-            'dateFormat' => $this->dateFormatTojQueryUIDatePickerFormat(),
+            'timeslotsPerHour' => 60 / get_option('ab_settings_time_slot_length'),
+            'shortMonths'      => array_values( $wp_locale->month_abbrev ),
+            'longMonths'       => array_values( $wp_locale->month ),
+            'shortDays'        => array_values( $wp_locale->weekday_abbrev ),
+            'longDays'         => array_values( $wp_locale->weekday ),
+            'AM'               => $wp_locale->meridiem[ 'AM' ],
+            'PM'               => $wp_locale->meridiem[ 'PM' ],
+            'Week'             => __( 'Week', 'ab' ) . ': ',
+            'dateFormat'       => $this->dateFormatTojQueryUIDatePickerFormat(),
         ));
 
         if ( is_super_admin() ) {
@@ -125,7 +89,7 @@ class AB_CalendarController extends AB_Controller  {
             $this->collection = $this->getWpdb()->get_results( $this->getWpdb()->prepare( "SELECT * FROM ab_staff s WHERE s.wp_user_id = %d", array(get_current_user_id()) ) );
         }
 
-        $this->render( 'calendar' );
+        $this->render( 'calendar', array( 'custom_fields' => json_decode( get_option( 'ab_custom_fields' ) ) ) );
     }
     /**
      * Get data for WeekCalendar in `week` mode.
@@ -260,8 +224,7 @@ class AB_CalendarController extends AB_Controller  {
                         staff.full_name AS "staff_fullname",
                         ss.capacity AS max_capacity,
                         COUNT( ca.id ) AS current_capacity,
-                        ca.customer_id,
-                        ca.notes AS notes
+                        ca.customer_id
                     FROM ab_appointment a
                     LEFT JOIN ab_customer_appointment ca ON ca.appointment_id = a.id
                     LEFT JOIN ab_service s ON a.service_id = s.id
@@ -274,7 +237,7 @@ class AB_CalendarController extends AB_Controller  {
               ) );
 
             foreach ( $appointments as $appointment ) {
-                $result['events'][] = $this->getAppointment( $appointment, $appointment->staff_id, $day_view = true );
+                $result['events'][] = $this->getAppointment( $appointment, $appointment->staff_id );
             }
 
             $day_index = date("N", strtotime($start_date)) + 1;
@@ -333,63 +296,60 @@ class AB_CalendarController extends AB_Controller  {
      * Get data needed for appointment form initialisation.
      */
     public function executeGetDataForAppointmentForm() {
-        $wpdb    = $this->getWpdb();
-        $result  = array(
+        $result = array(
             'staff'         => array(),
             'customers'     => array(),
+            'custom_fields' => array(),
             'time'          => array(),
             'time_interval' => get_option( 'ab_settings_time_slot_length' ) * 60
         );
 
         // Staff list.
+        $em = AB_EntityManager::getInstance( 'AB_Staff' );
         if ( is_super_admin() ) {
-            $staff = $wpdb->get_results( 'SELECT `id`, `full_name` FROM `ab_staff`', ARRAY_A );
-        } else {
-            $staff = $wpdb->get_results( $wpdb->prepare(
-                'SELECT `id`, `full_name` FROM `ab_staff` WHERE `wp_user_id` = %d',
-                array( get_current_user_id() )
-            ), ARRAY_A );
+            $staff_members = $em->findAll();
         }
-        foreach ( $staff as $st ) {
-            $services = $wpdb->get_results( $wpdb->prepare(
-                'SELECT
-                    `service`.`id`,
-                    `service`.`title`,
-                    `service`.`duration`
-                FROM `ab_service` `service`
-                LEFT JOIN `ab_staff_service` `ss` ON `ss`.`service_id` = `service`.`id`
-                LEFT JOIN `ab_staff` `staff` ON `ss`.`staff_id` = `staff`.`id`
-                WHERE `staff`.`id` = %d',
-                $st[ 'id' ]
-            ), ARRAY_A );
-            array_walk($services, create_function('&$a', '$a[\'title\'] = sprintf(\'%s (%s)\', $a[\'title\'], AB_Service::durationToString($a[\'duration\']));'));
+        else {
+            $staff_members = $em->findBy( array( 'wp_user_id' => get_current_user_id() ) );
+        }
+        /** @var AB_Staff $staff_member */
+        foreach ( $staff_members as $staff_member ) {
+            $services = array();
+            foreach ( $staff_member->getStaffServices() as $staff_service ) {
+                $services[] = array(
+                    'id'       => $staff_service->service->get( 'id' ),
+                    'title'    => sprintf(
+                        '%s (%s)',
+                        $staff_service->service->get( 'title' ),
+                        AB_Service::durationToString( $staff_service->service->get( 'duration' ) )
+                    ),
+                    'duration' => $staff_service->service->get( 'duration' ),
+                    'capacity' => $staff_service->get( 'capacity' )
+                );
+            }
             $result[ 'staff' ][] = array(
-                'id'        => $st[ 'id' ],
-                'full_name' => $st[ 'full_name' ],
+                'id'        => $staff_member->get( 'id' ),
+                'full_name' => $staff_member->get( 'full_name' ),
                 'services'  => $services
             );
         }
 
         // Customers list.
-        $customers = $this->getWpdb()->get_results(
-            'SELECT * FROM `ab_customer` WHERE name <> "" OR phone <> "" OR email <> "" ORDER BY name',
-            ARRAY_A
-        );
-        $customer = new AB_Customer();
-        foreach ($customers as $customer_data) {
-            $customer->setData( $customer_data );
-
+        $em = AB_EntityManager::getInstance( 'AB_Customer' );
+        foreach ( $em->findAll( array( 'name' => 'asc' ) ) as $customer ) {
             $name = $customer->get('name');
-            if ($customer->get('email') && $customer->get('phone')){
-                $name .= ' (' . $customer->get('email') . ', ' . $customer->get('phone') . ')';
-            }elseif($customer->get('email')){
-                $name .= ' (' . $customer->get('email') . ')';
-            }elseif($customer->get('phone')){
-                $name .= ' (' . $customer->get('phone') . ')';
+            if ( $customer->get( 'email' ) != '' && $customer->get( 'phone' ) != '' ) {
+                $name .= ' (' . $customer->get( 'email' ) . ', ' . $customer->get( 'phone' ) . ')';
+            }
+            else if ( $customer->get( 'email' ) != '' ) {
+                $name .= ' (' . $customer->get( 'email' ) . ')';
+            }
+            else if ( $customer->get( 'phone' ) ) {
+                $name .= ' (' . $customer->get( 'phone' ) . ')';
             }
 
             $result[ 'customers' ][] = array(
-                'id'   => $customer->get('id'),
+                'id'   => $customer->get( 'id' ),
                 'name' => $name,
             );
         }
@@ -432,8 +392,7 @@ class AB_CalendarController extends AB_Controller  {
             $appointment_additional_info = $wpdb->get_row( $wpdb->prepare(
                 'SELECT
                   ss.capacity AS max_capacity,
-                  COUNT( ca.id ) AS current_capacity,
-                  ca.notes AS notes
+                  COUNT( ca.id ) AS current_capacity
               FROM ab_appointment a
               LEFT JOIN ab_customer_appointment ca ON ca.appointment_id = a.id
               LEFT JOIN ab_staff_service ss ON ss.staff_id = a.staff_id AND ss.service_id = a.service_id
@@ -443,7 +402,6 @@ class AB_CalendarController extends AB_Controller  {
 
             $response[ 'data' ][ 'current_capacity' ] = $appointment_additional_info->current_capacity;
             $response[ 'data' ][ 'max_capacity' ] = $appointment_additional_info->max_capacity;
-            $response[ 'data' ][ 'notes' ] = $appointment_additional_info->max_capacity == 1 && $appointment_additional_info->notes ? $appointment_additional_info->notes : null;
 
             $customers = $wpdb->get_results(
                 $wpdb->prepare(
@@ -457,6 +415,10 @@ class AB_CalendarController extends AB_Controller  {
 
             foreach($customers as $customer){
                 $response[ 'data' ][ 'customers' ][] = $customer->customer_id;
+                $response[ 'data' ][ 'custom_fields' ][] = array(
+                    'customer_id'   => $customer->customer_id,
+                    'fields'        => $customer->custom_fields ? json_decode($customer->custom_fields, true) : array(),
+                );
             }
         }
 
@@ -475,7 +437,7 @@ class AB_CalendarController extends AB_Controller  {
         $service_id     = $this->getParameter( 'service_id' );
         $appointment_id = $this->getParameter( 'id',  0 );
         $customers      = json_decode( $this->getParameter( 'customers', '[]' ) );
-        $notes          = $this->getParameter( 'notes', '' );
+        $custom_fields  = json_decode( $this->getParameter( 'custom_fields', '[]' ) );
 
         $staff_service = new AB_StaffService();
         $staff_service->loadBy( array(
@@ -496,6 +458,13 @@ class AB_CalendarController extends AB_Controller  {
         if ( count( $customers ) > $staff_service->get( 'capacity' ) ) {
             $response[ 'errors' ][ 'overflow_capacity' ] = __( 'The number of customers should be not more than ', 'ab' ) . $staff_service->get( 'capacity' );
         }
+        if ( !$this->getParameter( 'start_date' )) {
+            $response[ 'errors' ][ 'time_interval' ] = __( 'Start time must not be empty', 'ab' );
+        }elseif ( !$this->getParameter( 'end_date' )) {
+            $response[ 'errors' ][ 'time_interval' ] = __( 'End time must not be empty', 'ab' );
+        }elseif ( $start_date == $end_date ) {
+            $response[ 'errors' ][ 'time_interval' ] = __( 'End time must not be equal to start time', 'ab' );
+        }
 
         // If no errors then try to save the appointment.
         if ( !isset ( $response[ 'errors' ] ) ) {
@@ -512,11 +481,19 @@ class AB_CalendarController extends AB_Controller  {
             if ( $appointment->save() !== false ) {
                 // Save customers.
                 $appointment->setCustomers( $customers );
-                if ( $staff_service->get( 'capacity' ) == 1 ) {
-                    // Save notes.
-                    $customer_appointments = $appointment->getCustomerAppointments();
-                    $customer_appointments[ 0 ]->set( 'notes', $notes );
-                    $customer_appointments[ 0 ]->save();
+
+                // Save custom fields
+                if ( $ac = $appointment->getCustomerAppointments() and count( $ac ) ) {
+                    /** @var AB_Customer_Appointment $customer_appointment */
+                    foreach ( $ac as $customer_appointment ) {
+                        $customer_appointment->set( 'custom_fields', '' );
+                        foreach ( $custom_fields as $fields ) {
+                            if ( $customer_appointment->get( 'customer_id' ) == $fields->customer_id ) {
+                                $customer_appointment->set( 'custom_fields', json_encode($fields->fields ) );
+                            }
+                        }
+                        $customer_appointment->save();
+                    }
                 }
 
                 // Google Calendar.
@@ -539,7 +516,10 @@ class AB_CalendarController extends AB_Controller  {
                                 $desc[] = '<div class="wc-employee">' . esc_html( $entry_value ) . '</div>';
                             }
                         }
-                        $desc[] = '<div class="wc-notes">' . nl2br( esc_html( $customer_appointments[ 0 ]->notes ) ) . '</div>';
+
+                        foreach ($customer_appointments[0]->getCustomFields() as $custom_field) {
+                            $desc[] = '<div class="wc-notes">' . esc_html( $custom_field['label'] ) . ': ' . esc_html( $custom_field['value'] ) . '</div>';
+                        }
                     }
                 }
                 else {
@@ -597,20 +577,6 @@ class AB_CalendarController extends AB_Controller  {
         }
 
         echo json_encode( $result );
-        exit;
-    }
-
-    public function executeCheckAppointmentMaxSelectedOptions(){
-        $staff_id   = $this->getParameter( 'staff_id' );
-        $service_id = $this->getParameter( 'service_id' );
-
-        $staff_service = new AB_StaffService();
-        $staff_service->loadBy( array(
-            'staff_id'   => $staff_id,
-            'service_id' => $service_id
-        ) );
-
-        echo json_encode( array('max_selected_options' => $staff_service->get('capacity')) );
         exit;
     }
 
@@ -675,11 +641,10 @@ class AB_CalendarController extends AB_Controller  {
      *
      * @param stdClass     $appointment
      * @param null         $user_id
-     * @param bool         $day_view
      *
      * @return array
      */
-    private function getAppointment( stdClass $appointment, $user_id = null, $day_view = false ) {
+    private function getAppointment( stdClass $appointment, $user_id = null ) {
         $startDate = new DateTime( $appointment->start_date );
         $endDate   = new DateTime( $appointment->end_date );
         $desc = array();
@@ -694,8 +659,14 @@ class AB_CalendarController extends AB_Controller  {
                 }
             }
 
-            if ($appointment->notes) {
-                $desc[] = '<div class="wc-notes">' . nl2br( esc_html( $appointment->notes ) ) . '</div>';
+            $customer_appointment = new AB_Customer_Appointment();
+            $customer_appointment->loadBy(array(
+                'customer_id'    => $customer->get('id'),
+                'appointment_id' => $appointment->id
+            ));
+
+            foreach ($customer_appointment->getCustomFields() as $custom_field) {
+                $desc[] = '<div class="wc-notes">' . esc_html( $custom_field['label'] ) . ' : ' . esc_html( $custom_field['value'] ) . '</div>';
             }
         }else{
             $desc[] = '<div class="wc-notes">Signed up ' . $appointment->current_capacity . '</div>';
@@ -708,8 +679,7 @@ class AB_CalendarController extends AB_Controller  {
             'end'   => $endDate->format( 'm/d/Y H:i' ),
             'title' => $appointment->title ? esc_html( $appointment->title ) : __( 'Untitled', 'ab' ),
             'desc'  => implode('', $desc),
-            'color' => $appointment->color,
-            'notes' => $appointment->max_capacity == 1 && $appointment->notes ? $appointment->notes : null
+            'color' => $appointment->color
         );
 
         // if needed to be rendered for a specific user

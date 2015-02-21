@@ -60,12 +60,13 @@ class AB_AvailableTime {
         $this->bookings = $this->_getBookings();
 
         // Merge Google Calendar events with original bookings.
-        foreach ($this->_getGCEvents() as $staff_id => $events ) {
-            if ( isset ( $this->bookings[ $staff_id ] ) ) {
-                $this->bookings[ $staff_id ] = array_merge( $this->bookings[ $staff_id ], $events );
-            }
-            else {
-                $this->bookings[ $staff_id ] = $events;
+        if  ( get_option( 'ab_settings_google_two_way_sync' ) ) {
+            foreach ($this->_getGCEvents() as $staff_id => $events) {
+                if (isset ($this->bookings[$staff_id])) {
+                    $this->bookings[$staff_id] = array_merge($this->bookings[$staff_id], $events);
+                } else {
+                    $this->bookings[$staff_id] = $events;
+                }
             }
         }
 
@@ -81,19 +82,19 @@ class AB_AvailableTime {
             $this->_userData->getServiceId()
         ) );
 
-        $date = new DateTime( $this->start_date ? ($this->start_date . '+1 day') : $this->_userData->getRequestedDateFrom() );
+        $date = new DateTime( $this->start_date ? ($this->start_date . '+1 day') : $this->_userData->getDateFrom() );
         $now = new DateTime();
         if ( $now > $date ) {
             $date = $now;
         }
         $date = $date->format('Y-m-d');
 
-        if ( count( $this->_userData->getAvailableDays() ) && !empty ( $this->staff_working_hours ) ) {
+        if ( count( $this->_userData->getDays() ) && !empty ( $this->staff_working_hours ) ) {
             $this->time_format = get_option('time_format');
             $i = 0;
             $items_number = 0;
 
-            while ( $items_number < 100 && $i < 365 /* check maximum 365 days */ ) {
+            while ( $i < 8 ) {
                 $date = $this->_findAvailableDay( $date );
                 if ( $date ) {
                     ++ $i;
@@ -141,7 +142,7 @@ class AB_AvailableTime {
                                         $this->_addTime($temp_date, $time - $client_diff, $item['staff_id'], $time);
                                     }
                                     else {
-                                        $this->_addTime($date, $time - $client_diff, $item['staff_id'], $time);
+                                        $this->_addTime($date, $time - $client_diff, $item['staff_id'], $time, isset($item['booked']) ? true : false);
                                     }
                                     ++ $items_number;
                                 }
@@ -182,9 +183,9 @@ class AB_AvailableTime {
     private function _findAvailableDay( $date ) {
         $datetime = new DateTime( $date );
         $attempt  = 0;
-        // Finds day when customer is available
-        $customer_available_days = $this->_userData->getAvailableDays();
-        while ( !in_array( $datetime->format( 'w' ) + 1, $customer_available_days ) ) {
+        // Find available day within requested days.
+        $customer_requested_days = $this->_userData->getDays();
+        while ( !in_array( $datetime->format( 'w' ) + 1, $customer_requested_days ) ) {
             $datetime->modify( '+1 day' );
             if ( ++ $attempt >= 7 ) {
                 return false;
@@ -217,6 +218,12 @@ class AB_AvailableTime {
         $current_time = date( 'H:i:s', ceil( $current_timestamp / $time_slot_length ) * $time_slot_length );
 
         foreach ( $this->staff_working_hours as $staff_id => $hours ) {
+//            // if the capacity of staff service is less than selected by user, skip it
+//            $available_capacity = $this->_getAvailableCapacity($staff_id, $this->_userData->getServiceId());
+//            if ( $available_capacity < $this->_userData->getCapacity() ) {
+//                continue;
+//            }
+
             if ( isset ( $hours[ $day_of_week ] ) && $this->isWorkingDay( $date, $staff_id )) {
                 // Find intersection between working and requested hours
                 //(excluding time slots in the past).
@@ -227,8 +234,8 @@ class AB_AvailableTime {
                 $intersection = $this->_findIntersection(
                     $this->_strToTime( $working_start_time ),
                     $this->_strToTime( $hours[ $day_of_week ][ 'end_time' ] ),
-                    $this->_strToTime( $this->_userData->getRequestedTimeFrom() ),
-                    $this->_strToTime( $this->_userData->getRequestedTimeTo() )
+                    $this->_strToTime( $this->_userData->getTimeFrom() ),
+                    $this->_strToTime( $this->_userData->getTimeTo() )
                 );
 
                 if (is_array($intersection) && !array_key_exists('start', $intersection)){
@@ -257,7 +264,9 @@ class AB_AvailableTime {
                                     $bookingEnd    = new DateTime( $booking->end_date );
                                     $booking_start = $bookingStart->format( 'U' ) % (24 * 60 * 60);
                                     $booking_end   = $bookingEnd->format( 'U' ) % (24 * 60 * 60);
-                                    $timeframes    = $this->_removeTimePeriod( $timeframes, $booking_start, $booking_end );
+                                    $timeframes    = get_option( 'ab_appearance_show_blocked_timeslots' ) == 1 ?
+                                                     $this->_setBookedTimePeriod( $timeframes, $booking_start, $booking_end ):
+                                                     $this->_removeTimePeriod( $timeframes, $booking_start, $booking_end );
                                 }
                             }
                             $result = array_merge( $result, $timeframes );
@@ -288,19 +297,27 @@ class AB_AvailableTime {
                                 $bookingEnd    = new DateTime( $booking->end_date );
                                 $booking_start = $bookingStart->format( 'U' ) % (24 * 60 * 60);
                                 $booking_end   = $bookingEnd->format( 'U' ) % (24 * 60 * 60);
-                                $timeframes    = $this->_removeTimePeriod( $timeframes, $booking_start, $booking_end );
 
-                                if (
-                                    $booking->number_of_bookings < $booking->capacity &&
-                                    $booking->service_id == $this->_userData->getServiceId() &&
-                                    $booking_start >= $intersection[ 'start' ]
-                                ) {
-                                    $timeframes[] = array(
-                                        'start'    => $booking_start,
-                                        'end'      => $booking_end,
-                                        'staff_id' => $staff_id,
-                                        'not_full' => true
-                                    );
+                                if (get_option( 'ab_appearance_show_blocked_timeslots' ) == 1) {
+                                    if ($booking->number_of_bookings >= $booking->capacity)
+                                    {
+                                        $timeframes = $this->_setBookedTimePeriod( $timeframes, $booking_start, $booking_end );
+                                    }
+                                } else {
+                                    $timeframes = $this->_removeTimePeriod( $timeframes, $booking_start, $booking_end );
+
+                                    if (
+                                        $booking->number_of_bookings < $booking->capacity &&
+                                        $booking->service_id == $this->_userData->getServiceId() &&
+                                        $booking_start >= $intersection[ 'start' ]
+                                    ) {
+                                        $timeframes[] = array(
+                                            'start'    => $booking_start,
+                                            'end'      => $booking_end,
+                                            'staff_id' => $staff_id,
+                                            'not_full' => true
+                                        );
+                                    }
                                 }
                             }
                         }
@@ -365,6 +382,44 @@ class AB_AvailableTime {
                 $result = array( 'start' => $p1_start, 'end' => $p2_end );
             } else if ( $p1_start >= $p2_start && $p1_end <= $p2_end ) {
                 $result = array( 'start' => $p1_start, 'end' => $p1_end );
+            }
+        }
+
+        return $result;
+    }
+
+    private function _setBookedTimePeriod( array $timeframes, $booking_start, $booking_end ) {
+        $result = array();
+        foreach ( $timeframes as $timeframe ) {
+            $intersection = $this->_findIntersection(
+                $timeframe[ 'start' ],
+                $timeframe[ 'end' ],
+                $booking_start,
+                $booking_end
+            );
+            if ( $intersection  && $intersection['start'] != $intersection['end']) {
+                if ( $timeframe[ 'start' ] < $intersection[ 'start' ] && $this->service_duration <= ( $intersection[ 'start' ] - $timeframe[ 'start' ] ) ) {
+                    $result[] = array(
+                        'start'    => $timeframe[ 'start' ],
+                        'end'      => $intersection[ 'start' ],
+                        'staff_id' => $timeframe[ 'staff_id' ]
+                    );
+                }
+                if ( $timeframe[ 'end' ] > $intersection[ 'end' ] && $this->service_duration <= ( $timeframe[ 'end' ] - $intersection[ 'end' ] ) ) {
+                    $result[] = array(
+                        'start'    => $intersection[ 'end' ],
+                        'end'      => $timeframe[ 'end' ],
+                        'staff_id' => $timeframe[ 'staff_id' ]
+                    );
+                }
+                $result[] = array(
+                    'start'     => $intersection[ 'start' ],
+                    'end'       => $intersection[ 'end' ],
+                    'staff_id'  => $timeframe[ 'staff_id' ],
+                    'booked'    => true
+                );
+            } else {
+                $result[] = $timeframe;
             }
         }
 
@@ -491,6 +546,40 @@ class AB_AvailableTime {
         return $result;
     }
 
+//    /**
+//     * @param $staff_id
+//     * @param $service_id
+//     * @return int
+//     */
+//    private function _getAvailableCapacity($staff_id, $service_id) {
+//        /** @var WPDB $wpdb */
+//        global $wpdb;
+//
+//        $row    = $wpdb->get_row( $wpdb->prepare("SELECT capacity FROM ab_staff_service WHERE staff_id = %d AND service_id = %d", intval( $staff_id ), intval( $service_id ) ) );
+//        $row2   = $wpdb->get_row( $wpdb->prepare( "
+//            SELECT COUNT(*) AS booked
+//            FROM ab_customer_appointment ca
+//            LEFT JOIN ab_appointment a ON a.id = ca.appointment_id
+//            WHERE a.staff_id = %d
+//            AND a.service_id = %d",
+//            intval( $staff_id ), intval( $service_id ) )
+//        );
+//
+//        if ( $row ) {
+//            if ( $row->capacity == 1 ) {
+//                return 1;
+//            }
+//
+//            if ( $row2 ) {
+//                return $row->capacity - $row2->booked;
+//            } else {
+//                return 1;
+//            }
+//        }
+//
+//        return 0;
+//    }
+
     /**
      * Get array of appointments.
      *
@@ -513,7 +602,7 @@ class AB_AvailableTime {
                 LEFT JOIN `ab_staff_service` `ss` ON `ss`.`staff_id` = `a`.`staff_id` AND `ss`.`service_id` = `a`.`service_id`
              WHERE `a`.`staff_id` IN ({$this->_staffIdsStr}) AND `a`.`start_date` >= %s
              GROUP BY `a`.`start_date`, `a`.`staff_id`, `a`.`service_id`",
-            $this->_userData->getRequestedDateFrom() ) );
+            $this->_userData->getDateFrom() ) );
 
         if ( is_array( $rows ) ) {
             foreach ( $rows as $row ) {
@@ -543,7 +632,7 @@ class AB_AvailableTime {
                                     WHERE `id` IN ({$this->_staffIdsStr}) AND `google_data` IS NOT NULL");
 
         if (is_array($rows)) {
-            $startDate = new DateTime($this->_userData->getRequestedDateFrom());
+            $startDate = new DateTime($this->_userData->getDateFrom());
             foreach ($rows as $row) {
                 $google = new AB_Google();
                 $google->loadByStaffId($row->staff_id);
@@ -617,6 +706,7 @@ class AB_AvailableTime {
             $object->is_day = true;
             $object->value = $date;
             $object->staff_id = '';
+            $object->booked = 0;
             $this->time[ $date ]['day'] = $object;
 
             return true;
@@ -632,8 +722,9 @@ class AB_AvailableTime {
      * @param int $label_time
      * @param int $staff_id
      * @param int $time
+     * @param boolean $booked
      */
-    private function _addTime( $date, $label_time, $staff_id, $time ) {
+    private function _addTime( $date, $label_time, $staff_id, $time, $booked = false ) {
         $object = new stdClass();
 
         $object->label = date_i18n( $this->time_format, $label_time);
@@ -643,6 +734,7 @@ class AB_AvailableTime {
         $object->timestamp = $time;
         $object->date = $date;
         $object->is_day = false;
+        $object->booked = intval($booked);
         $this->time[ $date ][ $time ] = $object;
     }
 }

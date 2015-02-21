@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Bookly v3.4\n"
+"Project-Id-Version: Bookly v4.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-12-25 15:01+0200\n"
-"PO-Revision-Date: 2014-12-25 15:01+0200\n"
+"POT-Creation-Date: 2015-02-19 15:19+0200\n"
+"PO-Revision-Date: 2015-02-19 15:19+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -20,326 +20,117 @@ msgstr ""
 "X-Poedit-SearchPath-0: ..\n"
 
 # @ ab
-#: ../backend/AB_Backend.php:85
-#: ../backend/modules/calendar/templates/calendar.php:14
-#: ../backend/modules/export/AB_ExportController.php:21
-#: ../backend/modules/payment/AB_PaymentController.php:99
-#: ../frontend/AB_Frontend.php:92
-#: ../frontend/modules/booking/templates/short_code.php:12
-msgid "Today"
-msgstr ""
-
-# @ ab
-#: ../backend/AB_Backend.php:87 ../backend/AB_Backend.php:139
-#: ../backend/modules/calendar/AB_CalendarController.php:85
-#: ../backend/modules/export/AB_ExportController.php:33
-#: ../backend/modules/payment/AB_PaymentController.php:111
-#: ../backend/modules/staff/AB_StaffController.php:37
-#: ../frontend/AB_Frontend.php:94
-msgid "January"
-msgstr ""
-
-# @ ab
-#: ../backend/AB_Backend.php:88 ../backend/AB_Backend.php:140
-#: ../backend/modules/calendar/AB_CalendarController.php:86
-#: ../backend/modules/export/AB_ExportController.php:34
-#: ../backend/modules/payment/AB_PaymentController.php:112
-#: ../backend/modules/staff/AB_StaffController.php:38
-#: ../frontend/AB_Frontend.php:95
-msgid "February"
-msgstr ""
-
-# @ ab
-#: ../backend/AB_Backend.php:89 ../backend/AB_Backend.php:141
-#: ../backend/modules/calendar/AB_CalendarController.php:87
-#: ../backend/modules/export/AB_ExportController.php:35
-#: ../backend/modules/payment/AB_PaymentController.php:113
-#: ../backend/modules/staff/AB_StaffController.php:39
-#: ../frontend/AB_Frontend.php:96
-msgid "March"
-msgstr ""
-
-# @ ab
-#: ../backend/AB_Backend.php:90 ../backend/AB_Backend.php:142
-#: ../backend/modules/calendar/AB_CalendarController.php:88
-#: ../backend/modules/export/AB_ExportController.php:36
-#: ../backend/modules/payment/AB_PaymentController.php:114
-#: ../backend/modules/staff/AB_StaffController.php:40
-#: ../frontend/AB_Frontend.php:97
-msgid "April"
-msgstr ""
-
-# @ ab
-#: ../backend/AB_Backend.php:91 ../backend/AB_Backend.php:143
-#: ../backend/modules/calendar/AB_CalendarController.php:75
-#: ../backend/modules/calendar/AB_CalendarController.php:89
-#: ../backend/modules/export/AB_ExportController.php:37
-#: ../backend/modules/payment/AB_PaymentController.php:115
-#: ../backend/modules/staff/AB_StaffController.php:41
-#: ../frontend/AB_Frontend.php:98
-msgid "May"
-msgstr ""
-
-# @ ab
-#: ../backend/AB_Backend.php:92 ../backend/AB_Backend.php:144
-#: ../backend/modules/calendar/AB_CalendarController.php:90
-#: ../backend/modules/export/AB_ExportController.php:38
-#: ../backend/modules/payment/AB_PaymentController.php:116
-#: ../backend/modules/staff/AB_StaffController.php:42
-#: ../frontend/AB_Frontend.php:99
-msgid "June"
-msgstr ""
-
-# @ ab
-#: ../backend/AB_Backend.php:93 ../backend/AB_Backend.php:145
-#: ../backend/modules/calendar/AB_CalendarController.php:91
-#: ../backend/modules/export/AB_ExportController.php:39
-#: ../backend/modules/payment/AB_PaymentController.php:117
-#: ../backend/modules/staff/AB_StaffController.php:43
-#: ../frontend/AB_Frontend.php:100
-msgid "July"
-msgstr ""
-
-# @ ab
-#: ../backend/AB_Backend.php:94 ../backend/AB_Backend.php:146
-#: ../backend/modules/calendar/AB_CalendarController.php:92
-#: ../backend/modules/export/AB_ExportController.php:40
-#: ../backend/modules/payment/AB_PaymentController.php:118
-#: ../backend/modules/staff/AB_StaffController.php:44
-#: ../frontend/AB_Frontend.php:101
-msgid "August"
-msgstr ""
-
-# @ ab
-#: ../backend/AB_Backend.php:95 ../backend/AB_Backend.php:147
-#: ../backend/modules/calendar/AB_CalendarController.php:93
-#: ../backend/modules/export/AB_ExportController.php:41
-#: ../backend/modules/payment/AB_PaymentController.php:119
-#: ../backend/modules/staff/AB_StaffController.php:45
-#: ../frontend/AB_Frontend.php:102
-msgid "September"
-msgstr ""
-
-# @ ab
-#: ../backend/AB_Backend.php:96 ../backend/AB_Backend.php:148
-#: ../backend/modules/calendar/AB_CalendarController.php:94
-#: ../backend/modules/export/AB_ExportController.php:42
-#: ../backend/modules/payment/AB_PaymentController.php:120
-#: ../backend/modules/staff/AB_StaffController.php:46
-#: ../frontend/AB_Frontend.php:103
-msgid "October"
-msgstr ""
-
-# @ ab
-#: ../backend/AB_Backend.php:97 ../backend/AB_Backend.php:149
-#: ../backend/modules/calendar/AB_CalendarController.php:95
-#: ../backend/modules/export/AB_ExportController.php:43
-#: ../backend/modules/payment/AB_PaymentController.php:121
-#: ../backend/modules/staff/AB_StaffController.php:47
-#: ../frontend/AB_Frontend.php:104
-msgid "November"
-msgstr ""
-
-# @ ab
-#: ../backend/AB_Backend.php:98 ../backend/AB_Backend.php:150
-#: ../backend/modules/calendar/AB_CalendarController.php:96
-#: ../backend/modules/export/AB_ExportController.php:44
-#: ../backend/modules/payment/AB_PaymentController.php:122
-#: ../backend/modules/staff/AB_StaffController.php:48
-#: ../frontend/AB_Frontend.php:105
-msgid "December"
-msgstr ""
-
-# @ ab
-#: ../backend/AB_Backend.php:101 ../backend/AB_Backend.php:159
-#: ../backend/modules/appearance/templates/_1_service.php:82
-#: ../backend/modules/calendar/AB_CalendarController.php:99
-#: ../backend/modules/export/AB_ExportController.php:53
-#: ../backend/modules/payment/AB_PaymentController.php:131
-#: ../backend/modules/staff/AB_StaffController.php:57
-#: ../frontend/AB_Frontend.php:108 ../lib/AB_BookingConfiguration.php:163
-msgid "Sun"
-msgstr ""
-
-# @ ab
-#: ../backend/AB_Backend.php:102 ../backend/AB_Backend.php:153
-#: ../backend/modules/appearance/templates/_1_service.php:88
-#: ../backend/modules/calendar/AB_CalendarController.php:100
-#: ../backend/modules/export/AB_ExportController.php:47
-#: ../backend/modules/payment/AB_PaymentController.php:125
-#: ../backend/modules/staff/AB_StaffController.php:51
-#: ../frontend/AB_Frontend.php:109 ../lib/AB_BookingConfiguration.php:164
-msgid "Mon"
-msgstr ""
-
-# @ ab
-#: ../backend/AB_Backend.php:103 ../backend/AB_Backend.php:154
-#: ../backend/modules/appearance/templates/_1_service.php:94
-#: ../backend/modules/calendar/AB_CalendarController.php:101
-#: ../backend/modules/export/AB_ExportController.php:48
-#: ../backend/modules/payment/AB_PaymentController.php:126
-#: ../backend/modules/staff/AB_StaffController.php:52
-#: ../frontend/AB_Frontend.php:110 ../lib/AB_BookingConfiguration.php:165
-msgid "Tue"
-msgstr ""
-
-# @ ab
-#: ../backend/AB_Backend.php:104 ../backend/AB_Backend.php:155
-#: ../backend/modules/appearance/templates/_1_service.php:100
-#: ../backend/modules/calendar/AB_CalendarController.php:102
-#: ../backend/modules/export/AB_ExportController.php:49
-#: ../backend/modules/payment/AB_PaymentController.php:127
-#: ../backend/modules/staff/AB_StaffController.php:53
-#: ../frontend/AB_Frontend.php:111 ../lib/AB_BookingConfiguration.php:166
-msgid "Wed"
-msgstr ""
-
-# @ ab
-#: ../backend/AB_Backend.php:105 ../backend/AB_Backend.php:156
-#: ../backend/modules/appearance/templates/_1_service.php:106
-#: ../backend/modules/calendar/AB_CalendarController.php:103
-#: ../backend/modules/export/AB_ExportController.php:50
-#: ../backend/modules/payment/AB_PaymentController.php:128
-#: ../backend/modules/staff/AB_StaffController.php:54
-#: ../frontend/AB_Frontend.php:112 ../lib/AB_BookingConfiguration.php:167
-msgid "Thu"
-msgstr ""
-
-# @ ab
-#: ../backend/AB_Backend.php:106 ../backend/AB_Backend.php:157
-#: ../backend/modules/appearance/templates/_1_service.php:112
-#: ../backend/modules/calendar/AB_CalendarController.php:104
-#: ../backend/modules/export/AB_ExportController.php:51
-#: ../backend/modules/payment/AB_PaymentController.php:129
-#: ../backend/modules/staff/AB_StaffController.php:55
-#: ../frontend/AB_Frontend.php:113 ../lib/AB_BookingConfiguration.php:168
-msgid "Fri"
-msgstr ""
-
-# @ ab
-#: ../backend/AB_Backend.php:107 ../backend/AB_Backend.php:158
-#: ../backend/modules/appearance/templates/_1_service.php:118
-#: ../backend/modules/calendar/AB_CalendarController.php:105
-#: ../backend/modules/export/AB_ExportController.php:52
-#: ../backend/modules/payment/AB_PaymentController.php:130
-#: ../backend/modules/staff/AB_StaffController.php:56
-#: ../frontend/AB_Frontend.php:114 ../lib/AB_BookingConfiguration.php:169
-msgid "Sat"
-msgstr ""
-
-# @ ab
-#: ../backend/AB_Backend.php:123 ../backend/AB_Backend.php:172
-#: ../backend/modules/calendar/AB_CalendarController.php:66
-msgid "Are you sure?"
-msgstr ""
-
-# @ ab
-#: ../backend/AB_Backend.php:124
-msgid "Please select at least one service."
-msgstr ""
-
-# @ ab
-#: ../backend/AB_Backend.php:136
-#: ../backend/modules/staff/AB_StaffController.php:34
-msgid "We are not working on this day"
-msgstr ""
-
-# @ ab
-#: ../backend/AB_Backend.php:137
-#: ../backend/modules/staff/AB_StaffController.php:35
-msgid "Repeat every year"
-msgstr ""
-
-#: ../backend/AB_Backend.php:173
-msgid "Please select at least one coupon."
-msgstr ""
-
-# @ ab
-#: ../backend/AB_Backend.php:185
+#: ../backend/AB_Backend.php:60
 #: ../backend/modules/calendar/templates/calendar.php:8
 msgid "Calendar"
 msgstr ""
 
 # @ ab
-#: ../backend/AB_Backend.php:186
+#: ../backend/AB_Backend.php:61
 msgid "Staff members"
 msgstr ""
 
 # @ ab
-#: ../backend/AB_Backend.php:187
+#: ../backend/AB_Backend.php:62
 #: ../backend/modules/service/templates/index.php:2
 #: ../backend/modules/staff/templates/edit.php:33
 msgid "Services"
 msgstr ""
 
 # @ ab
-#: ../backend/AB_Backend.php:188
+#: ../backend/AB_Backend.php:63
+#: ../backend/modules/calendar/templates/_appointment_form.php:58
 #: ../backend/modules/customer/templates/index.php:2
 msgid "Customers"
 msgstr ""
 
 # @ ab
-#: ../backend/AB_Backend.php:189
+#: ../backend/AB_Backend.php:64
 #: ../backend/modules/notifications/templates/index.php:2
 msgid "Notifications"
 msgstr ""
 
 # @ ab
-#: ../backend/AB_Backend.php:190
+#: ../backend/AB_Backend.php:65
 #: ../backend/modules/customer/templates/index.php:29
 #: ../backend/modules/payment/templates/index.php:10
-#: ../backend/modules/settings/templates/index.php:7
+#: ../backend/modules/settings/templates/index.php:8
 msgid "Payments"
 msgstr ""
 
 # @ ab
-#: ../backend/AB_Backend.php:191
-#: ../backend/modules/appearance/templates/index.php:7
+#: ../backend/AB_Backend.php:66
+#: ../backend/modules/appearance/templates/index.php:3
 msgid "Appearance"
 msgstr ""
 
 # @ ab
-#: ../backend/AB_Backend.php:192
+#: ../backend/AB_Backend.php:67
 #: ../backend/modules/settings/templates/index.php:2
 msgid "Settings"
 msgstr ""
 
-#: ../backend/AB_Backend.php:193
+#: ../backend/AB_Backend.php:68
 msgid "Export"
 msgstr ""
 
-#: ../backend/AB_Backend.php:194
+#: ../backend/AB_Backend.php:69
 #: ../backend/modules/coupons/templates/index.php:2
 #: ../backend/modules/settings/templates/_paymentsForm.php:21
 msgid "Coupons"
 msgstr ""
 
+#: ../backend/AB_Backend.php:70
+msgid "Custom fields"
+msgstr ""
+
 # @ ab
-#: ../backend/modules/appearance/templates/_1_service.php:66
-#: ../backend/modules/appearance/templates/_1_service.php:187
-#: ../backend/modules/appearance/templates/_3_details.php:44
+#: ../backend/modules/appearance/AB_AppearanceController.php:60
+#: ../backend/modules/calendar/templates/calendar.php:14
+#: ../backend/modules/export/AB_ExportController.php:33
+#: ../backend/modules/payment/AB_PaymentController.php:112
+#: ../frontend/AB_Frontend.php:37
+msgid "Today"
+msgstr ""
+
+#: ../backend/modules/appearance/AB_AppearanceController.php:63
+#: ../frontend/AB_Frontend.php:40
+msgid "Next month"
+msgstr ""
+
+#: ../backend/modules/appearance/AB_AppearanceController.php:64
+#: ../frontend/AB_Frontend.php:41
+msgid "Previous month"
+msgstr ""
+
+# @ ab
+#: ../backend/modules/appearance/templates/_1_service.php:70
+#: ../backend/modules/appearance/templates/_1_service.php:157
+#: ../backend/modules/appearance/templates/_3_details.php:36
 #: ../backend/modules/appearance/templates/_4_payment.php:66
-#: ../frontend/modules/booking/templates/payment.php:97
-#: ../frontend/modules/booking/templates/payment.php:114
-#: ../frontend/modules/booking/templates/service.php:53
-#: ../frontend/modules/booking/templates/service.php:113
-#: ../frontend/modules/booking/templates/your_details.php:57
-#: ../lib/Payment/PayPal.php:245
+#: ../frontend/modules/booking/templates/1_service.php:54
+#: ../frontend/modules/booking/templates/1_service.php:114
+#: ../frontend/modules/booking/templates/3_details.php:90
+#: ../frontend/modules/booking/templates/4_payment.php:104
+#: ../frontend/modules/booking/templates/4_payment.php:121
+#: ../frontend/modules/booking/templates/4_payment.php:131
+#: ../lib/payment/PayPal.php:258
 msgid "Next"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/appearance/templates/_1_service.php:184
-#: ../backend/modules/appearance/templates/_2_time.php:110
-#: ../backend/modules/appearance/templates/_3_details.php:41
+#: ../backend/modules/appearance/templates/_1_service.php:154
+#: ../backend/modules/appearance/templates/_2_time.php:337
+#: ../backend/modules/appearance/templates/_3_details.php:33
 #: ../backend/modules/appearance/templates/_4_payment.php:63
-#: ../frontend/modules/booking/templates/payment.php:94
-#: ../frontend/modules/booking/templates/payment.php:111
-#: ../frontend/modules/booking/templates/service.php:110
-#: ../frontend/modules/booking/templates/time.php:41
-#: ../frontend/modules/booking/templates/time.php:49
-#: ../frontend/modules/booking/templates/your_details.php:54
-#: ../lib/Payment/PayPal.php:244
+#: ../frontend/modules/booking/templates/1_service.php:111
+#: ../frontend/modules/booking/templates/2_time.php:41
+#: ../frontend/modules/booking/templates/2_time.php:49
+#: ../frontend/modules/booking/templates/3_details.php:87
+#: ../frontend/modules/booking/templates/4_payment.php:101
+#: ../frontend/modules/booking/templates/4_payment.php:118
+#: ../frontend/modules/booking/templates/4_payment.php:128
+#: ../lib/payment/PayPal.php:257
 msgid "Back"
 msgstr ""
 
@@ -376,21 +167,15 @@ msgid "<b>[[SERVICE_PRICE]]</b> - price of service"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/appearance/templates/_4_payment.php:29
-#: ../frontend/modules/booking/templates/payment.php:44
-msgid "I will pay locally"
-msgstr ""
-
-# @ ab
 #: ../backend/modules/appearance/templates/_4_payment.php:35
-#: ../frontend/modules/booking/templates/payment.php:53
+#: ../frontend/modules/booking/templates/4_payment.php:55
 msgid "I will pay now with PayPal"
 msgstr ""
 
 #: ../backend/modules/appearance/templates/_4_payment.php:42
 #: ../backend/modules/appearance/templates/_4_payment.php:52
-#: ../frontend/modules/booking/templates/payment.php:67
-#: ../frontend/modules/booking/templates/payment.php:81
+#: ../frontend/modules/booking/templates/4_payment.php:69
+#: ../frontend/modules/booking/templates/4_payment.php:83
 msgid "I will pay now with Credit Card"
 msgstr ""
 
@@ -411,259 +196,211 @@ msgstr ""
 
 # @ ab
 # @ default
-#: ../backend/modules/appearance/templates/index.php:5
-#: ../backend/modules/settings/AB_SettingsController.php:20
-#: ../backend/modules/settings/AB_SettingsController.php:26
-#: ../backend/modules/settings/AB_SettingsController.php:31
+#: ../backend/modules/appearance/templates/index.php:6
 #: ../backend/modules/settings/AB_SettingsController.php:44
-#: ../backend/modules/settings/AB_SettingsController.php:52
+#: ../backend/modules/settings/AB_SettingsController.php:50
+#: ../backend/modules/settings/AB_SettingsController.php:55
+#: ../backend/modules/settings/AB_SettingsController.php:66
+#: ../backend/modules/settings/AB_SettingsController.php:73
+#: ../backend/modules/settings/AB_SettingsController.php:81
 #: ../backend/modules/staff/templates/edit.php:13
 msgid "Settings saved."
 msgstr ""
 
-#: ../backend/modules/appearance/templates/index.php:20
+#: ../backend/modules/appearance/templates/index.php:21
 msgid "Show form progress tracker"
 msgstr ""
 
-#: ../backend/modules/appearance/templates/index.php:67
+#: ../backend/modules/appearance/templates/index.php:29
+msgid "Show calendar"
+msgstr ""
+
+#: ../backend/modules/appearance/templates/index.php:35
+msgid "Show blocked timeslots"
+msgstr ""
+
+#: ../backend/modules/appearance/templates/index.php:41
+msgid "Show each day in one column"
+msgstr ""
+
+#: ../backend/modules/appearance/templates/index.php:88
 msgid "Click on the underlined text to edit."
 msgstr ""
 
 # @ ab
-#: ../backend/modules/appearance/templates/index.php:76
+#: ../backend/modules/appearance/templates/index.php:97
 #: ../backend/modules/staff/templates/edit.php:148
 #: ../backend/modules/staff/templates/schedule.php:100
-#: ../backend/modules/staff/templates/services.php:88
+#: ../backend/modules/staff/templates/services.php:90
 msgid "Update"
 msgstr ""
 
 # @ ab
 # @ default
-#: ../backend/modules/appearance/templates/index.php:80
+#: ../backend/modules/appearance/templates/index.php:101
 #: ../backend/modules/notifications/templates/index.php:56
 #: ../backend/modules/settings/templates/_hoursForm.php:27
 #: ../backend/modules/settings/templates/_paymentsForm.php:126
 #: ../backend/modules/staff/templates/edit.php:149
 #: ../backend/modules/staff/templates/schedule.php:102
-#: ../backend/modules/staff/templates/services.php:89
+#: ../backend/modules/staff/templates/services.php:91
 msgid "Reset"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/calendar/AB_CalendarController.php:64
+#: ../backend/modules/calendar/AB_CalendarController.php:70
 msgid "New appointment"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/calendar/AB_CalendarController.php:65
+#: ../backend/modules/calendar/AB_CalendarController.php:71
 msgid "Edit appointment"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/calendar/AB_CalendarController.php:67
+#: ../backend/modules/calendar/AB_CalendarController.php:72
+#: ../backend/modules/coupons/AB_CouponsController.php:36
+#: ../backend/modules/customer/AB_CustomerController.php:41
+#: ../backend/modules/service/AB_ServiceController.php:42
+msgid "Are you sure?"
+msgstr ""
+
+# @ ab
+#: ../backend/modules/calendar/AB_CalendarController.php:73
 #: ../backend/modules/customer/templates/index.php:24
-#: ../backend/modules/customer/templates/ng-new_customer_dialog.php:20
+#: ../backend/modules/customer/templates/ng-new_customer_dialog.php:23
+#: ../backend/modules/export/AB_ExportController.php:70
 #: ../backend/modules/settings/templates/_companyForm.php:34
-#: ../backend/modules/staff/templates/edit.php:94 ../installer.php:109
-#: ../lib/AB_Google.php:141 ../updates.php:244
+#: ../backend/modules/staff/templates/edit.php:94 ../installer.php:111
+#: ../lib/AB_Google.php:140 ../updates.php:269
 msgid "Phone"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/calendar/AB_CalendarController.php:68
+#: ../backend/modules/calendar/AB_CalendarController.php:74
 #: ../backend/modules/customer/templates/index.php:25
-#: ../backend/modules/customer/templates/ng-new_customer_dialog.php:26
-#: ../backend/modules/staff/templates/edit.php:86 ../installer.php:110
-#: ../lib/AB_Google.php:140 ../updates.php:245
+#: ../backend/modules/customer/templates/ng-new_customer_dialog.php:29
+#: ../backend/modules/export/AB_ExportController.php:71
+#: ../backend/modules/staff/templates/edit.php:86 ../installer.php:112
+#: ../lib/AB_Google.php:139 ../updates.php:270
 msgid "Email"
 msgstr ""
 
-#: ../backend/modules/calendar/AB_CalendarController.php:71
-msgid "Jan"
-msgstr ""
-
-#: ../backend/modules/calendar/AB_CalendarController.php:72
-msgid "Feb"
-msgstr ""
-
-#: ../backend/modules/calendar/AB_CalendarController.php:73
-msgid "Mar"
-msgstr ""
-
-#: ../backend/modules/calendar/AB_CalendarController.php:74
-msgid "Apr"
-msgstr ""
-
-#: ../backend/modules/calendar/AB_CalendarController.php:76
-msgid "Jun"
-msgstr ""
-
-#: ../backend/modules/calendar/AB_CalendarController.php:77
-msgid "Jul"
-msgstr ""
-
-#: ../backend/modules/calendar/AB_CalendarController.php:78
-msgid "Aug"
-msgstr ""
-
-#: ../backend/modules/calendar/AB_CalendarController.php:79
-msgid "Sep"
-msgstr ""
-
-#: ../backend/modules/calendar/AB_CalendarController.php:80
-msgid "Oct"
-msgstr ""
-
-#: ../backend/modules/calendar/AB_CalendarController.php:81
-msgid "Nov"
-msgstr ""
-
-#: ../backend/modules/calendar/AB_CalendarController.php:82
-msgid "Dec"
-msgstr ""
-
-#: ../backend/modules/calendar/AB_CalendarController.php:108
-msgid "Sunday"
-msgstr ""
-
-#: ../backend/modules/calendar/AB_CalendarController.php:109
-msgid "Monday"
-msgstr ""
-
-#: ../backend/modules/calendar/AB_CalendarController.php:110
-msgid "Tuesday"
-msgstr ""
-
-#: ../backend/modules/calendar/AB_CalendarController.php:111
-msgid "Wednesday"
-msgstr ""
-
-#: ../backend/modules/calendar/AB_CalendarController.php:112
-msgid "Thursday"
-msgstr ""
-
-#: ../backend/modules/calendar/AB_CalendarController.php:113
-msgid "Friday"
-msgstr ""
-
-#: ../backend/modules/calendar/AB_CalendarController.php:114
-msgid "Saturday"
-msgstr ""
-
-#: ../backend/modules/calendar/AB_CalendarController.php:116
-msgid "PM"
-msgstr ""
-
-#: ../backend/modules/calendar/AB_CalendarController.php:117
-msgid "AM"
-msgstr ""
-
 # @ ab
-#: ../backend/modules/calendar/AB_CalendarController.php:118
+#: ../backend/modules/calendar/AB_CalendarController.php:82
 #: ../backend/modules/calendar/templates/calendar.php:12
 msgid "Week"
 msgstr ""
 
-#: ../backend/modules/calendar/AB_CalendarController.php:497
+#: ../backend/modules/calendar/AB_CalendarController.php:459
 msgid "The number of customers should be not more than "
 msgstr ""
 
-#: ../backend/modules/calendar/AB_CalendarController.php:546
+#: ../backend/modules/calendar/AB_CalendarController.php:462
+msgid "Start time must not be empty"
+msgstr ""
+
+#: ../backend/modules/calendar/AB_CalendarController.php:464
+msgid "End time must not be empty"
+msgstr ""
+
+#: ../backend/modules/calendar/AB_CalendarController.php:466
+msgid "End time must not be equal to start time"
+msgstr ""
+
+#: ../backend/modules/calendar/AB_CalendarController.php:526
 msgid "Signed up"
 msgstr ""
 
-#: ../backend/modules/calendar/AB_CalendarController.php:547
-#: ../backend/modules/service/templates/list.php:10
+#: ../backend/modules/calendar/AB_CalendarController.php:527
+#: ../backend/modules/service/templates/list.php:11
 #: ../backend/modules/staff/templates/services.php:26
-#: ../backend/modules/staff/templates/services.php:61
+#: ../backend/modules/staff/templates/services.php:62
 msgid "Capacity"
 msgstr ""
 
-#: ../backend/modules/calendar/AB_CalendarController.php:559
-#: ../backend/modules/calendar/AB_CalendarController.php:709
-#: ../lib/entities/AB_Appointment.php:249
+#: ../backend/modules/calendar/AB_CalendarController.php:539
+#: ../backend/modules/calendar/AB_CalendarController.php:680
+#: ../lib/entities/AB_Appointment.php:255
 msgid "Untitled"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/calendar/templates/appointment_form.php:8
+#: ../backend/modules/calendar/templates/_appointment_form.php:8
 #: ../backend/modules/payment/templates/index.php:71
 msgid "Provider"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/calendar/templates/appointment_form.php:16
-#: ../backend/modules/payment/templates/index.php:72 ../installer.php:97
-#: ../installer.php:103 ../updates.php:232 ../updates.php:238
+#: ../backend/modules/calendar/templates/_appointment_form.php:16
+#: ../backend/modules/export/AB_ExportController.php:65
+#: ../backend/modules/payment/templates/index.php:72 ../installer.php:99
+#: ../installer.php:105 ../updates.php:257 ../updates.php:263
 msgid "Service"
 msgstr ""
 
-#: ../backend/modules/calendar/templates/appointment_form.php:20
+#: ../backend/modules/calendar/templates/_appointment_form.php:20
 msgid "Please select a service"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/calendar/templates/appointment_form.php:23
+#: ../backend/modules/calendar/templates/_appointment_form.php:23
 msgid "-- Select a service --"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/calendar/templates/appointment_form.php:29
+#: ../backend/modules/calendar/templates/_appointment_form.php:29
 #: ../backend/modules/payment/templates/index.php:68
 msgid "Date"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/calendar/templates/appointment_form.php:37
+#: ../backend/modules/calendar/templates/_appointment_form.php:37
 msgid "Period"
 msgstr ""
 
-#: ../backend/modules/calendar/templates/appointment_form.php:41
+#: ../backend/modules/calendar/templates/_appointment_form.php:41
 msgid "The selected period is occupied by another appointment"
 msgstr ""
 
 # @ ab
 # @ default
-#: ../backend/modules/calendar/templates/appointment_form.php:44
+#: ../backend/modules/calendar/templates/_appointment_form.php:44
 #: ../backend/modules/settings/templates/_hoursForm.php:18
 msgid " to "
 msgstr ""
 
-#: ../backend/modules/calendar/templates/appointment_form.php:50
+#: ../backend/modules/calendar/templates/_appointment_form.php:50
 msgid ""
 "The selected period does't match default duration for the selected service"
 msgstr ""
 
-# @ ab
-#: ../backend/modules/calendar/templates/appointment_form.php:56
-#: ../backend/modules/payment/templates/index.php:70
-msgid "Customer"
+#: ../backend/modules/calendar/templates/_appointment_form.php:59
+msgid "Selected / maximum"
 msgstr ""
 
-#: ../backend/modules/calendar/templates/appointment_form.php:60
+#: ../backend/modules/calendar/templates/_appointment_form.php:64
+#: ../backend/modules/calendar/templates/_custom_fields_form.php:5
+msgid "Edit custom fields values"
+msgstr ""
+
+#: ../backend/modules/calendar/templates/_appointment_form.php:65
+msgid "Remove customer"
+msgstr ""
+
+#: ../backend/modules/calendar/templates/_appointment_form.php:71
 msgid "Please select a customer"
 msgstr ""
 
-# @ ab
-#: ../backend/modules/calendar/templates/appointment_form.php:63
-msgid "-- Select a customer --"
+#: ../backend/modules/calendar/templates/_appointment_form.php:75
+msgid "-- Search customers --"
 msgstr ""
 
-# @ default
-#: ../backend/modules/calendar/templates/appointment_form.php:73
-#: ../backend/modules/customer/templates/index.php:26
-#: ../backend/modules/customer/templates/ng-new_customer_dialog.php:32
-#: ../backend/modules/export/AB_ExportController.php:78
-#: ../backend/modules/export/AB_ExportController.php:85
-#: ../lib/AB_Google.php:142
-msgid "Notes"
-msgstr ""
-
-#: ../backend/modules/calendar/templates/appointment_form.php:84
+#: ../backend/modules/calendar/templates/_appointment_form.php:90
 msgid "Send email notifications"
 msgstr ""
 
-#: ../backend/modules/calendar/templates/appointment_form.php:89
+#: ../backend/modules/calendar/templates/_appointment_form.php:95
 msgid ""
 "If email notifications are enabled and you want the customer or the staff "
 "member to be notified about this appointment after saving, tick this "
@@ -672,9 +409,11 @@ msgstr ""
 
 # @ default
 # @ ab
-#: ../backend/modules/calendar/templates/appointment_form.php:100
+#: ../backend/modules/calendar/templates/_appointment_form.php:106
+#: ../backend/modules/custom_fields/templates/index.php:16
 #: ../backend/modules/settings/templates/_companyForm.php:44
-#: ../backend/modules/settings/templates/_generalForm.php:154
+#: ../backend/modules/settings/templates/_generalForm.php:117
+#: ../backend/modules/settings/templates/_googleCalendarForm.php:100
 #: ../backend/modules/settings/templates/_hoursForm.php:26
 #: ../backend/modules/settings/templates/_paymentsForm.php:125
 #: ../backend/modules/settings/templates/_purchaseCodeForm.php:21
@@ -683,15 +422,24 @@ msgstr ""
 
 # @ default
 # @ ab
-#: ../backend/modules/calendar/templates/appointment_form.php:101
+#: ../backend/modules/calendar/templates/_appointment_form.php:107
+#: ../backend/modules/calendar/templates/_custom_fields_form.php:51
 #: ../backend/modules/customer/templates/_import.php:36
-#: ../backend/modules/customer/templates/ng-new_customer_dialog.php:41
-#: ../backend/modules/service/templates/index.php:37
-#: ../backend/modules/staff/AB_StaffController.php:261
+#: ../backend/modules/customer/templates/ng-new_customer_dialog.php:88
+#: ../backend/modules/service/templates/index.php:40
+#: ../backend/modules/staff/AB_StaffController.php:259
 #: ../backend/modules/staff/templates/_breaks.php:66
 #: ../backend/modules/staff/templates/new.php:29
 #: ../backend/modules/staff/templates/schedule.php:81
 msgid "Cancel"
+msgstr ""
+
+# @ ab
+#: ../backend/modules/calendar/templates/_custom_fields_form.php:50
+#: ../backend/modules/export/AB_ExportController.php:40
+#: ../backend/modules/payment/AB_PaymentController.php:119
+#: ../frontend/modules/booking/templates/4_payment.php:32
+msgid "Apply"
 msgstr ""
 
 # @ ab
@@ -707,7 +455,7 @@ msgstr ""
 # @ ab
 #: ../backend/modules/calendar/templates/calendar.php:51
 #: ../backend/modules/calendar/templates/calendar.php:77
-#: ../backend/modules/service/templates/list_item.php:68
+#: ../backend/modules/service/templates/list_item.php:75
 msgid "All staff"
 msgstr ""
 
@@ -721,7 +469,11 @@ msgstr ""
 msgid "staff members"
 msgstr ""
 
-#: ../backend/modules/coupons/AB_CouponsController.php:45
+#: ../backend/modules/coupons/AB_CouponsController.php:37
+msgid "Please select at least one coupon."
+msgstr ""
+
+#: ../backend/modules/coupons/AB_CouponsController.php:69
 msgid "Discount should be between 0 and 100"
 msgstr ""
 
@@ -736,7 +488,7 @@ msgstr ""
 # @ ab
 #: ../backend/modules/coupons/templates/index.php:12
 #: ../backend/modules/customer/templates/index.php:60
-#: ../backend/modules/service/templates/index.php:56
+#: ../backend/modules/service/templates/index.php:59
 #: ../backend/modules/settings/templates/_companyForm.php:22
 msgid "Delete"
 msgstr ""
@@ -751,6 +503,89 @@ msgstr ""
 
 #: ../backend/modules/coupons/templates/list.php:8
 msgid "Used"
+msgstr ""
+
+#: ../backend/modules/custom_fields/templates/index.php:2
+#: ../backend/modules/customer/templates/ng-new_customer_dialog.php:44
+msgid "Custom Fields"
+msgstr ""
+
+#: ../backend/modules/custom_fields/templates/index.php:9
+#: ../backend/modules/custom_fields/templates/index.php:25
+msgid "Text Field"
+msgstr ""
+
+#: ../backend/modules/custom_fields/templates/index.php:10
+#: ../backend/modules/custom_fields/templates/index.php:42
+msgid "Text Area"
+msgstr ""
+
+#: ../backend/modules/custom_fields/templates/index.php:11
+#: ../backend/modules/custom_fields/templates/index.php:59
+msgid "Checkbox Group"
+msgstr ""
+
+#: ../backend/modules/custom_fields/templates/index.php:12
+#: ../backend/modules/custom_fields/templates/index.php:78
+msgid "Radio Button Group"
+msgstr ""
+
+#: ../backend/modules/custom_fields/templates/index.php:13
+#: ../backend/modules/custom_fields/templates/index.php:97
+msgid "Drop Down"
+msgstr ""
+
+# @ ab
+#: ../backend/modules/custom_fields/templates/index.php:18
+#: ../backend/modules/settings/templates/_companyForm.php:45
+#: ../backend/modules/settings/templates/_generalForm.php:118
+#: ../backend/modules/settings/templates/_googleCalendarForm.php:101
+#: ../backend/modules/settings/templates/_purchaseCodeForm.php:22
+msgid " Reset "
+msgstr ""
+
+#: ../backend/modules/custom_fields/templates/index.php:29
+#: ../backend/modules/custom_fields/templates/index.php:46
+#: ../backend/modules/custom_fields/templates/index.php:63
+#: ../backend/modules/custom_fields/templates/index.php:82
+#: ../backend/modules/custom_fields/templates/index.php:101
+#: ../backend/modules/custom_fields/templates/index.php:115
+#: ../backend/modules/custom_fields/templates/index.php:121
+#: ../backend/modules/custom_fields/templates/index.php:127
+msgid "Enter a label"
+msgstr ""
+
+#: ../backend/modules/custom_fields/templates/index.php:33
+#: ../backend/modules/custom_fields/templates/index.php:50
+#: ../backend/modules/custom_fields/templates/index.php:67
+#: ../backend/modules/custom_fields/templates/index.php:86
+#: ../backend/modules/custom_fields/templates/index.php:105
+msgid "Required field"
+msgstr ""
+
+#: ../backend/modules/custom_fields/templates/index.php:43
+#: ../backend/modules/custom_fields/templates/index.php:60
+#: ../backend/modules/custom_fields/templates/index.php:79
+#: ../backend/modules/custom_fields/templates/index.php:98
+msgid "Remove field"
+msgstr ""
+
+#: ../backend/modules/custom_fields/templates/index.php:72
+msgid "Checkbox"
+msgstr ""
+
+#: ../backend/modules/custom_fields/templates/index.php:91
+msgid "Radio Button"
+msgstr ""
+
+#: ../backend/modules/custom_fields/templates/index.php:110
+msgid "Option"
+msgstr ""
+
+#: ../backend/modules/custom_fields/templates/index.php:116
+#: ../backend/modules/custom_fields/templates/index.php:122
+#: ../backend/modules/custom_fields/templates/index.php:128
+msgid "Remove item"
 msgstr ""
 
 #: ../backend/modules/customer/templates/_import.php:7
@@ -774,14 +609,17 @@ msgid "Select file"
 msgstr ""
 
 #: ../backend/modules/customer/templates/_import.php:23
+#: ../backend/modules/export/templates/index.php:11
 msgid "Delimiter"
 msgstr ""
 
 #: ../backend/modules/customer/templates/_import.php:26
+#: ../backend/modules/export/templates/index.php:13
 msgid "Comma (,)"
 msgstr ""
 
 #: ../backend/modules/customer/templates/_import.php:27
+#: ../backend/modules/export/templates/index.php:14
 msgid "Semicolon (;)"
 msgstr ""
 
@@ -792,9 +630,15 @@ msgstr ""
 
 # @ ab
 #: ../backend/modules/customer/templates/index.php:23
-#: ../backend/modules/customer/templates/ng-new_customer_dialog.php:13
-#: ../installer.php:108 ../lib/AB_Google.php:139 ../updates.php:243
+#: ../backend/modules/customer/templates/ng-new_customer_dialog.php:16
+#: ../installer.php:110 ../lib/AB_Google.php:138 ../updates.php:268
 msgid "Name"
+msgstr ""
+
+# @ default
+#: ../backend/modules/customer/templates/index.php:26
+#: ../backend/modules/customer/templates/ng-new_customer_dialog.php:35
+msgid "Notes"
 msgstr ""
 
 # @ ab
@@ -809,7 +653,7 @@ msgstr ""
 
 # @ ab
 #: ../backend/modules/customer/templates/index.php:36
-#: ../backend/modules/customer/templates/ng-new_customer_dialog.php:16
+#: ../backend/modules/customer/templates/ng-new_customer_dialog.php:19
 #: ../lib/AB_Validator.php:74
 msgid "Required"
 msgstr ""
@@ -829,274 +673,222 @@ msgstr ""
 msgid "New Customer"
 msgstr ""
 
-# @ ab
-#: ../backend/modules/customer/templates/ng-new_customer_dialog.php:40
-msgid "Save customer"
+#: ../backend/modules/customer/templates/ng-new_customer_dialog.php:14
+msgid "Personal Information"
+msgstr ""
+
+#: ../backend/modules/customer/templates/ng-new_customer_dialog.php:87
+msgid "Create customer"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/export/AB_ExportController.php:22
-#: ../backend/modules/payment/AB_PaymentController.php:100
+#: ../backend/modules/export/AB_ExportController.php:34
+#: ../backend/modules/payment/AB_PaymentController.php:113
 msgid "Yesterday"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/export/AB_ExportController.php:23
-#: ../backend/modules/payment/AB_PaymentController.php:101
+#: ../backend/modules/export/AB_ExportController.php:35
+#: ../backend/modules/payment/AB_PaymentController.php:114
 msgid "Last 7 Days"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/export/AB_ExportController.php:24
-#: ../backend/modules/payment/AB_PaymentController.php:102
+#: ../backend/modules/export/AB_ExportController.php:36
+#: ../backend/modules/payment/AB_PaymentController.php:115
 msgid "Last 30 Days"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/export/AB_ExportController.php:25
-#: ../backend/modules/payment/AB_PaymentController.php:103
+#: ../backend/modules/export/AB_ExportController.php:37
+#: ../backend/modules/payment/AB_PaymentController.php:116
 msgid "This Month"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/export/AB_ExportController.php:26
-#: ../backend/modules/payment/AB_PaymentController.php:104
+#: ../backend/modules/export/AB_ExportController.php:38
+#: ../backend/modules/payment/AB_PaymentController.php:117
 msgid "Last Month"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/export/AB_ExportController.php:27
-#: ../backend/modules/payment/AB_PaymentController.php:105
+#: ../backend/modules/export/AB_ExportController.php:39
+#: ../backend/modules/payment/AB_PaymentController.php:118
 msgid "Custom Range"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/export/AB_ExportController.php:28
-#: ../backend/modules/payment/AB_PaymentController.php:106
-#: ../frontend/modules/booking/templates/payment.php:31
-msgid "Apply"
-msgstr ""
-
-# @ ab
-#: ../backend/modules/export/AB_ExportController.php:29
-#: ../backend/modules/payment/AB_PaymentController.php:107
+#: ../backend/modules/export/AB_ExportController.php:41
+#: ../backend/modules/payment/AB_PaymentController.php:120
 msgid "Clear"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/export/AB_ExportController.php:30
-#: ../backend/modules/payment/AB_PaymentController.php:108
+#: ../backend/modules/export/AB_ExportController.php:42
+#: ../backend/modules/payment/AB_PaymentController.php:121
 msgid "To"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/export/AB_ExportController.php:31
-#: ../backend/modules/payment/AB_PaymentController.php:109
+#: ../backend/modules/export/AB_ExportController.php:43
+#: ../backend/modules/payment/AB_PaymentController.php:122
 msgid "From"
 msgstr ""
 
-#: ../backend/modules/export/AB_ExportController.php:74
-#: ../backend/modules/export/AB_ExportController.php:81
-msgid "Customer name"
+#: ../backend/modules/export/AB_ExportController.php:64
+msgid "Staff Member"
 msgstr ""
 
-#: ../backend/modules/export/AB_ExportController.php:75
-#: ../backend/modules/export/AB_ExportController.php:82
-msgid "Service title"
+#: ../backend/modules/export/AB_ExportController.php:66
+msgid "Booking Time"
 msgstr ""
 
-#: ../backend/modules/export/AB_ExportController.php:76
-#: ../backend/modules/export/AB_ExportController.php:83
-msgid "Start date"
+# @ default
+#: ../backend/modules/export/AB_ExportController.php:67
+#: ../backend/modules/service/templates/list.php:9
+msgid "Duration"
 msgstr ""
 
-#: ../backend/modules/export/AB_ExportController.php:77
-#: ../backend/modules/export/AB_ExportController.php:84
-msgid "End date"
+# @ default
+#: ../backend/modules/export/AB_ExportController.php:68
+#: ../backend/modules/service/templates/list.php:10
+#: ../backend/modules/staff/templates/services.php:25
+#: ../backend/modules/staff/templates/services.php:61
+msgid "Price"
+msgstr ""
+
+# @ ab
+#: ../backend/modules/export/AB_ExportController.php:69
+#: ../backend/modules/payment/templates/index.php:70
+msgid "Customer"
 msgstr ""
 
 #: ../backend/modules/export/templates/index.php:2
 msgid "Export appointments"
 msgstr ""
 
-#: ../backend/modules/export/templates/index.php:13
+#: ../backend/modules/export/templates/index.php:16
 msgid "Export to CSV"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/notifications/AB_NotificationsController.php:21
+#: ../backend/modules/notifications/AB_NotificationsController.php:27
 msgid "Notification settings were updated successfully."
 msgstr ""
 
 # @ ab
-#: ../backend/modules/notifications/AB_NotificationsForm.php:81
+#: ../backend/modules/notifications/forms/AB_NotificationsForm.php:79
 msgid "Notification to Customer about Appointment details"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/notifications/AB_NotificationsForm.php:82
+#: ../backend/modules/notifications/forms/AB_NotificationsForm.php:80
 msgid "Notification to Staff Member about Appointment details"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/notifications/AB_NotificationsForm.php:83
+#: ../backend/modules/notifications/forms/AB_NotificationsForm.php:81
 msgid "Evening reminder to Customer about next day Appointment"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/notifications/AB_NotificationsForm.php:84
+#: ../backend/modules/notifications/forms/AB_NotificationsForm.php:82
 msgid "Follow-up message on the day after Appointment"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/notifications/AB_NotificationsForm.php:85
+#: ../backend/modules/notifications/forms/AB_NotificationsForm.php:83
 msgid "Evening notification with the next day agenda to Staff Member"
 msgstr ""
 
-#: ../backend/modules/notifications/AB_NotificationsForm.php:117
-#: ../backend/modules/notifications/templates/_tags_client_info.php:3
-#: ../backend/modules/notifications/templates/_tags_evening_after.php:3
-#: ../backend/modules/notifications/templates/_tags_evening_next_day.php:3
-#: ../backend/modules/notifications/templates/_tags_event_next_day.php:3
-#: ../backend/modules/notifications/templates/_tags_provider_info.php:3
+#: ../backend/modules/notifications/forms/AB_NotificationsForm.php:115
 msgid "Subject"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/notifications/AB_NotificationsForm.php:150
+#: ../backend/modules/notifications/forms/AB_NotificationsForm.php:148
 msgid "Send copy to administrators"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/notifications/templates/_tags_client_info.php:4
-#: ../backend/modules/notifications/templates/_tags_evening_after.php:4
-#: ../backend/modules/notifications/templates/_tags_evening_next_day.php:4
-#: ../backend/modules/notifications/templates/_tags_event_next_day.php:4
-#: ../backend/modules/notifications/templates/_tags_provider_info.php:4
-#: ../backend/modules/notifications/templates/index.php:34
-msgid "Message"
-msgstr ""
-
-# @ ab
-#: ../backend/modules/notifications/templates/_tags_client_info.php:7
-#: ../backend/modules/notifications/templates/_tags_client_info.php:36
-#: ../backend/modules/notifications/templates/_tags_evening_after.php:7
-#: ../backend/modules/notifications/templates/_tags_evening_after.php:32
-#: ../backend/modules/notifications/templates/_tags_evening_next_day.php:7
-#: ../backend/modules/notifications/templates/_tags_evening_next_day.php:32
-#: ../backend/modules/notifications/templates/_tags_provider_info.php:7
-#: ../backend/modules/notifications/templates/_tags_provider_info.php:48
-msgid "[[COMPANY_NAME]] - name of the company"
-msgstr ""
-
-# @ ab
-#: ../backend/modules/notifications/templates/_tags_client_info.php:8
-#: ../backend/modules/notifications/templates/_tags_evening_after.php:8
-#: ../backend/modules/notifications/templates/_tags_evening_next_day.php:8
-#: ../backend/modules/notifications/templates/_tags_provider_info.php:8
-msgid "[[CLIENT_NAME]] - name of client"
-msgstr ""
-
-#: ../backend/modules/notifications/templates/_tags_client_info.php:12
-#: ../backend/modules/notifications/templates/_tags_provider_info.php:24
-msgid "[[STAFF_NAME]] - name of staff"
-msgstr ""
-
-# @ ab
-#: ../backend/modules/notifications/templates/_tags_client_info.php:16
-#: ../backend/modules/notifications/templates/_tags_evening_after.php:12
-#: ../backend/modules/notifications/templates/_tags_evening_next_day.php:12
-#: ../backend/modules/notifications/templates/_tags_provider_info.php:28
-msgid "[[APPOINTMENT_DATE]] - date of appointment"
-msgstr ""
-
-# @ ab
-#: ../backend/modules/notifications/templates/_tags_client_info.php:20
-#: ../backend/modules/notifications/templates/_tags_evening_after.php:16
-#: ../backend/modules/notifications/templates/_tags_evening_next_day.php:16
-#: ../backend/modules/notifications/templates/_tags_provider_info.php:32
+#: ../backend/modules/notifications/templates/_codes.php:2
 msgid "[[APPOINTMENT_TIME]] - time of appointment"
 msgstr ""
 
-# @ ab
-#: ../backend/modules/notifications/templates/_tags_client_info.php:24
-#: ../backend/modules/notifications/templates/_tags_evening_after.php:20
-#: ../backend/modules/notifications/templates/_tags_evening_next_day.php:20
-#: ../backend/modules/notifications/templates/_tags_provider_info.php:36
-msgid "[[SERVICE_NAME]] - name of service"
+#: ../backend/modules/notifications/templates/_codes.php:3
+msgid "[[APPOINTMENT_DATE]] - date of  appointment"
 msgstr ""
 
-#: ../backend/modules/notifications/templates/_tags_client_info.php:28
-#: ../backend/modules/notifications/templates/_tags_evening_after.php:24
-#: ../backend/modules/notifications/templates/_tags_evening_next_day.php:24
-#: ../backend/modules/notifications/templates/_tags_provider_info.php:40
-msgid "[[SERVICE_PRICE]] - price of service"
+#: ../backend/modules/notifications/templates/_codes.php:4
+msgid "[[CANCEL_APPOINTMENT]] - cancel appointment link"
 msgstr ""
 
-#: ../backend/modules/notifications/templates/_tags_client_info.php:32
-#: ../backend/modules/notifications/templates/_tags_evening_after.php:28
-#: ../backend/modules/notifications/templates/_tags_evening_next_day.php:28
-#: ../backend/modules/notifications/templates/_tags_provider_info.php:44
+#: ../backend/modules/notifications/templates/_codes.php:5
 msgid "[[CATEGORY_NAME]] - name of category"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/notifications/templates/_tags_client_info.php:40
-#: ../backend/modules/notifications/templates/_tags_evening_after.php:36
-#: ../backend/modules/notifications/templates/_tags_evening_next_day.php:36
-#: ../backend/modules/notifications/templates/_tags_provider_info.php:52
-msgid "[[COMPANY_LOGO]] - company logo"
+#: ../backend/modules/notifications/templates/_codes.php:6
+msgid "[[CLIENT_NAME]] - name of client"
+msgstr ""
+
+#: ../backend/modules/notifications/templates/_codes.php:7
+msgid "[[COMPANY_NAME]] - name of your company"
+msgstr ""
+
+#: ../backend/modules/notifications/templates/_codes.php:8
+msgid "[[COMPANY_LOGO]] - your company logo"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/notifications/templates/_tags_client_info.php:44
-#: ../backend/modules/notifications/templates/_tags_evening_after.php:40
-#: ../backend/modules/notifications/templates/_tags_evening_next_day.php:40
-#: ../backend/modules/notifications/templates/_tags_provider_info.php:56
+#: ../backend/modules/notifications/templates/_codes.php:9
 msgid "[[COMPANY_ADDRESS]] - address of your company"
 msgstr ""
 
-# @ ab
-#: ../backend/modules/notifications/templates/_tags_client_info.php:48
-#: ../backend/modules/notifications/templates/_tags_evening_after.php:44
-#: ../backend/modules/notifications/templates/_tags_evening_next_day.php:44
-#: ../backend/modules/notifications/templates/_tags_provider_info.php:60
-msgid "[[COMPANY_PHONE]] - company phone"
+#: ../backend/modules/notifications/templates/_codes.php:10
+msgid "[[COMPANY_PHONE]] - your company phone"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/notifications/templates/_tags_client_info.php:52
-#: ../backend/modules/notifications/templates/_tags_evening_after.php:48
-#: ../backend/modules/notifications/templates/_tags_evening_next_day.php:48
-#: ../backend/modules/notifications/templates/_tags_provider_info.php:64
+#: ../backend/modules/notifications/templates/_codes.php:11
 msgid "[[COMPANY_WEBSITE]] - this web-site address"
 msgstr ""
 
-#: ../backend/modules/notifications/templates/_tags_client_info.php:56
-#: ../backend/modules/notifications/templates/_tags_provider_info.php:68
-msgid "[[CANCEL_APPOINTMENT]] - cancel appointment link"
+#: ../backend/modules/notifications/templates/_codes.php:12
+msgid "[[CUSTOM_FIELDS]] - combined values of all custom fields"
 msgstr ""
 
-#: ../backend/modules/notifications/templates/_tags_event_next_day.php:7
+# @ ab
+#: ../backend/modules/notifications/templates/_codes.php:13
+msgid "[[SERVICE_NAME]] - name of service"
+msgstr ""
+
+#: ../backend/modules/notifications/templates/_codes.php:14
+msgid "[[SERVICE_PRICE]] - price of service"
+msgstr ""
+
+#: ../backend/modules/notifications/templates/_codes.php:15
+msgid "[[STAFF_EMAIL]] - email of staff"
+msgstr ""
+
+#: ../backend/modules/notifications/templates/_codes.php:16
+msgid "[[STAFF_NAME]] - name of staff"
+msgstr ""
+
+#: ../backend/modules/notifications/templates/_codes.php:17
+msgid "[[STAFF_PHONE]] - phone of staff"
+msgstr ""
+
+#: ../backend/modules/notifications/templates/_codes.php:18
+msgid "[[STAFF_PHOTO]] - photo of staff"
+msgstr ""
+
+#: ../backend/modules/notifications/templates/_codes_event_next_day.php:2
 msgid "[[TOMORROW_DATE]] - date of next day"
 msgstr ""
 
-#: ../backend/modules/notifications/templates/_tags_event_next_day.php:8
+#: ../backend/modules/notifications/templates/_codes_event_next_day.php:3
 msgid "[[NEXT_DAY_AGENDA]] - staff agenda for next day"
-msgstr ""
-
-# @ ab
-#: ../backend/modules/notifications/templates/_tags_provider_info.php:12
-msgid "[[CLIENT_PHONE]] - сlient phone"
-msgstr ""
-
-# @ ab
-#: ../backend/modules/notifications/templates/_tags_provider_info.php:16
-msgid "[[CLIENT_EMAIL]] - сlient email"
-msgstr ""
-
-#: ../backend/modules/notifications/templates/_tags_provider_info.php:20
-msgid "[[CLIENT_NOTES]] - сlient notes"
 msgstr ""
 
 # @ ab
@@ -1109,8 +901,13 @@ msgstr ""
 msgid "Sender email"
 msgstr ""
 
+# @ ab
+#: ../backend/modules/notifications/templates/index.php:34
+msgid "Message"
+msgstr ""
+
 #: ../backend/modules/notifications/templates/index.php:41
-msgid "Tags "
+msgid "Codes"
 msgstr ""
 
 # @ ab
@@ -1156,7 +953,7 @@ msgstr ""
 
 # @ ab
 #: ../backend/modules/payment/templates/index.php:55
-#: ../backend/modules/service/templates/index.php:48
+#: ../backend/modules/service/templates/index.php:51
 #: ../backend/modules/staff/templates/services.php:22
 msgid "All services"
 msgstr ""
@@ -1176,8 +973,8 @@ msgstr ""
 msgid "Amount"
 msgstr ""
 
-#: ../backend/modules/payment/templates/index.php:74 ../installer.php:112
-#: ../updates.php:40
+#: ../backend/modules/payment/templates/index.php:74 ../installer.php:113
+#: ../updates.php:114
 msgid "Coupon"
 msgstr ""
 
@@ -1187,63 +984,91 @@ msgid "Appointment Date"
 msgstr ""
 
 # @ ab
+#: ../backend/modules/service/AB_ServiceController.php:43
+msgid "Please select at least one service."
+msgstr ""
+
+# @ ab
 #: ../backend/modules/service/templates/index.php:6
 msgid "All Services"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/service/templates/index.php:22
+#: ../backend/modules/service/templates/index.php:25
 msgid "New Category"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/service/templates/index.php:36
+#: ../backend/modules/service/templates/index.php:39
 msgid "Save category"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/service/templates/index.php:49
+#: ../backend/modules/service/templates/index.php:52
 msgid "No services found. Please add services."
 msgstr ""
 
 # @ ab
-#: ../backend/modules/service/templates/index.php:55
+#: ../backend/modules/service/templates/index.php:58
 msgid "Add Service"
 msgstr ""
 
-# @ default
-#: ../backend/modules/service/templates/list.php:7
-msgid "Title"
+#: ../backend/modules/service/templates/index.php:67
+msgid "Update service setting"
+msgstr ""
+
+#: ../backend/modules/service/templates/index.php:70
+msgid ""
+"You are about to change a service setting which is also configured "
+"separately for each staff member. Do you want to update it in staff settings "
+"too?"
+msgstr ""
+
+#: ../backend/modules/service/templates/index.php:72
+msgid "Remember my choice"
+msgstr ""
+
+#: ../backend/modules/service/templates/index.php:76
+msgid "No, just update here in services"
+msgstr ""
+
+#: ../backend/modules/service/templates/index.php:77
+msgid "Yes"
 msgstr ""
 
 # @ default
 #: ../backend/modules/service/templates/list.php:8
-msgid "Duration"
+msgid "Title"
 msgstr ""
 
-# @ default
-#: ../backend/modules/service/templates/list.php:9
-#: ../backend/modules/staff/templates/services.php:25
-#: ../backend/modules/staff/templates/services.php:60
-msgid "Price"
-msgstr ""
-
-#: ../backend/modules/service/templates/list.php:11
+#: ../backend/modules/service/templates/list.php:12
 msgid ""
 "The maximum number of customers allowed to book the service for the certain "
 "time period."
 msgstr ""
 
 # @ default
-#: ../backend/modules/service/templates/list.php:12
+#: ../backend/modules/service/templates/list.php:13
 msgid "Staff"
 msgstr ""
 
 # @ ab
 # @ default
-#: ../backend/modules/service/templates/list.php:13 ../installer.php:102
-#: ../updates.php:237
+#: ../backend/modules/service/templates/list.php:14 ../installer.php:104
+#: ../updates.php:262
 msgid "Category"
+msgstr ""
+
+# @ ab
+#: ../backend/modules/settings/AB_SettingsController.php:33
+#: ../backend/modules/staff/AB_StaffController.php:43
+msgid "We are not working on this day"
+msgstr ""
+
+# @ ab
+#: ../backend/modules/settings/AB_SettingsController.php:34
+#: ../backend/modules/staff/AB_StaffController.php:44
+msgid "Repeat every year"
 msgstr ""
 
 # @ ab
@@ -1273,13 +1098,6 @@ msgstr ""
 msgid "Website"
 msgstr ""
 
-# @ ab
-#: ../backend/modules/settings/templates/_companyForm.php:45
-#: ../backend/modules/settings/templates/_generalForm.php:155
-#: ../backend/modules/settings/templates/_purchaseCodeForm.php:22
-msgid " Reset "
-msgstr ""
-
 #: ../backend/modules/settings/templates/_generalForm.php:13
 msgid "Time slot length"
 msgstr ""
@@ -1297,6 +1115,8 @@ msgstr ""
 
 #: ../backend/modules/settings/templates/_generalForm.php:41
 #: ../backend/modules/settings/templates/_generalForm.php:62
+#: ../backend/modules/settings/templates/_generalForm.php:98
+#: ../backend/modules/settings/templates/_googleCalendarForm.php:85
 #: ../backend/modules/settings/templates/_paymentsForm.php:24
 #: ../backend/modules/settings/templates/_paymentsForm.php:36
 #: ../backend/modules/settings/templates/_paymentsForm.php:48
@@ -1316,6 +1136,8 @@ msgid "Display available time slots in client's time zone"
 msgstr ""
 
 #: ../backend/modules/settings/templates/_generalForm.php:62
+#: ../backend/modules/settings/templates/_generalForm.php:98
+#: ../backend/modules/settings/templates/_googleCalendarForm.php:85
 #: ../backend/modules/settings/templates/_paymentsForm.php:24
 #: ../backend/modules/settings/templates/_paymentsForm.php:36
 #: ../backend/modules/settings/templates/_paymentsForm.php:113
@@ -1330,66 +1152,57 @@ msgstr ""
 msgid "Cancel appointment page URL"
 msgstr ""
 
+#: ../backend/modules/settings/templates/_generalForm.php:81
+#: ../backend/modules/settings/templates/_generalForm.php:103
+msgid "Enter a URL"
+msgstr ""
+
 #: ../backend/modules/settings/templates/_generalForm.php:88
 msgid ""
-"Insert the URL of the page that is shown to clients after they have "
-"cancelled their booking."
+"Insert a URL of a page that is shown to clients after they have cancelled "
+"their booking."
 msgstr ""
 
 #: ../backend/modules/settings/templates/_generalForm.php:94
-msgid "Google Calendar"
+msgid "Final step URL"
 msgstr ""
 
-#: ../backend/modules/settings/templates/_generalForm.php:105
-msgid "Client ID"
+#: ../backend/modules/settings/templates/_generalForm.php:110
+msgid ""
+"Set a URL of a page that the user will be forwarded to after successful "
+"booking. If disabled then the default step 5 is displayed."
 msgstr ""
 
-#: ../backend/modules/settings/templates/_generalForm.php:115
-msgid "The client ID obtained from the Developers Console"
+#: ../backend/modules/settings/templates/_googleCalendarForm.php:15
+msgid "Google Instructions"
 msgstr ""
 
-#: ../backend/modules/settings/templates/_generalForm.php:121
-msgid "Client secret"
-msgstr ""
-
-#: ../backend/modules/settings/templates/_generalForm.php:131
-msgid "The client secret obtained from the Developers Console"
-msgstr ""
-
-#: ../backend/modules/settings/templates/_generalForm.php:137
-msgid "Redirect URI"
-msgstr ""
-
-#: ../backend/modules/settings/templates/_generalForm.php:147
-msgid "Enter this URL as a redirect URI in the Developers Console"
-msgstr ""
-
-#: ../backend/modules/settings/templates/_generalForm.php:162
+#: ../backend/modules/settings/templates/_googleCalendarForm.php:18
 msgid "To find your client ID and client secret, do the following:"
 msgstr ""
 
-#: ../backend/modules/settings/templates/_generalForm.php:164
+#: ../backend/modules/settings/templates/_googleCalendarForm.php:21
 msgid ""
 "Go to the <a href=\"https://console.developers.google.com/\" target=\"_blank"
 "\">Google Developers Console</a>."
 msgstr ""
 
-#: ../backend/modules/settings/templates/_generalForm.php:165
+#: ../backend/modules/settings/templates/_googleCalendarForm.php:22
 msgid "Select a project, or create a new one."
 msgstr ""
 
-#: ../backend/modules/settings/templates/_generalForm.php:166
+#: ../backend/modules/settings/templates/_googleCalendarForm.php:23
 msgid ""
 "In the sidebar on the left, expand <b>APIs & auth</b>. Next, click <b>APIs</"
 "b>. In the list of APIs, make sure the status is <b>ON</b> for the Google "
 "Calendar API."
 msgstr ""
 
-#: ../backend/modules/settings/templates/_generalForm.php:167
+#: ../backend/modules/settings/templates/_googleCalendarForm.php:24
 msgid "In the sidebar on the left, select <b>Credentials</b>."
 msgstr ""
 
-#: ../backend/modules/settings/templates/_generalForm.php:168
+#: ../backend/modules/settings/templates/_googleCalendarForm.php:25
 msgid ""
 "Create your project's OAuth 2.0 credentials by clicking <b>Create new Client "
 "ID</b>, selecting <b>Web application</b>, and providing the information "
@@ -1397,10 +1210,52 @@ msgid ""
 "the <b>Redirect URI</b> found below on this page."
 msgstr ""
 
-#: ../backend/modules/settings/templates/_generalForm.php:169
+#: ../backend/modules/settings/templates/_googleCalendarForm.php:26
 msgid ""
 "Look for the <b>Client ID</b> and <b>Client secret</b> in the table "
 "associated with each of your credentials."
+msgstr ""
+
+#: ../backend/modules/settings/templates/_googleCalendarForm.php:34
+#: ../backend/modules/settings/templates/index.php:7
+msgid "Google Calendar"
+msgstr ""
+
+#: ../backend/modules/settings/templates/_googleCalendarForm.php:39
+msgid "Client ID"
+msgstr ""
+
+#: ../backend/modules/settings/templates/_googleCalendarForm.php:47
+msgid "The client ID obtained from the Developers Console"
+msgstr ""
+
+#: ../backend/modules/settings/templates/_googleCalendarForm.php:53
+msgid "Client secret"
+msgstr ""
+
+#: ../backend/modules/settings/templates/_googleCalendarForm.php:61
+msgid "The client secret obtained from the Developers Console"
+msgstr ""
+
+#: ../backend/modules/settings/templates/_googleCalendarForm.php:67
+msgid "Redirect URI"
+msgstr ""
+
+#: ../backend/modules/settings/templates/_googleCalendarForm.php:75
+msgid "Enter this URL as a redirect URI in the Developers Console"
+msgstr ""
+
+#: ../backend/modules/settings/templates/_googleCalendarForm.php:81
+msgid "2 way sync"
+msgstr ""
+
+#: ../backend/modules/settings/templates/_googleCalendarForm.php:93
+msgid ""
+"By default Bookly pushes new appointments and any further changes to Google "
+"Calendar. If you enable this option then Bookly will fetch events from "
+"Google Calendar and remove corresponding time slots before displaying the "
+"second step of the booking form (this may lead to a delay when users click "
+"Next at the first step)."
 msgstr ""
 
 # @ ab
@@ -1448,15 +1303,15 @@ msgstr ""
 
 # @ ab
 #: ../backend/modules/settings/templates/_purchaseCodeForm.php:12
-#: ../backend/modules/settings/templates/index.php:10
+#: ../backend/modules/settings/templates/index.php:11
 msgid "Purchase Code"
 msgstr ""
 
 #: ../backend/modules/settings/templates/admin_notice.php:3
 msgid ""
 "Please do not forget to specify your purchase code in Bookly <a href=\"admin."
-"php?page=ab-system-settings\">settings</a>. Upon providing the code you will "
-"have access to free updates of Bookly. Updates may contain functionality "
+"php?page=ab-settings\">settings</a>. Upon providing the code you will have "
+"access to free updates of Bookly. Updates may contain functionality "
 "improvements and important security fixes."
 msgstr ""
 
@@ -1464,8 +1319,8 @@ msgstr ""
 msgid ""
 "<b>Important!</b> Please be aware that if your copy of Bookly was not "
 "downloaded from Codecanyon (the only channel of Bookly distribution), you "
-"may put your website under significant risk - it is very likely that it may "
-"contain a malicious code, a trojan or a backdoor. Please consider buying a "
+"may put your website under significant risk - it is very likely that it "
+"contains a malicious code, a trojan or a backdoor. Please consider buying a "
 "licensed copy of Bookly <a href=\"http://bookly.ladela.com\" target=\"_blank"
 "\">here</a>."
 msgstr ""
@@ -1484,27 +1339,27 @@ msgid "Company"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/settings/templates/index.php:8
+#: ../backend/modules/settings/templates/index.php:9
 msgid "Business hours"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/settings/templates/index.php:9
+#: ../backend/modules/settings/templates/index.php:10
 msgid "Holidays"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/staff/AB_StaffController.php:185
+#: ../backend/modules/staff/AB_StaffController.php:183
 msgid "The start time must be less than the end one"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/staff/AB_StaffController.php:200
+#: ../backend/modules/staff/AB_StaffController.php:198
 msgid "The requested interval is not available"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/staff/AB_StaffController.php:256
+#: ../backend/modules/staff/AB_StaffController.php:254
 #: ../backend/modules/staff/templates/_breaks.php:59
 #: ../backend/modules/staff/templates/schedule.php:41
 #: ../backend/modules/staff/templates/schedule.php:74
@@ -1512,18 +1367,18 @@ msgid "to"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/staff/AB_StaffController.php:260
+#: ../backend/modules/staff/AB_StaffController.php:258
 #: ../backend/modules/staff/templates/_breaks.php:65
 #: ../backend/modules/staff/templates/schedule.php:80
 msgid "Save break"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/staff/AB_StaffController.php:275
+#: ../backend/modules/staff/AB_StaffController.php:273
 msgid "Error adding the break interval"
 msgstr ""
 
-#: ../backend/modules/staff/AB_StaffController.php:309
+#: ../backend/modules/staff/AB_StaffController.php:307
 msgid "Calendar ID is not valid."
 msgstr ""
 
@@ -1537,8 +1392,8 @@ msgid "Delete this staff member"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/staff/templates/edit.php:32 ../installer.php:99
-#: ../updates.php:234
+#: ../backend/modules/staff/templates/edit.php:32 ../installer.php:101
+#: ../updates.php:259
 msgid "Details"
 msgstr ""
 
@@ -1595,8 +1450,8 @@ msgstr ""
 
 #: ../backend/modules/staff/templates/edit.php:118
 msgid ""
-"Please configure Google Calendar <a href=\"?page=ab-system-settings"
-"\">settings</a> first"
+"Please configure Google Calendar <a href=\"?page=ab-"
+"settings&type=_google_calendar\">settings</a> first"
 msgstr ""
 
 #: ../backend/modules/staff/templates/edit.php:121
@@ -1617,38 +1472,38 @@ msgid "Staff Members"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/staff/templates/list.php:24
+#: ../backend/modules/staff/templates/list.php:27
 msgid ""
 "If this staff member requires separate login to access personal calendar, a "
 "regular WP user needs to be created for this purpose."
 msgstr ""
 
 # @ ab
-#: ../backend/modules/staff/templates/list.php:25
+#: ../backend/modules/staff/templates/list.php:28
 msgid ""
 "User with \"Administrator\" role will have access to calendars and settings "
 "of all staff members, user with some other role will have access only to "
 "personal calendar and settings."
 msgstr ""
 
-#: ../backend/modules/staff/templates/list.php:26
+#: ../backend/modules/staff/templates/list.php:29
 msgid ""
 "If you will leave this field blank, this staff member will not be able to "
 "access personal calendar using WP backend."
 msgstr ""
 
-#: ../backend/modules/staff/templates/list.php:29
+#: ../backend/modules/staff/templates/list.php:32
 msgid "Synchronize the data of the staff member bookings with Google Calendar."
 msgstr ""
 
-#: ../backend/modules/staff/templates/list.php:32
+#: ../backend/modules/staff/templates/list.php:35
 msgid ""
 "The Calendar ID can be found by clicking on \"Calendar settings\" next to "
 "the calendar you wish to display. The Calendar ID is then shown beside "
 "\"Calendar Address\"."
 msgstr ""
 
-#: ../backend/modules/staff/templates/list.php:33
+#: ../backend/modules/staff/templates/list.php:36
 msgid "<b>Leave this field empty</b> to work with the default calendar."
 msgstr ""
 
@@ -1685,8 +1540,8 @@ msgid "Default value for category select"
 msgstr ""
 
 # @ ab
-#: ../backend/modules/tinymce/templates/popup.php:11 ../installer.php:114
-#: ../updates.php:248
+#: ../backend/modules/tinymce/templates/popup.php:11 ../installer.php:116
+#: ../updates.php:273
 msgid "Select category"
 msgstr ""
 
@@ -1711,8 +1566,8 @@ msgstr ""
 
 # @ ab
 # @ default
-#: ../backend/modules/tinymce/templates/popup.php:28 ../installer.php:113
-#: ../updates.php:247
+#: ../backend/modules/tinymce/templates/popup.php:28 ../installer.php:115
+#: ../updates.php:272
 msgid "Select service"
 msgstr ""
 
@@ -1724,8 +1579,8 @@ msgstr ""
 # @ ab
 # @ default
 #: ../backend/modules/tinymce/templates/popup.php:45
-#: ../frontend/modules/booking/lib/AB_UserBookingData.php:361
-#: ../installer.php:115 ../updates.php:249
+#: ../frontend/modules/booking/lib/AB_UserBookingData.php:371
+#: ../installer.php:117 ../updates.php:274
 msgid "Any"
 msgstr ""
 
@@ -1746,39 +1601,39 @@ msgstr ""
 msgid "Insert Appointment Booking Form"
 msgstr ""
 
-#: ../frontend/modules/booking/AB_BookingController.php:301
-msgid ""
-"The selected time is not available anymore. Please, choose another time slot."
-msgstr ""
-
 # @ ab
-#: ../frontend/modules/booking/AB_BookingController.php:444
+#: ../frontend/modules/booking/AB_BookingController.php:298
 msgid ""
 "<h3>The selected time is not available anymore. Please, choose another time "
 "slot.</h3>"
 msgstr ""
 
-#: ../frontend/modules/booking/AB_BookingController.php:557
+#: ../frontend/modules/booking/AB_BookingController.php:489
+msgid ""
+"The selected time is not available anymore. Please, choose another time slot."
+msgstr ""
+
+#: ../frontend/modules/booking/AB_BookingController.php:575
 msgid "* This coupon code is invalid or has been used"
 msgstr ""
 
 # @ default
-#: ../frontend/modules/booking/lib/AB_UserBookingData.php:335
-#: ../lib/AB_BookingConfiguration.php:89
+#: ../frontend/modules/booking/lib/AB_UserBookingData.php:345
+#: ../lib/AB_BookingConfiguration.php:53
 msgid "Uncategorized"
 msgstr ""
 
 # @ ab
-#: ../frontend/modules/booking/templates/service.php:35
+#: ../frontend/modules/booking/templates/1_service.php:35
 msgid "* Please select a service"
 msgstr ""
 
-#: ../frontend/modules/booking/templates/service.php:104
+#: ../frontend/modules/booking/templates/1_service.php:105
 #: ../lib/AB_Validator.php:87
 msgid "* The start time must be less than the end time"
 msgstr ""
 
-#: ../frontend/modules/booking/templates/time.php:46
+#: ../frontend/modules/booking/templates/2_time.php:46
 msgid "No time is available for selected criteria."
 msgstr ""
 
@@ -1818,8 +1673,7 @@ msgid ""
 "Time: [[APPOINTMENT_TIME]]\n"
 "Client name: [[CLIENT_NAME]]\n"
 "Client phone: [[CLIENT_PHONE]]\n"
-"Client email: [[CLIENT_EMAIL]]\n"
-"Client notes: [[CLIENT_NOTES]]"
+"Client email: [[CLIENT_EMAIL]]"
 msgstr ""
 
 # @ ab
@@ -1875,18 +1729,18 @@ msgid ""
 msgstr ""
 
 # @ ab
-#: ../installer.php:90
+#: ../installer.php:92
 msgid "Please select service: "
 msgstr ""
 
-#: ../installer.php:91
+#: ../installer.php:93
 msgid ""
 "Below you can find a list of available time slots for [[SERVICE_NAME]] by "
 "[[STAFF_NAME]].\n"
 "Click on a time slot to proceed with booking."
 msgstr ""
 
-#: ../installer.php:92
+#: ../installer.php:94
 msgid ""
 "You selected a booking for [[SERVICE_NAME]] by [[STAFF_NAME]] at "
 "[[SERVICE_TIME]] on [[SERVICE_DATE]]. The price for the service is "
@@ -1895,61 +1749,62 @@ msgid ""
 msgstr ""
 
 # @ ab
-#: ../installer.php:93
+#: ../installer.php:95
 msgid "Please tell us how you would like to pay: "
 msgstr ""
 
-#: ../installer.php:94
+#: ../installer.php:96
 msgid ""
 "Thank you! Your booking is complete. An email with details of your booking "
 "has been sent to you."
 msgstr ""
 
-#: ../installer.php:95 ../updates.php:41
+#: ../installer.php:97 ../updates.php:115
 msgid "The price for the service is [[SERVICE_PRICE]]."
 msgstr ""
 
 # @ ab
-#: ../installer.php:98 ../updates.php:233
+#: ../installer.php:100 ../updates.php:258
 msgid "Time"
 msgstr ""
 
 # @ ab
-#: ../installer.php:100 ../updates.php:235
+#: ../installer.php:102 ../updates.php:260
 msgid "Payment"
 msgstr ""
 
 # @ ab
-#: ../installer.php:101 ../updates.php:236
+#: ../installer.php:103 ../updates.php:261
 msgid "Done"
 msgstr ""
 
 # @ ab
-#: ../installer.php:104 ../updates.php:239
+#: ../installer.php:106 ../updates.php:264
 msgid "Employee"
 msgstr ""
 
 # @ ab
-#: ../installer.php:105 ../updates.php:240
+#: ../installer.php:107 ../updates.php:265
 msgid "I'm available on or after"
 msgstr ""
 
 # @ ab
-#: ../installer.php:106 ../updates.php:241
+#: ../installer.php:108 ../updates.php:266
 msgid "Start from"
 msgstr ""
 
 # @ ab
-#: ../installer.php:107 ../updates.php:242
+#: ../installer.php:109 ../updates.php:267
 msgid "Finish by"
 msgstr ""
 
-#: ../installer.php:111 ../updates.php:246
-msgid "Notes (optional)"
+# @ ab
+#: ../installer.php:114 ../updates.php:50
+msgid "I will pay locally"
 msgstr ""
 
 #: ../lib/AB_Controller.php:91
-msgid "You do not have sufficient permissions to access this page."
+msgid "Bookly: You do not have sufficient permissions to access this page."
 msgstr ""
 
 # @ ab
@@ -1999,6 +1854,7 @@ msgstr ""
 
 # @ ab
 #: ../lib/AB_Validator.php:59 ../lib/AB_Validator.php:102
+#: ../lib/AB_Validator.php:121 ../lib/AB_Validator.php:131
 msgid "* Required"
 msgstr ""
 
@@ -2012,16 +1868,16 @@ msgstr ""
 msgid "Invalid date or time"
 msgstr ""
 
-#: ../lib/entities/AB_Service.php:43
+#: ../lib/entities/AB_Service.php:39
 #, php-format
 msgid "%d h"
 msgstr ""
 
-#: ../lib/entities/AB_Service.php:49
+#: ../lib/entities/AB_Service.php:45
 #, php-format
 msgid "%d min"
 msgstr ""
 
-#: ../updates.php:12
-msgid "Places number"
+#: ../updates.php:271
+msgid "Notes (optional)"
 msgstr ""

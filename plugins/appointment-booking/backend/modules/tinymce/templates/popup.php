@@ -96,7 +96,7 @@ jQuery(function ($) {
         $hide_services   = $('#ab-hide-services'),
         $hide_staff      = $('#ab-hide-employee'),
         $hide_available  = $('#ab-hide-available'),
-        $add_button      = $('#add-ap-booking'),
+        $add_button      = $('#add-bookly-form'),
         $insert          = $('#ab-insert-shortcode'),
         abCategories     = <?php echo $categoriesJson ?>,
         abStaff          = <?php echo $staffJson ?>,
@@ -105,7 +105,10 @@ jQuery(function ($) {
     $add_button.on('click', function () {
         window.parent.tb_show(<?php echo json_encode( __( 'Insert Appointment Booking Form', 'ab' ) ) ?>, this.href);
         window.setTimeout(function(){
-            $("#TB_window").css('overflow','auto');
+            $("#TB_window").css({
+                'overflow-x': 'auto',
+                'overflow-y': 'hidden'
+            });
         },100);
     });
 
@@ -355,34 +358,34 @@ jQuery(function ($) {
     $insert.on('click', function (e) {
         e.preventDefault();
 
-        var insert = '[ap-booking';
+        var insert = '[bookly-form';
 
         if ($select_category.val()) {
-            insert += ' cid="' + $select_category.val() + '"';
+            insert += ' category_id="' + $select_category.val() + '"';
         }
 
         if ($hide_categories.is(':checked')) {
-            insert += ' ch="1"';
+            insert += ' hide_categories="1"';
         }
 
         if ($select_service.val()) {
-            insert += ' sid="' + $select_service.val() + '"';
+            insert += ' service_id="' + $select_service.val() + '"';
         }
 
         if ($hide_services.is(':checked')) {
-            insert += ' hs="1"';
+            insert += ' hide_services="1"';
         }
 
         if ($select_employee.val()) {
-            insert += ' eid="' + $select_employee.val() + '"';
+            insert += ' staff_member_id="' + $select_employee.val() + '"';
         }
 
         if ($hide_staff.is(':checked')) {
-            insert += ' he="1"';
+            insert += ' hide_staff_members="1"';
         }
 
         if ($hide_available.is(':checked')) {
-            insert += ' ha="1"';
+            insert += ' hide_date_and_time="1"';
         }
 
         insert += ']';

@@ -1,23 +1,18 @@
-<?php
+<?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 /**
  * Class AB_Coupon
  */
 class AB_Coupon extends AB_Entity {
 
-    /**
-     * Constructor.
-     */
-    public function __construct() {
-        $this->table_name = 'ab_coupons';
-        $this->schema = array(
-            'id'          => array( 'format' => '%d' ),
-            'code'        => array( 'format' => '%s', 'default' => '' ),
-            'discount'    => array( 'format' => '%d', 'default' => 0 ),
-            'used'        => array( 'format' => '%d', 'default' => 0 ),
-        );
-        parent::__construct();
-    }
+    protected static $table_name = 'ab_coupons';
+
+    protected static $schema = array(
+        'id'          => array( 'format' => '%d' ),
+        'code'        => array( 'format' => '%s', 'default' => '' ),
+        'discount'    => array( 'format' => '%d', 'default' => 0 ),
+        'used'        => array( 'format' => '%d', 'default' => 0 ),
+    );
 
     /**
      * @param $coupon

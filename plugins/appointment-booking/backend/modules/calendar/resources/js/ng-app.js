@@ -1,6 +1,6 @@
 ;(function() {
 
-    var module = angular.module('appointmentForm', ['ui', 'newCustomerDialog']);
+    var module = angular.module('appointmentForm', ['ui.date', 'newCustomerDialog']);
 
     /**
      * DataSource service.
@@ -21,9 +21,8 @@
                 start_time : null,
                 end_time   : null,
                 customers  : [],
-                email_notification : null,
-                notes      : null,
-                capacity   : 1
+                custom_fields : [],
+                email_notification : null
             },
             loadData : function() {
                 var deferred = $q.defer();
@@ -40,8 +39,7 @@
                         }
                         ds.form.start_time = data.time[0];
                         ds.form.end_time   = data.time[1];
-                        ds.form.notes      = data.notes;
-                        $rootScope.$apply(deferred.resolve);
+                        deferred.resolve();
                     },
                     'json'
                 );
@@ -121,8 +119,8 @@
             getStartAndEndDates : function() {
                 var date = $filter('date')(ds.form.date, 'yyyy-MM-dd');
                 return {
-                    start_date : date + ' ' + ds.form.start_time.value,
-                    end_date   : date + ' ' + ds.form.end_time.value
+                    start_date : ds.form.start_time ? date + ' ' + ds.form.start_time.value : '',
+                    end_date   : ds.form.end_time ? date + ' ' + ds.form.end_time.value : ''
                 };
             }
         };
@@ -141,7 +139,6 @@
         // Set up data source.
         $scope.dataSource = dataSource;
         $scope.form = dataSource.form;  // shortcut
-        $scope.show_notes = false;
         // Populate data source.
         dataSource.loadData().then(function() {
             $scope.loading = false;
@@ -166,14 +163,14 @@
                 start_time : dataSource.findTime(start_date),
                 end_time   : null,
                 customers  : [],
-                email_notification : null,
-                notes      : null
+                custom_fields: [],
+                email_notification : null
             });
             $scope.errors = {};
             dataSource.setEndTimeBasedOnService();
             current_staff_id = staff_id;
 
-            $scope.redrawStaffSelector(1);
+            $scope.reInitChosen();
         };
 
         /**
@@ -195,15 +192,20 @@
                                 start_time : $scope.dataSource.findTime(start_date),
                                 end_time   : $scope.dataSource.findTime(end_date),
                                 customers  : [],
-                                notes      : response.data.notes
+                                custom_fields : []
                             });
 
-                            $scope.redrawStaffSelector(response.data.max_capacity);
-                            $scope.show_notes = response.data.max_capacity == 1;
+                            $scope.reInitChosen();
 
                             response.data.customers.forEach(function(item, i, arr){
                                 $scope.form.customers.push($scope.dataSource.findCustomer(item))
                             });
+
+                            if (response.data.custom_fields) {
+                                response.data.custom_fields.forEach(function (item, i, arr) {
+                                    $scope.form.custom_fields.push(item);
+                                });
+                            }
                         }
                         $scope.loading = false;
                     });
@@ -235,28 +237,10 @@
             );
         };
 
-        var checkAppointmentMaxSelectedOptions = function(){
-            jQuery.get(
-                ajaxurl,
-                {
-                    action         : 'ab_check_appointment_max_selected_options',
-                    staff_id       : $scope.form.staff ? $scope.form.staff.id : null,
-                    service_id     : $scope.form.service ? $scope.form.service.id : null
-                },
-                function(response){
-                    $scope.redrawStaffSelector(response.max_selected_options);
-                    $scope.$apply(function () {
-                        $scope.show_notes = response.max_selected_options == 1;
-                    });
-                },
-                'json'
-            );
-        };
-
         $scope.onServiceChange = function() {
             $scope.dataSource.setEndTimeBasedOnService();
+            $scope.reInitChosen();
             checkTimeInterval();
-            checkAppointmentMaxSelectedOptions();
         };
 
         $scope.onStartTimeChange = function() {
@@ -271,10 +255,15 @@
         $scope.processForm = function() {
             $scope.loading = true;
             var dates = $scope.dataSource.getStartAndEndDates(),
-                customers = [];
+                customers = [],
+                custom_fields = [];
 
             $scope.form.customers.forEach(function(item, i, arr){
                 customers.push(item.id);
+            });
+
+            $scope.form.custom_fields.forEach(function(item, customer_id, arr){
+                custom_fields.push(item);
             });
 
             jQuery.post(
@@ -287,8 +276,8 @@
                     start_date  : dates.start_date,
                     end_date    : dates.end_date,
                     customers   : JSON.stringify(customers),
-                    email_notification : $scope.form.email_notification,
-                    notes       : $scope.form.notes
+                    custom_fields   : JSON.stringify(custom_fields),
+                    email_notification : $scope.form.email_notification
                 },
                 function (response) {
                     $scope.$apply(function($scope) {
@@ -323,6 +312,24 @@
             $element.dialog('close');
         };
 
+        $scope.reInitChosen = function(){
+            jQuery('#chosen')
+                .chosen('destroy')
+                .chosen({
+                    search_contains     : true,
+                    width               : '400px',
+                    max_selected_options: dataSource.form.service ? dataSource.form.service.capacity : 0
+                });
+        };
+
+        /**************************************************************************************************************
+         * New customer                                                                                               *
+         **************************************************************************************************************/
+
+        /**
+         * Create new customer.
+         * @param customer
+         */
         $scope.createCustomer = function(customer) {
             // Add new customer to the list.
             var new_customer = {id : customer.id.toString(), name : customer.name};
@@ -332,27 +339,108 @@
             }
 
             dataSource.data.customers.push(new_customer);
+            $scope.form.custom_fields.push({ customer_id: customer.id, fields: customer.custom_fields });
+
             // Make it selected.
-            if (dataSource.form.customers.length < dataSource.form.capacity){
+            if (!dataSource.form.service || dataSource.form.customers.length < dataSource.form.service.capacity){
                 dataSource.form.customers.push(new_customer);
             }
 
-            //TODO find better solution. Callback on modification of selector
-            setTimeout(function(){jQuery("#chosen").trigger("chosen:updated");}, 100);
+            setTimeout(function() { jQuery("#chosen").trigger("chosen:updated"); }, 0);
         };
 
-        $scope.redrawStaffSelector = function(max_selected_options){
-            dataSource.form.capacity = max_selected_options;
+        $scope.removeCustomer = function(item) {
+            $scope.form.customers.splice($scope.form.customers.indexOf(item), 1);
 
-            jQuery('#chosen')
-                .chosen('destroy')
-                .chosen({
-                    search_contains     : true,
-                    width               : '400px',
-                    max_selected_options: max_selected_options
-                });
+            $scope.form.custom_fields.forEach(function(customer, i, arr){
+                if (customer.customer_id == item.id) {
+                    delete $scope.form.custom_fields[i];
+                }
+            });
         };
 
+        /**************************************************************************************************************
+         * Custom fields                                                                                              *
+         **************************************************************************************************************/
+
+        $scope.editCustomFields = function(customer) {
+            // get the fields of this custom form
+            var fields = [];
+            $scope.form.custom_fields.forEach(function(item, i, arr) {
+                if (item.customer_id == customer.id) {
+                    fields = item.fields;
+                }
+            });
+
+            var $form = jQuery('#ab_custom_fields_dialog form');
+            $form.find('input.ab-custom-field:text, textarea.ab-custom-field, select.ab-custom-field').val('');
+            $form.find('input.ab-custom-field:checkbox, input.ab-custom-field:radio').prop('checked', false);
+
+            jQuery.each(fields, function(key, field) {
+                var $field = $form.find('.ab-formField[data-id="' + field.id + '"]');
+                switch ($field.data('type')) {
+                    case 'checkboxes':
+                        jQuery.each(field.value, function(key, value) {
+                            $field.find('.ab-custom-field').filter(function() {
+                                return this.value == value;
+                            }).prop('checked', true);
+                        });
+                        break;
+                    case 'radio-buttons':
+                        $field.find('.ab-custom-field').filter(function() {
+                            return this.value == field.value;
+                        }).prop('checked', true);
+                        break;
+                    default:
+                        $field.find('.ab-custom-field').val(field.value);
+                        break;
+                }
+            });
+
+            // this is used in SaveCustomFields()
+            $scope.edit_customer = customer;
+
+            jQuery('#ab_custom_fields_dialog').modal({show:true, backdrop: false});
+        };
+
+        $scope.saveCustomFields = function() {
+            var result  = [];
+            var $fields = jQuery('#ab_custom_fields_dialog .ab-formField');
+
+            $fields.each(function() {
+                var $this = jQuery(this);
+                var value;
+                switch ($this.data('type')) {
+                    case 'checkboxes':
+                        value = [];
+                        $this.find('.ab-custom-field:checked').each(function() {
+                            value.push(this.value);
+                        });
+                        break;
+                    case 'radio-buttons':
+                        value = $this.find('.ab-custom-field:checked').val();
+                        break;
+                    default:
+                        value = $this.find('.ab-custom-field').val();
+                        break;
+                }
+                result.push({ id: $this.data('id'), value: value });
+            });
+
+            $scope.form.custom_fields.forEach(function(customer, i, arr) {
+                if (customer.customer_id == $scope.edit_customer.id) {
+                    delete $scope.form.custom_fields[i];
+                }
+            });
+
+            $scope.form.custom_fields.push({ customer_id: $scope.edit_customer.id, fields: result });
+
+            jQuery('#ab_custom_fields_dialog').modal('hide');
+        };
+
+        /**
+         * Datepicker options.
+         */
         $scope.dateOptions = {
             dateFormat      : 'M, dd yy',
             dayNamesMin     : BooklyL10n['shortDays'],
@@ -378,23 +466,28 @@
         };
     });
 
-    module.directive('chosen',function(){
+    /**
+     * Directive for chosen.
+     */
+    module.directive('chosen',function($timeout) {
         var linker = function(scope,element,attrs) {
             scope.$watch(attrs['chosen'], function() {
                 element.trigger("chosen:updated");
             });
 
-            scope.$watch(attrs['ngModel'], function() {
-                element.trigger("chosen:updated");
+            scope.$watchCollection(attrs['ngModel'], function() {
+                $timeout(function() {
+                    element.trigger("chosen:updated");
+                });
             });
 
-            scope.redrawStaffSelector(1);
+            scope.reInitChosen();
         };
 
         return {
             restrict:'A',
             link: linker
-        }
+        };
     });
 
     /**
@@ -412,7 +505,7 @@
 
 })();
 
-var showAppointmentDialog = function(appointment_id, staff_id, start_date, end_date, calendar, mode, notes) {
+var showAppointmentDialog = function(appointment_id, staff_id, start_date, end_date, calendar, mode) {
     var $scope = angular.element(document.getElementById('ab_appointment_dialog')).scope(),
         title  = null;
     $scope.$apply(function($scope){
@@ -428,7 +521,7 @@ var showAppointmentDialog = function(appointment_id, staff_id, start_date, end_d
     });
     jQuery('#ab_appointment_dialog').dialog({
         width: 700,
-        position: jQuery.ui.version < '1.11' ? ['center', 150] : { at: 'center center-50' },
+        position: jQuery.ui.version < '1.11' ? ['center', 150] : { at: 'center center-150' },
         modal: true,
         dialogClass: 'ab-appointment-popup',
         title: title

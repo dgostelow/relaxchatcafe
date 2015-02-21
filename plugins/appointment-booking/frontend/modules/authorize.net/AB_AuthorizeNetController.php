@@ -1,8 +1,6 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-if ( !class_exists( 'AuthorizeNet' ) ) include AB_PATH.'/lib/Payment/authorize.net/AuthorizeNet.php';
-
 /**
  * Class AB_AuthorizeNetController
  */
@@ -76,8 +74,7 @@ class AB_AuthorizeNetController extends AB_Controller {
                     $payment = new AB_Payment();
                     $payment->set( 'total', $price);
                     $payment->set( 'type', 'authorizeNet' );
-                    $payment->set( 'customer_id', $customer_appointment->get( 'customer_id' ) );
-                    $payment->set( 'appointment_id', $appointment->get( 'id' ) );
+                    $payment->set( 'customer_appointment_id', $customer_appointment->get( 'id' ) );
                     $payment->set( 'created', date('Y-m-d H:i:s') );
 
                     if ($userData->getCoupon()) {
@@ -86,11 +83,6 @@ class AB_AuthorizeNetController extends AB_Controller {
                     }
 
                     $payment->save();
-
-                    if ( isset( $_SESSION[ 'tmp_booking_data' ] ) ) {
-                        unset( $_SESSION[ 'tmp_booking_data' ] );
-                    }
-                    $_SESSION[ 'tmp_booking_data' ] = serialize( $userData );
 
                     $userData->clean();
                     $userData->setPaymentId( $payment->get( 'id' ) );

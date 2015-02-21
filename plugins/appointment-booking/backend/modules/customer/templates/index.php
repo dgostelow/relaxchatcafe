@@ -57,7 +57,7 @@
             <td>
                 <div ng-model=customer.payments class=displayed-value>{{customer.payments}}</div>
             </td>
-            <td><a href="" ng-click="deleteCustomer(customer)" role="button" class="btn btn-danger" id="{{customer.id}}" name="customer_delete"><?php _e( 'Delete', 'ab' ) ?></a></td>
+            <td><a href="javascript:void(0)" ng-click="deleteCustomer(customer)" role="button" class="btn btn-danger" id="{{customer.id}}" name="customer_delete"><?php _e( 'Delete', 'ab' ) ?></a></td>
         </tr>
         <tr ng-hide="dataSource.customers.length || loading"><td colspan=6><?php _e( 'No customers', 'ab' ); ?></td></tr>
         </tbody>

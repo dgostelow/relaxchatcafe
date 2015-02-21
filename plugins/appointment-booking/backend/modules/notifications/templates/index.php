@@ -38,11 +38,11 @@
                     <?php echo $form->renderCopy($slug) ?>
                 <?php endif ?>
                 <div class="ab-form-row">
-                    <label class="ab-form-label"><?php _e( 'Tags ','ab' ) ?></label>
+                    <label class="ab-form-label"><?php _e( 'Codes','ab' ) ?></label>
                     <div class="ab-tags-form left">
                         <table>
                             <tbody>
-                                <?php include "_tags_{$slug}.php"; ?>
+                                <?php include $slug == 'event_next_day' ? '_codes_event_next_day.php' : '_codes.php' ?>
                             </tbody>
                         </table>
                     </div>
@@ -71,19 +71,19 @@
             $(this).change(function() {
                 if ( $(this).attr('checked') ) {
                     $(this).parent().next('div.ab-form-field').show(200);
-                    $(this).parents('.ab-notifications').find('.ab-toggle-arrow').css('background','url(<?php echo plugins_url( 'resources/images/notifications-arrow-up.png', dirname(__FILE__).'/../../../AB_Backend.php' ) ?>) 100% 0 no-repeat');
+                    $(this).parents('.ab-notifications').find('.ab-toggle-arrow').css('background','url(<?php echo plugins_url( 'backend/resources/images/notifications-arrow-up.png', AB_PATH . '/main.php' ) ?>) 100% 0 no-repeat');
                 } else {
                     $(this).parent().next('div.ab-form-field').hide(200);
-                    $(this).parents('.ab-notifications').find('.ab-toggle-arrow').css('background','url(<?php echo plugins_url( 'resources/images/notifications-arrow-down.png', dirname(__FILE__).'/../../../AB_Backend.php' ) ?>) 100% 0 no-repeat');
+                    $(this).parents('.ab-notifications').find('.ab-toggle-arrow').css('background','url(<?php echo plugins_url( 'backend/resources/images/notifications-arrow-down.png', AB_PATH . '/main.php' ) ?>) 100% 0 no-repeat');
                 }
             }).change();
         });
         $('.ab-toggle-arrow').click(function() {
             $(this).nextAll('.ab-form-field').toggle(200, function() {
                 if ( $('.ab-form-field').css('display') == 'block' ) {
-                    $(this).prevAll('.ab-toggle-arrow').css('background','url(<?php echo plugins_url( 'resources/images/notifications-arrow-up.png', dirname(__FILE__).'/../../../AB_Backend.php' ) ?>) 100% 0 no-repeat');
+                    $(this).prevAll('.ab-toggle-arrow').css('background','url(<?php echo plugins_url( 'backend/resources/images/notifications-arrow-up.png', AB_PATH . '/main.php' ) ?>) 100% 0 no-repeat');
                 } else {
-                    $(this).prevAll('.ab-toggle-arrow').css('background','url(<?php echo plugins_url( 'resources/images/notifications-arrow-down.png', dirname(__FILE__).'/../../../AB_Backend.php' ) ?>) 100% 0 no-repeat');
+                    $(this).prevAll('.ab-toggle-arrow').css('background','url(<?php echo plugins_url( 'backend/resources/images/notifications-arrow-down.png', AB_PATH . '/main.php' ) ?>) 100% 0 no-repeat');
                 }
             });
         });

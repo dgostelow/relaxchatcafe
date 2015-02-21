@@ -1,25 +1,20 @@
-<?php
+<?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 /**
  * Class AB_Appointment
  */
 class AB_Appointment extends AB_Entity {
 
-    /**
-     * Constructor.
-     */
-    public function __construct() {
-        $this->table_name = 'ab_appointment';
-        $this->schema = array(
-            'id'              => array( 'format' => '%d' ),
-            'staff_id'        => array( 'format' => '%d' ),
-            'service_id'      => array( 'format' => '%d' ),
-            'start_date'      => array( 'format' => '%s' ),
-            'end_date'        => array( 'format' => '%s' ),
-            'google_event_id' => array( 'format' => '%s' ),
-        );
-        parent::__construct();
-    }
+    protected static $table_name = 'ab_appointment';
+
+    protected static $schema = array(
+        'id'              => array( 'format' => '%d' ),
+        'staff_id'        => array( 'format' => '%d' ),
+        'service_id'      => array( 'format' => '%d' ),
+        'start_date'      => array( 'format' => '%s' ),
+        'end_date'        => array( 'format' => '%s' ),
+        'google_event_id' => array( 'format' => '%s' ),
+    );
 
     /**
      * Get color of service
@@ -44,7 +39,7 @@ class AB_Appointment extends AB_Entity {
     /**
      * Get AB_Customer_Appointment entities associated with this appointment.
      *
-     * @return array  Array of entities
+     * @return AB_Customer_Appointment[]   Array of entities
      */
     public function getCustomerAppointments() {
         $result = array();
@@ -54,8 +49,7 @@ class AB_Appointment extends AB_Entity {
                 'SELECT `ca`.*,
                         `c`.`name`,
                         `c`.`phone`,
-                        `c`.`email`,
-                        `c`.`notes` AS `customer_notes`
+                        `c`.`email`
                 FROM `ab_customer_appointment` `ca` LEFT JOIN `ab_customer` `c` ON `c`.`id` = `ca`.`customer_id`
                 WHERE `ca`.`appointment_id` = %d',
                 $this->get( 'id' )
@@ -64,10 +58,12 @@ class AB_Appointment extends AB_Entity {
             foreach( $records as $data ) {
                 $ca = new AB_Customer_Appointment();
                 $ca->setData( $data );
-                $ca->customer    = new AB_Customer();
-                $data[ 'id' ]    = $data[ 'customer_id' ];
-                $data[ 'notes' ] = $data[ 'customer_notes' ];
-                $ca->customer->setData( $data );
+
+                // Inject AB_Customer entity.
+                $ca->customer = new AB_Customer();
+                $data[ 'id' ] = $data[ 'customer_id' ];
+                $ca->customer->setData( $data, true );
+
                 $result[] = $ca;
             }
         }
@@ -222,8 +218,9 @@ class AB_Appointment extends AB_Entity {
      * Send email notifications to client and staff member.
      *
      * @param int $client_time_offset
+     * @param null $coupon
      */
-    public function sendEmailNotifications( $client_time_offset = 0 ) {
+    public function sendEmailNotifications( $client_time_offset = 0, $coupon = null ) {
         $client_notification = new AB_Notifications();
         $client_notification->loadBy( array( 'slug' => 'client_info' ) );
 
@@ -242,22 +239,38 @@ class AB_Appointment extends AB_Entity {
         $category = new AB_Category();
         $category->load( $service->get( 'category_id' ) );
 
+        $price = $staff_service->get( 'price' );
+        if ($coupon !== null) {
+            $price = AB_Coupon::applyCouponOnPrice($coupon, $price);
+        }
+
         foreach ( $this->getCustomerAppointments() as $ca ) {
             $replacement = new AB_NotificationReplacement();
-            $replacement->setClientName( $ca->customer->get( 'name' ) );
-            $replacement->setClientPhone( $ca->customer->get( 'phone' ) );
-            $replacement->setClientEmail( $ca->customer->get( 'email' ) );
-            $replacement->setClientNotes( nl2br( esc_html( $ca->get( 'notes' ) ) ) );
-            $replacement->setAppointmentTime( $this->get('start_date') );
-            $replacement->setServiceName( $service->get( 'title' ) ? $service->get( 'title' ) : __( 'Untitled', 'ab' ) );
-            $replacement->setServicePrice( $staff_service->get( 'price' ) );
-            $replacement->setCategoryName( $category->get( 'name' ) );
-            $replacement->setAppointmentToken( $ca->get( 'token' ) );
-            $replacement->setStaffName( $staff->get( 'full_name' ) );
+            $replacement->set( 'appointment_time', $this->get('start_date') );
+            $replacement->set( 'appointment_token', $ca->get( 'token' ) );
+            $replacement->set( 'category_name', $category->get( 'name' ) );
+            $replacement->set( 'client_name', $ca->customer->get( 'name' ) );
+            $replacement->set( 'client_phone', $ca->customer->get( 'phone' ) );
+            $replacement->set( 'client_email', $ca->customer->get( 'email' ) );
+            $replacement->set( 'service_name', $service->get( 'title' ) ? $service->get( 'title' ) : __( 'Untitled', 'ab' ) );
+            $replacement->set( 'service_price', $price );
+            $replacement->set( 'staff_name', $staff->get( 'full_name' ) );
+            $replacement->set( 'staff_email', $staff->get( 'email' ) );
+            $replacement->set( 'staff_phone', $staff->get( 'phone' ) );
+            $replacement->set( 'staff_photo', $staff->get( 'avatar_url' ) );
+
+            $custom_fields = '';
+            foreach ($ca->getCustomFields() as $custom_field) {
+                $custom_fields .= sprintf(
+                    "%s: %s\n",
+                    $custom_field[ 'label' ], $custom_field[ 'value' ]
+                );
+            }
+            $replacement->set( 'custom_fields', $custom_fields );
 
             if ( $staff_notification->get( 'active' ) ) {
                 // Send email notification to service provider.
-                $subject = $replacement->replaceSubject( $staff_notification->get( 'subject' ) );
+                $subject = $replacement->replace( $staff_notification->get( 'subject' ) );
                 $message = wpautop( $replacement->replace( $staff_notification->get( 'message' ) ) );
                 wp_mail( $staff->get( 'email' ), $subject, $message, AB_CommonUtils::getEmailHeaderFrom() );
 
@@ -271,9 +284,9 @@ class AB_Appointment extends AB_Entity {
             }
 
             if ( $client_notification->get( 'active' ) ) {
-                $replacement->setAppointmentTime( date( 'Y-m-d H:i:s', strtotime( $this->get( 'start_date' ) ) - $client_time_offset * 3600 ) );
+                $replacement->set( 'appointment_time', date( 'Y-m-d H:i:s', strtotime( $this->get( 'start_date' ) ) - $client_time_offset * 3600 ) );
                 // Send email notification to client.
-                $subject = $replacement->replaceSubject( $client_notification->get( 'subject' ) );
+                $subject = $replacement->replace( $client_notification->get( 'subject' ) );
                 $message = wpautop( $replacement->replace( $client_notification->get( 'message' ) ) );
                 wp_mail( $ca->customer->get( 'email' ), $subject, $message, AB_CommonUtils::getEmailHeaderFrom() );
             }

@@ -1,21 +1,17 @@
-<?php
+<?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 /**
  * Class AB_Category
  */
 class AB_Category extends AB_Entity {
 
-    /**
-     * Constructor.
-     */
-    public function __construct() {
-        $this->table_name = 'ab_category';
-        $this->schema = array(
-            'id'    => array( 'format' => '%d' ),
-            'name'  => array( 'format' => '%s' ),
-        );
-        parent::__construct();
-    }
+    protected static $table_name = 'ab_category';
+
+    protected static $schema = array(
+        'id'        => array( 'format' => '%d' ),
+        'name'      => array( 'format' => '%s' ),
+        'position'  => array( 'format' => '%d', 'default' => 9999 ),
+    );
 
     /**
      * @var AB_Service[]

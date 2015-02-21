@@ -30,7 +30,7 @@ class AB_CommonUtils {
 
         $headers  = 'MIME-Version: 1.0' . "\r\n";
         $headers .= 'Content-type: text/html; charset=utf-8' . "\r\n";
-        $headers .= 'From: '.$from.'' . "\r\n";
+        $headers .= 'From: '.$from . "\r\n";
 
         return $headers;
     } // getEmailHeaderFrom
@@ -44,100 +44,103 @@ class AB_CommonUtils {
     public static function formatPrice( $price ) {
         $result = '';
         $price  = number_format_i18n( $price, 2 );
-        switch ( get_option( 'ab_paypal_currency' ) ) {
-          case 'AUD' :
-            $result = 'A$' . $price;
-            break;
-          case 'BRL' :
-            $result = 'R$ ' . $price;
-            break;
-          case 'CAD' :
-            $result = 'C$' . $price;
-            break;
-          case 'RMB' :
-            $result = $price . ' ¥';
-            break;
-          case 'CZK' :
-            $result = $price . ' Kč';
-            break;
-          case 'DKK' :
-            $result = $price . ' kr';
-            break;
-          case 'EUR' :
-            $result = '€' . $price;
-            break;
-          case 'HKD' :
-            $result = $price . ' $';
-            break;
-          case 'HUF' :
-            $result = $price . ' Ft';
-            break;
-          case 'IDR' :
-            $result = $price . ' Rp';
-            break;
-          case 'INR' :
-            $result = $price . ' ₹';
-            break;
-          case 'ILS' :
-            $result = $price . ' ₪';
-            break;
-          case 'JPY' :
-            $result = '¥' . $price;
-            break;
-          case 'KRW' :
-            $result = $price . ' ₩';
-            break;
-          case 'MYR' :
-            $result = $price . ' RM';
-            break;
-          case 'MXN' :
-            $result = $price . ' $';
-            break;
-          case 'NOK' :
-            $result = $price . ' kr';
-            break;
-          case 'NZD' :
-            $result = $price . ' $';
-            break;
-          case 'PHP' :
-            $result = $price . ' ₱';
-            break;
-          case 'PLN' :
-            $result = $price . ' zł';
-            break;
-          case 'GBP' :
-            $result = '£' . $price;
-            break;
-          case 'RON' :
-            $result = $price . ' lei';
-            break;
-          case 'RUB' :
-            $result = $price . ' руб.';
-            break;
-          case 'SGD' :
-            $result = $price . ' $';
-            break;
-          case 'ZAR' :
-            $result = $price . ' R';
-            break;
-          case 'SEK' :
-            $result = $price . ' kr';
-            break;
-          case 'CHF' :
-            $result = $price . ' CHF';
-            break;
-          case 'TWD' :
-            $result = $price . ' NT$';
-            break;
-          case 'THB' :
-            $result = $price . ' ฿';
-            break;
-          case 'TRY' :
-            $result = $price . ' TL';
-            break;
-          case 'USD' :
-            $result = '$' . $price;
-            break;
+        switch (get_option('ab_paypal_currency')) {
+            case 'AUD' :
+                $result = 'A$' . $price;
+                break;
+            case 'BRL' :
+                $result = 'R$ ' . $price;
+                break;
+            case 'CAD' :
+                $result = 'C$' . $price;
+                break;
+            case 'RMB' :
+                $result = $price . ' ¥';
+                break;
+            case 'CZK' :
+                $result = $price . ' Kč';
+                break;
+            case 'DKK' :
+                $result = $price . ' kr';
+                break;
+            case 'EUR' :
+                $result = '€' . $price;
+                break;
+            case 'GTQ' :
+                $result = 'Q' . $price;
+                break;
+            case 'HKD' :
+                $result = $price . ' $';
+                break;
+            case 'HUF' :
+                $result = $price . ' Ft';
+                break;
+            case 'IDR' :
+                $result = $price . ' Rp';
+                break;
+            case 'INR' :
+                $result = $price . ' ₹';
+                break;
+            case 'ILS' :
+                $result = $price . ' ₪';
+                break;
+            case 'JPY' :
+                $result = '¥' . $price;
+                break;
+            case 'KRW' :
+                $result = $price . ' ₩';
+                break;
+            case 'MYR' :
+                $result = $price . ' RM';
+                break;
+            case 'MXN' :
+                $result = $price . ' $';
+                break;
+            case 'NOK' :
+                $result = $price . ' kr';
+                break;
+            case 'NZD' :
+                $result = $price . ' $';
+                break;
+            case 'PHP' :
+                $result = $price . ' ₱';
+                break;
+            case 'PLN' :
+                $result = $price . ' zł';
+                break;
+            case 'GBP' :
+                $result = '£' . $price;
+                break;
+            case 'RON' :
+                $result = $price . ' lei';
+                break;
+            case 'RUB' :
+                $result = $price . ' руб.';
+                break;
+            case 'SGD' :
+                $result = $price . ' $';
+                break;
+            case 'ZAR' :
+                $result = 'R ' . $price;
+                break;
+            case 'SEK' :
+                $result = $price . ' kr';
+                break;
+            case 'CHF' :
+                $result = $price . ' CHF';
+                break;
+            case 'TWD' :
+                $result = $price . ' NT$';
+                break;
+            case 'THB' :
+                $result = $price . ' ฿';
+                break;
+            case 'TRY' :
+                $result = $price . ' TL';
+                break;
+            case 'USD' :
+                $result = '$' . $price;
+                break;
         } // switch
 
         return $result;
@@ -160,25 +163,10 @@ class AB_CommonUtils {
     } // getFormattedDateTime
 
     /**
-     * Get saved booking-data, using in Payment Cancelling via PayPal
-     *
-     * @return array
+     * @return string
      */
-    public static function getTemporaryBookingData() {
-        $tmp_booking_data = array();
-
-        if ( isset( $_SESSION[ 'tmp_booking_data' ] ) ) {
-            $tmp_booking_data = unserialize( $_SESSION[ 'tmp_booking_data' ] );
-            if ( is_array( $tmp_booking_data ) ) {
-                $tmp_booking_data = (object)$tmp_booking_data;
-            }
-            // accessing private properties of AB_UserBookingData instance
-            $tmp_booking_data = get_object_vars( json_decode( preg_replace(
-                '/\\\\u([0-9a-f]{4})|'.get_class( $tmp_booking_data ).'/i', '', json_encode( (array) $tmp_booking_data ) )
-            ) );
-        }
-
-        return $tmp_booking_data;
-    } // getTemporaryBookingData
+    public static function getCurrentPageURL() {
+        return ($_SERVER['REQUEST_SCHEME'] ? $_SERVER['REQUEST_SCHEME'] : 'http') . "://".$_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
+    }
 
 } // AB_CommonUtils

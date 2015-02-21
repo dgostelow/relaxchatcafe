@@ -2,9 +2,6 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-include AB_PATH . '/lib/AB_Validator.php';
-include AB_PATH . '/lib/AB_Google.php';
-
 class AB_UserBookingData {
 
     /**
@@ -25,17 +22,17 @@ class AB_UserBookingData {
     /**
      * @var string
      */
-    private $requested_date_from;
+    private $date_from;
 
     /**
      * @var string
      */
-    private $requested_time_from;
+    private $time_from;
 
     /**
      * @var string
      */
-    private $requested_time_to;
+    private $time_to;
 
     /**
      * @var string
@@ -58,11 +55,6 @@ class AB_UserBookingData {
     private $phone;
 
     /**
-     * @var string
-     */
-    private $notes;
-
-    /**
      * @var int
      */
     private $client_time_offset = 0;
@@ -70,7 +62,7 @@ class AB_UserBookingData {
     /**
      * @var array
      */
-    private $available_days = array();
+    private $days = array();
 
     /**
      * @var int
@@ -82,11 +74,21 @@ class AB_UserBookingData {
      */
     private $coupon;
 
+//    /**
+//     * @var int
+//     */
+//    private $capacity;
+
+    /**
+     * @var string
+     */
+    private $custom_fields = '';
+
     public function __construct( $form_id ) {
         $this->form_id = $form_id;
 
         $prior_time = AB_BookingConfiguration::getMinimumTimePriorBooking();
-        $this->requested_date_from = date( 'Y-m-d', current_time( 'timestamp' ) + $prior_time );
+        $this->date_from = date( 'Y-m-d', current_time( 'timestamp' ) + $prior_time );
     }
 
     public function hasData() {
@@ -100,37 +102,6 @@ class AB_UserBookingData {
                 $field_name = $reflectionProperty->getName();
                 if ( isset($_SESSION['appointment_booking'][ $this->form_id ][ $field_name ]) ) {
                     $this->$field_name = $_SESSION['appointment_booking'][ $this->form_id ][ $field_name ];
-                }
-            }
-        }
-    }
-
-    public function loadTemporaryForExpressCheckout() {
-        if ( isset( $_SESSION[ 'appointment_booking' ][ $this->form_id ][ 'cancelled' ] ) &&
-            $_SESSION[ 'appointment_booking' ][ $this->form_id ][ 'cancelled' ] === true) {
-            $reflection = new ReflectionObject($this);
-            foreach ( $reflection->getProperties() as $reflectionProperty ) {
-                $field_name = $reflectionProperty->getName();
-                $tmp_booking_data = unserialize( $_SESSION[ 'tmp_booking_data' ] );
-                $tmp_booking_data = get_object_vars( $tmp_booking_data );
-
-                if ( isset( $tmp_booking_data[ $field_name ] ) ) {
-                    $this->$field_name = $tmp_booking_data[ $field_name ];
-                }
-            }
-        }
-    }
-
-    public function loadTemporaryForLocalPayment() {
-        if ( isset( $_SESSION[ 'tmp_booking_data' ] ) ) {
-            $reflection = new ReflectionObject($this);
-            foreach ( $reflection->getProperties() as $reflectionProperty ) {
-                $field_name = $reflectionProperty->getName();
-                $tmp_booking_data = unserialize( $_SESSION[ 'tmp_booking_data' ] );
-                $tmp_booking_data = get_object_vars( $tmp_booking_data );
-
-                if ( isset( $tmp_booking_data[ $field_name ] ) ) {
-                    $this->$field_name = $tmp_booking_data[ $field_name ];
                 }
             }
         }
@@ -165,11 +136,11 @@ class AB_UserBookingData {
                         $validator->validateEmail( $field_name, $data[ $field_name ], true );
                         break;
                     case 'phone':
-                        $validator->validatePhone( $field_name, $data[ $field_name ], 255, true, true );
+                        $validator->validatePhone( $field_name, $data[ $field_name ], true );
                         break;
-                    case 'requested_date_from':
-                    case 'requested_time_from':
-                    case 'requested_time_to':
+                    case 'date_from':
+                    case 'time_from':
+                    case 'time_to':
                     case 'booked_datetime':
                         $validator->validateDateTime( $field_name, $data[ $field_name ], true );
                         break;
@@ -179,15 +150,43 @@ class AB_UserBookingData {
                     case 'service_id':
                         $validator->validateNumber( $field_name, $data[ $field_name ] );
                         break;
+                    case 'custom_fields':
+                        $validator->validateCustomFields( $data[ $field_name ] );
+                        break;
                 }
             }
         }
 
-        if ( isset( $data['requested_time_from'] ) && isset( $data['requested_time_to'] ) ) {
-            $validator->validateTimeGt( 'requested_time_from', $data['requested_time_from'], $data['requested_time_to'] );
+        if ( isset( $data['time_from'] ) && isset( $data['time_to'] ) ) {
+            $validator->validateTimeGt( 'time_from', $data['time_from'], $data['time_to'] );
         }
 
         return $validator->getErrors();
+    }
+
+    public function saveValidate(){
+        $response = true;
+
+        if (!get_option( 'ab_settings_pay_locally' )) { $response = false; }
+
+        if ($this->getCoupon() && get_option('ab_settings_coupons')) {
+            $coupon_exists = new AB_Coupon();
+            $coupon_exists->loadBy(array('code' => $this->getCoupon(), 'discount' => 100));
+
+            if ($coupon_exists->isLoaded()) {
+                $response = true;
+            }
+        }
+
+        if ($this->getServicePrice() == 0){
+            $response = true;
+        }
+
+        if (AB_BookingConfiguration::isPaymentDisabled()){
+            $response = true;
+        }
+
+        return $response;
     }
 
     /**
@@ -252,16 +251,37 @@ class AB_UserBookingData {
             $appointment->save();
         }
 
-        $customer_appointment = new AB_Customer_Appointment();
-        $customer_appointment->set('appointment_id', $appointment->get( 'id' ));
-        $customer_appointment->set('customer_id', $customer->get( 'id' ));
-        $customer_appointment->set('notes', $this->notes);
-        $customer_appointment->save();
+//        for ( $i = 1; $i <= $this->getCapacity(); $i++ ) {
+            $customer_appointment = new AB_Customer_Appointment();
+            $customer_appointment->set( 'appointment_id', $appointment->get( 'id' ) );
+            $customer_appointment->set( 'customer_id', $customer->get( 'id' ) );
+            $customer_appointment->set( 'custom_fields', $this->custom_fields );
+            $customer_appointment->save();
+//        }
+
+        // Free coupon
+        if ($this->getCoupon()){
+            $coupon_exists = new AB_Coupon();
+            $coupon_exists->loadBy(array('code' => $this->getCoupon(), 'discount' => 100));
+
+            if ( $coupon_exists->isLoaded()) {
+                $payment = new AB_Payment();
+                $payment->set('coupon', $this->getCoupon() );
+                $payment->set('total', '0.00' );
+                $payment->set('type', 'coupon' );
+                $payment->set('created', date('Y-m-d H:i:s') );
+                $payment->set('customer_appointment_id', $customer_appointment->get('id') );
+                $payment->save();
+
+                $coupon_exists->set('used', 1);
+                $coupon_exists->save();
+            }
+        }
 
         // Google Calendar.
         $appointment->handleGoogleCalendar();
 
-        $appointment->sendEmailNotifications( $this->client_time_offset );
+        $appointment->sendEmailNotifications( $this->client_time_offset, $this->coupon );
 
         return $appointment;
     }
@@ -273,8 +293,8 @@ class AB_UserBookingData {
     /**
      * @return string
      */
-    public function getFormattedRequestedDateFrom() {
-        return date_i18n( 'j F, Y', strtotime( $this->requested_date_from ) );
+    public function getFormattedDateFrom() {
+        return date_i18n( 'j F, Y', strtotime( $this->date_from ) );
     }
 
     /**
@@ -351,6 +371,9 @@ class AB_UserBookingData {
             : __( 'Any', 'ab' );
     }
 
+    /**
+     * @param $payment_id
+     */
     public function setPaymentId( $payment_id ) {
         $_SESSION['appointment_booking'][ $this->form_id ]['payment_id'] = $payment_id;
     }
@@ -366,6 +389,9 @@ class AB_UserBookingData {
         return null;
     }
 
+    /**
+     * @param $finished
+     */
     public function setBookingFinished( $finished ) {
         $_SESSION['appointment_booking'][ $this->form_id ]['finished'] = $finished;
     }
@@ -376,28 +402,34 @@ class AB_UserBookingData {
     public function getBookingFinished() {
         if ( isset($_SESSION['appointment_booking'][ $this->form_id ]['finished']) ) {
             return $_SESSION['appointment_booking'][ $this->form_id ]['finished'];
-        } elseif ( isset( $_SESSION[ 'tmp_booking_data' ] ) ) {
-            $tmp_booking_data = unserialize( $_SESSION[ 'tmp_booking_data' ] );
-            if ( is_array( $tmp_booking_data ) ) {
-                $tmp_booking_data = (object)$tmp_booking_data;
-            }
-            $tmp_booking_data = get_object_vars( $tmp_booking_data );
-            $tmp_form_id = $tmp_booking_data[ 'form_id' ];
-
-            if ( isset( $_SESSION[ 'appointment_booking' ][ $tmp_form_id ][ 'finished' ] ) ) {
-                return $_SESSION[ 'appointment_booking' ][ $tmp_form_id ][ 'finished' ];
-            }
         }
 
         return false;
     }
 
+    /**
+     * @param $cancelled
+     */
     public function setBookingCancelled( $cancelled ) {
         $_SESSION[ 'appointment_booking' ][ $this->form_id ][ 'cancelled' ] = $cancelled;
     }
 
+    /**
+     * @param $error
+     */
     public function setBookingPayPalError( $error ) {
         $_SESSION[ 'appointment_booking' ][ $this->form_id ][ 'paypal_error' ] = $error;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getBookingPayPalError() {
+        if ( isset( $_SESSION[ 'appointment_booking' ][ $this->form_id ] ) && array_key_exists( 'paypal_error', $_SESSION[ 'appointment_booking' ][ $this->form_id ] ) ) {
+            return $_SESSION['appointment_booking'][$this->form_id]['paypal_error'];
+        }
+
+        return false;
     }
 
     /**
@@ -406,17 +438,6 @@ class AB_UserBookingData {
     public function getBookingCancelled() {
         if ( isset( $_SESSION[ 'appointment_booking' ][ $this->form_id ][ 'cancelled' ] ) ) {
             return $_SESSION[ 'appointment_booking' ][ $this->form_id ][ 'cancelled' ];
-        } elseif ( isset( $_SESSION[ 'tmp_booking_data' ] ) ) {
-            $tmp_booking_data = unserialize( $_SESSION[ 'tmp_booking_data' ] );
-            if ( is_array( $tmp_booking_data ) ) {
-                $tmp_booking_data = (object)$tmp_booking_data;
-            }
-            $tmp_booking_data = get_object_vars( $tmp_booking_data );
-            $tmp_form_id = $tmp_booking_data[ 'form_id' ];
-
-            if ( isset( $_SESSION[ 'appointment_booking' ][ $tmp_form_id ][ 'cancelled' ] ) ) {
-                return $_SESSION[ 'appointment_booking' ][ $tmp_form_id ][ 'cancelled' ];
-            }
         }
 
         return false;
@@ -454,50 +475,50 @@ class AB_UserBookingData {
     }
 
     /**
-     * Get requested date-from.
+     * Get date-from.
      *
      * @return string
      */
-    public function getRequestedDateFrom() {
-        return $this->requested_date_from;
+    public function getDateFrom() {
+        return $this->date_from;
     }
 
     /**
-     * Get requested time-from.
+     * Get time-from.
      *
      * @return string
      */
-    public function getRequestedTimeFrom() {
-        if ( !$this->requested_time_from ) {
+    public function getTimeFrom() {
+        if ( !$this->time_from ) {
             /** @var wpdb $wpdb */
             global $wpdb;
-            $this->requested_time_from = $wpdb->get_var(
+            $this->time_from = $wpdb->get_var(
                 'SELECT SUBSTRING_INDEX(MIN(start_time), ":", 2) AS min_end_time
                     FROM ab_staff_schedule_item
                  WHERE start_time IS NOT NULL'
             );
         }
 
-        return $this->requested_time_from;
+        return $this->time_from;
     }
 
     /**
-     * Get requested time-to.
+     * Get time-to.
      *
      * @return string
      */
-    public function getRequestedTimeTo() {
-        if ( !$this->requested_time_to ) {
+    public function getTimeTo() {
+        if ( !$this->time_to ) {
             /** @var wpdb $wpdb */
             global $wpdb;
-            $this->requested_time_to = $wpdb->get_var(
+            $this->time_to = $wpdb->get_var(
                 'SELECT SUBSTRING_INDEX(MAX(end_time), ":", 2) AS max_end_time
                     FROM ab_staff_schedule_item
                  WHERE end_time IS NOT NULL'
             );
         }
 
-        return $this->requested_time_to;
+        return $this->time_to;
     }
 
     /**
@@ -515,6 +536,13 @@ class AB_UserBookingData {
     public function getEmail() {
         return $this->email;
     }
+
+//    /**
+//     * @return int
+//     */
+//    public function getCapacity() {
+//        return $this->capacity;
+//    }
 
     /**
      * Get name.
@@ -535,21 +563,12 @@ class AB_UserBookingData {
     }
 
     /**
-     * Get notes.
-     *
-     * @return string
-     */
-    public function getNotes() {
-        return $this->notes;
-    }
-
-    /**
      * Get available days.
      *
      * @return array
      */
-    public function getAvailableDays() {
-        return $this->available_days;
+    public function getDays() {
+        return $this->days;
     }
 
     /**

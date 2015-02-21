@@ -1,27 +1,22 @@
-<?php
+<?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 /**
  * Class AB_Customer_Appointment
  */
 class AB_Customer_Appointment extends AB_Entity {
 
+    protected static $table_name = 'ab_customer_appointment';
+
+    protected static $schema = array(
+        'id'             => array( 'format' => '%d' ),
+        'customer_id'    => array( 'format' => '%d' ),
+        'appointment_id' => array( 'format' => '%d' ),
+        'token'          => array( 'format' => '%s' ),
+        'custom_fields'  => array( 'format' => '%s' ),
+    );
+
     /** @var AB_Customer */
     public $customer = null;
-
-    /**
-     * Constructor.
-     */
-    public function __construct() {
-        $this->table_name = 'ab_customer_appointment';
-        $this->schema = array(
-            'id'             => array( 'format' => '%d' ),
-            'customer_id'    => array( 'format' => '%d' ),
-            'appointment_id' => array( 'format' => '%d' ),
-            'notes'          => array( 'format' => '%s' ),
-            'token'          => array( 'format' => '%s' ),
-        );
-        parent::__construct();
-    }
 
     /**
      * Save entity to database.
@@ -42,5 +37,32 @@ class AB_Customer_Appointment extends AB_Entity {
         }
 
         return parent::save();
+    }
+
+    /**
+     * Get array of custom fields with labels and values.
+     *
+     * @return array
+     */
+    public function getCustomFields() {
+        $result = array();
+        if ( $this->get( 'custom_fields' ) != '' ) {
+            $custom_fields = array();
+            foreach ( json_decode( get_option( 'ab_custom_fields' ) ) as $field ) {
+                $custom_fields[ $field->id ] = $field;
+            }
+            $data = json_decode( $this->get( 'custom_fields' ) );
+            foreach ($data as $value) {
+                if ( array_key_exists( $value->id, $custom_fields ) ) {
+                    $result[] = array(
+                        'id'    => $value->id,
+                        'label' => $custom_fields[ $value->id ]->label,
+                        'value' => is_array( $value->value ) ? implode( ', ', $value->value ) : $value->value
+                    );
+                }
+            }
+        }
+
+        return $result;
     }
 }

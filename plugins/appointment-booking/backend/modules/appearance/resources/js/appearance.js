@@ -1,6 +1,9 @@
 jQuery(function($) {
     var // Progress Tracker
         $progress_tracker_option = $('input#ab-progress-tracker-checkbox'),
+        // Time slots setting
+        $blocked_timeslots_option = $('input#ab-blocked-timeslots-checkbox'),
+        $day_one_column_option = $('input#ab-day-one-column-checkbox'),
         // Tabs
         $tabs = $('div.tabbable').find('.nav-tabs'),
         $tab_content = $('div.tab-content'),
@@ -18,6 +21,7 @@ jQuery(function($) {
         $text_option_service = $('#ab-text-option-service'),
         $text_option_employee = $('#ab-text-option-employee'),
         $text_label_service = $('#ab-text-label-service'),
+//        $text_label_place = $('#ab-text-label-place'),
         $text_label_employee = $('#ab-text-label-employee'),
         $text_label_select_date = $('#ab-text-label-select_date'),
         $text_label_start_from = $('#ab-text-label-start_from'),
@@ -25,7 +29,6 @@ jQuery(function($) {
         $text_label_name = $('#ab-text-label-name'),
         $text_label_phone = $('#ab-text-label-phone'),
         $text_label_email = $('#ab-text-label-email'),
-        $text_label_notes = $('#ab-text-label-notes'),
         $text_label_coupon = $('#ab-text-label-coupon'),
         $text_info_service = $('#ab-text-info-first'),
         $text_info_time = $('#ab-text-info-second'),
@@ -34,7 +37,8 @@ jQuery(function($) {
         $text_info_done = $('#ab-text-info-fifth'),
         $text_info_coupon = $('#ab-text-info-coupon'),
         $color_picker = $('.wp-color-picker'),
-        $ab_editable  = $('.ab_editable');
+        $ab_editable  = $('.ab_editable'),
+        $text_label_pay_locally = $('#ab-text-label-pay-locally');
 
     // menu fix for WP 3.8.1
     $('#toplevel_page_ab-system > ul').css('margin-left', '0px');
@@ -55,16 +59,16 @@ jQuery(function($) {
         $('.ab-mobile-step_1 label').css('color', $color_picker.wpColorPicker('color'));
         $('.ab-next-step, .ab-mobile-next-step').css('background', $color_picker.wpColorPicker('color'));
         $('.ab-week-days label').css('background-color', $color_picker.wpColorPicker('color'));
-        $('.pickadate__calendar').attr('style', 'background: ' + color_important);
-        $('.pickadate__header').attr('style', 'border-bottom: ' + '1px solid ' + color_important);
+        $('.picker__frame').attr('style', 'background: ' + color_important);
+        $('.picker__header').attr('style', 'border-bottom: ' + '1px solid ' + color_important);
 //        $('.pickadate__nav--next, .pickadate__nav--prev').attr('style', 'border-left: 6px solid ' + color_important);
 //        $('.pickadate__nav--next:before').attr('style', 'border-left: 6px solid ' + color_important);
 //        $('.pickadate__nav--prev:before').attr('style', 'border-right: 6px solid ' + color_important);
 //        $('.pickadate__day:hover').attr('style', 'color: ' + color_important);
 //        $('.pickadate__day--selected:hover').attr('style', '');
-        $('.pickadate__day--selected').attr('style', 'color: ' + color_important);
-        $('.pickadate__button--clear').attr('style', 'color: ' + color_important);
-        $('.pickadate__button--today').attr('style', 'color: ' + color_important);
+        $('.picker__day--selected').attr('style', 'color: ' + color_important);
+        $('.picker__button--clear').attr('style', 'color: ' + color_important);
+        $('.picker__button--today').attr('style', 'color: ' + color_important);
         $('.ab-columnizer .ab-available-day').css({
             'background': $color_picker.wpColorPicker('color'),
             'border-color': $color_picker.wpColorPicker('color')
@@ -108,10 +112,15 @@ jQuery(function($) {
         }
     });
 
-    $('.ab-requested-date-from').pickadate({
-        dateMin: true,
-        clear: false,
-        onRender: function() {
+    $('.ab-date-from').pickadate({
+        dateMin         : true,
+        clear           : false,
+        today           : BooklyL10n.today,
+        weekdaysShort   : BooklyL10n.days,
+        monthsFull      : BooklyL10n.months,
+        labelMonthNext  : BooklyL10n.nextMonth,
+        labelMonthPrev  : BooklyL10n.prevMonth,
+        onRender        : function() {
             applyColor();
         }
     });
@@ -138,6 +147,7 @@ jQuery(function($) {
                 'text_step_done'         : $.trim($text_step_done.text() == 'Empty' ? '' : $text_step_done.text()),
                 'text_label_category'    : $.trim($text_label_category.text() == 'Empty' ? '' : $text_label_category.text()),
                 'text_label_service'     : $.trim($text_label_service.text() == 'Empty' ? '' : $text_label_service.text()),
+//                'text_label_place'       : $.trim($text_label_place.text() == 'Empty' ? '' : $text_label_place.text()),
                 'text_label_employee'    : $.trim($text_label_employee.text() == 'Empty' ? '' : $text_label_employee.text()),
                 'text_label_select_date' : $.trim($text_label_select_date.text() == 'Empty' ? '' : $text_label_select_date.text()),
                 'text_label_start_from'  : $.trim($text_label_start_from.text() == 'Empty' ? '' : $text_label_start_from.text()),
@@ -145,13 +155,15 @@ jQuery(function($) {
                 'text_label_name'        : $.trim($text_label_name.text() == 'Empty' ? '' : $text_label_name.text()),
                 'text_label_phone'       : $.trim($text_label_phone.text() == 'Empty' ? '' : $text_label_phone.text()),
                 'text_label_email'       : $.trim($text_label_email.text() == 'Empty' ? '' : $text_label_email.text()),
-                'text_label_notes'       : $.trim($text_label_notes.text() == 'Empty' ? '' : $text_label_notes.text()),
                 'text_label_coupon'      : $.trim($text_label_coupon.text() == 'Empty' ? '' : $text_label_coupon.text()),
                 'text_option_category'   : $.trim($text_option_category.text() == 'Empty' ? '' : $text_option_category.text()),
                 'text_option_service'    : $.trim($text_option_service.text() == 'Empty' ? '' : $text_option_service.text()),
                 'text_option_employee'   : $.trim($text_option_employee.text() == 'Empty' ? '' : $text_option_employee.text()),
+                'text_label_pay_locally' : $.trim($text_label_pay_locally.text() == 'Empty' ? '' : $text_label_pay_locally.text()),
                 // Checkboxes.
-                'progress_tracker'       : Number($('#ab-progress-tracker-checkbox').is(':checked'))
+                'progress_tracker'       : Number($('#ab-progress-tracker-checkbox').is(':checked')),
+                'blocked_timeslots'      : Number($('#ab-blocked-timeslots-checkbox').is(':checked')),
+                'day_one_column'         : Number($('#ab-day-one-column-checkbox').is(':checked'))
            } // options
         }; // data
 
@@ -159,7 +171,7 @@ jQuery(function($) {
         $('#update_spinner').show();
         $.post(ajaxurl, data, function (response) {
             $('#update_spinner').hide();
-            $('.alert').show();
+            $('.updated').show();
         });
     });
 
@@ -202,6 +214,30 @@ jQuery(function($) {
     $progress_tracker_option.change(function(){
         $(this).is(':checked') ? $('div.ab-progress-tracker').show() : $('div.ab-progress-tracker').hide();
     }).trigger('change');
+
+    // Change blocked time slots
+    $blocked_timeslots_option.change(function(){
+        $tabs.children('li').removeClass('active');
+        $tabs.children('li[data-step-id="2"]').trigger('click').addClass('active');
+        if ($(this).is(':checked')) {
+            $('.ab-available-hour.no-booked').attr("class", "ab-available-hour booked");
+        } else {
+            $('.ab-available-hour.booked').attr("class", "ab-available-hour no-booked");
+        }
+    });
+
+    // Change day one column
+    $day_one_column_option.change(function(){
+        $tabs.children('li').removeClass('active');
+        $tabs.children('li[data-step-id="2"]').trigger('click').addClass('active');
+        if ($(this).is(':checked')) {
+            $('.ab-day-one-column').show();
+            $('.ab-day-columns').hide();
+        } else {
+            $('.ab-day-one-column').hide();
+            $('.ab-day-columns').show();
+        }
+    });
 
     // Clickable week-days.
     $('.ab-week-day').on('change', function () {

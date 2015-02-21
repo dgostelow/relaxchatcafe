@@ -1,7 +1,6 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 if ( !function_exists( 'wp_handle_upload' ) ) require_once(ABSPATH . 'wp-admin/includes/file.php');
-include AB_PATH . '/lib/AB_ImageResize.php';
 
 class AB_StaffMemberEditForm extends AB_StaffMemberForm {
 
@@ -15,6 +14,7 @@ class AB_StaffMemberEditForm extends AB_StaffMemberForm {
             'phone',
             'avatar',
             'google_calendar_id',
+            'position',
         ) );
     }
 
@@ -45,9 +45,12 @@ class AB_StaffMemberEditForm extends AB_StaffMemberForm {
         }
     }
 
+    /**
+     * @return bool|object
+     */
     public function save(){
         //verify google calendar
-        if ($this->data['google_calendar_id']){
+        if (array_key_exists('google_calendar_id', $this->data) && !empty($this->data['google_calendar_id'])){
             $google = new AB_Google();
             $google->loadByStaffId($this->data['id']);
             if (!$google->validateCalendar($this->data['google_calendar_id'])){

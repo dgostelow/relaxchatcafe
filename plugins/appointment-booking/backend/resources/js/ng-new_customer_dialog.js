@@ -9,7 +9,7 @@ angular.module('newCustomerDialog', []).directive('newCustomerDialog', function(
       backdrop  : '@',
       btn_class : '@btnClass'
     },
-    templateUrl : ajaxurl + '?action=ab_get_ng_new_customer_dialog_template',
+    templateUrl : ajaxurl + '?action=ab_get_ng_new_customer_dialog_template&module=' + ((typeof BooklyL10n.module == 'undefined')? 'calendar' : BooklyL10n.module) ,
     // The linking function will add behavior to the template.
     link: function(scope, element, attrs) {
       // Init properties.
@@ -55,6 +55,30 @@ angular.module('newCustomerDialog', []).directive('newCustomerDialog', function(
           success : function ( response ) {
             scope.$apply(function(scope) {
               if (response.status === 'ok') {
+                  // save custom fields of new customer into parent scope
+                  var result  = [];
+                  var $fields = jQuery('.new-customer-custom-fields .ab-formField');
+                  $fields.each(function() {
+                      var $this = jQuery(this);
+                      var value;
+                      switch ($this.data('type')) {
+                          case 'checkboxes':
+                              value = [];
+                              $this.find('.ab-custom-field:checked').each(function() {
+                                  value.push(this.value);
+                              });
+                              break;
+                          case 'radio-buttons':
+                              value = $this.find('.ab-custom-field:checked').val();
+                              break;
+                          default:
+                              value = $this.find('.ab-custom-field').val();
+                              break;
+                      }
+                      result.push({ id: $this.data('id'), value: value });
+                  });
+                  response.customer.custom_fields = result;
+
                 // Send new customer to the parent scope.
                 scope.callback({customer : response.customer});
                 // Close the dialog.

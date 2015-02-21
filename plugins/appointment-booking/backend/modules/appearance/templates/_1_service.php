@@ -1,5 +1,8 @@
-<?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly ?>
-<div class="ab-booking-form" style="overflow: hidden">
+<?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+/** @var WP_Locale $wp_locale */
+global $wp_locale;
+?>
+<div class="ab-booking-form">
 
     <!-- Progress Tracker-->
     <?php $step = 1; include '_progress_tracker.php'; ?>
@@ -56,71 +59,44 @@
                         </select>
                     </div>
                 </div>
+<?php /*                <div class="ab-formGroup ab-lastGroup ab-left">
+                    <label data-default="<?php echo esc_html(get_option( 'ab_appearance_text_label_place')); ?>" data-link-class="ab-text-option-place" class="ab-formLabel ab_editable" data-type="text" id="ab-text-label-place"><?php echo esc_html(get_option( 'ab_appearance_text_label_place', 'Places number' )); ?></label>
+                    <div class="ab-formField">
+                        <input class="ab-formElement ab-select-mobile ab-select-place" type="number" max="1" min="1" value="1">
+                    </div>
+                </div>
+ */ ?>
                 <button class="ab-right ab-mobile-next-step ab-btn ab-none ladda-button orange zoom-in" onclick="return false">
                     <span><?php _e( 'Next', 'ab' ) ?></span>
                 </button>
             </div>
             <div class="ab-mobile-step_2">
                 <div class="ab-row-fluid">
-                    <div class="ab-available-date ab-left">
-                        <label data-default="<?php echo get_option( 'ab_appearance_text_label_select_date' ); ?>" data-link-class="text_select_date_label" class="ab_editable" id="ab-text-label-select_date" data-type="text" data-pk="1"><?php echo esc_html(get_option( 'ab_appearance_text_label_select_date' )) ?></label>
-                        <div class="ab-input-wrap">
-                            <span class="ab-requested-date-wrap">
-                               <input class="select-list ab-requested-date-from select-list" type="text" value="29 November, 2013">
+                    <div class="ab-available-date ab-formGroup ab-lastGroup ab-left">
+                        <label class="ab-nowrap" data-default="<?php echo get_option( 'ab_appearance_text_label_select_date' ); ?>" data-link-class="text_select_date_label" class="ab_editable" id="ab-text-label-select_date" data-type="text" data-pk="1"><?php echo esc_html(get_option( 'ab_appearance_text_label_select_date' )) ?></label>
+                        <div class="ab-input-wrap ab-formField">
+                            <span class="ab-date-wrap">
+                               <input class="ab-date-from ab-formElement picker__input--active" type="text" value="29 November, 2013" />
                             </span>
                         </div>
                     </div>
                     <div class="ab-available-days ab-left">
                         <ul class="ab-week-days">
-                            <li>
-                                <div class="ab-bold"><?php _e('Sun', 'ab' ) ?></div>
-                                <label class="active">
-                                    <input class="ab-week-day ab-week-day-1" value="1" checked="checked" type="checkbox">
-                                </label>
-                            </li>
-                            <li>
-                                <div class="ab-bold"><?php _e( 'Mon', 'ab' ) ?></div>
-                                <label class="active">
-                                    <input class="ab-week-day ab-week-day-2" value="2" checked="checked" type="checkbox">
-                                </label>
-                            </li>
-                            <li>
-                                <div class="ab-bold"><?php _e( 'Tue', 'ab' ) ?></div>
-                                <label class="active">
-                                    <input class="ab-week-day ab-week-day-3" value="3" checked="checked" type="checkbox">
-                                </label>
-                            </li>
-                            <li>
-                                <div class="ab-bold"><?php _e( 'Wed', 'ab' ) ?></div>
-                                <label class="active">
-                                    <input class="ab-week-day ab-week-day-4" value="4" checked="checked" type="checkbox">
-                                </label>
-                            </li>
-                            <li>
-                                <div class="ab-bold"><?php _e( 'Thu', 'ab' ) ?></div>
-                                <label class="active">
-                                    <input class="ab-week-day ab-week-day-5" value="5" checked="checked" type="checkbox">
-                                </label>
-                            </li>
-                            <li>
-                                <div class="ab-bold"><?php _e( 'Fri', 'ab' ) ?></div>
-                                <label class="active">
-                                    <input class="ab-week-day ab-week-day-6" value="6" checked="checked" type="checkbox">
-                                </label>
-                            </li>
-                            <li>
-                                <div class="ab-bold"><?php _e( 'Sat', 'ab' ) ?></div>
-                                <label class="active">
-                                    <input class="ab-week-day ab-week-day-7" value="7" checked="checked" type="checkbox">
-                                </label>
-                            </li>
+                            <?php foreach ( $wp_locale->weekday_abbrev as $weekday_abbrev ): ?>
+                                <li>
+                                    <div class="ab-bold"><?php echo $weekday_abbrev ?></div>
+                                    <label class="active">
+                                        <input class="ab-week-day" value="1" checked="checked" type="checkbox">
+                                    </label>
+                                </li>
+                            <?php endforeach ?>
                         </ul>
                     </div>
                     <div class="ab-time-range ab-left">
                         <div class="ab-time-from ab-left">
                             <label data-default="<?php echo get_option( 'ab_appearance_text_label_start_from' ); ?>" data-link-class="text_start_from_label" class="ab_editable" id="ab-text-label-start_from" data-type="text" data-pk="1"><?php echo esc_html(get_option( 'ab_appearance_text_label_start_from' )) ?></label>
                             <div class="ab-select-wrap">
-                                <select class="select-list ab-requested-time-from">
+                                <select class="select-list ab-select-time-from">
                                     <option value="00:00">12:00 am</option>
                                     <option value="01:00">1:00 am</option>
                                     <option value="02:00">2:00 am</option>
@@ -151,7 +127,7 @@
                         <div class="ab-time-to ab-left">
                             <label data-default="<?php echo get_option( 'ab_appearance_text_label_finish_by' ); ?>" data-link-class="text_finish_by_label" class="ab_editable" id="ab-text-label-finish_by" data-type="text" data-pk="1"><?php echo esc_html(get_option( 'ab_appearance_text_label_finish_by' )) ?></label>
                             <div class="ab-select-wrap">
-                                <select class="select-list ab-requested-time-to">
+                                <select class="select-list ab-select-time-to">
                                     <option value="09:00">9:00 am</option>
                                     <option value="10:00">10:00 am</option>
                                     <option value="11:00">11:00 am</option>
@@ -185,3 +161,7 @@
         </div>
     </div>
 </div>
+<style>
+    .picker__nav--next:before { border-left: 6px solid <?php echo get_option( 'ab_appearance_color' ) ?>!important; }
+    .picker__nav--prev:before { border-right: 6px solid <?php echo get_option( 'ab_appearance_color' ) ?>!important; }
+</style>

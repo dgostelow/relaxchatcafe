@@ -1,26 +1,22 @@
-<?php
+<?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 /**
  * Class AB_Service
  */
 class AB_Service extends AB_Entity {
 
-    /**
-     * Constructor.
-     */
-    public function __construct() {
-        $this->table_name = 'ab_service';
-        $this->schema = array(
-            'id'          => array( 'format' => '%d' ),
-            'title'       => array( 'format' => '%s' ),
-            'duration'    => array( 'format' => '%d', 'default' => 900 ),
-            'price'       => array( 'format' => '%.2f', 'default' => '0' ),
-            'category_id' => array( 'format' => '%d' ),
-            'color'       => array( 'format' => '%s' ),
-            'capacity'    => array( 'format' => '%d', 'default' => '1' ),
-        );
-        parent::__construct();
-    }
+    protected static $table_name = 'ab_service';
+
+    protected static $schema = array(
+        'id'          => array( 'format' => '%d' ),
+        'title'       => array( 'format' => '%s' ),
+        'duration'    => array( 'format' => '%d', 'default' => 900 ),
+        'price'       => array( 'format' => '%.2f', 'default' => '0' ),
+        'category_id' => array( 'format' => '%d' ),
+        'color'       => array( 'format' => '%s' ),
+        'capacity'    => array( 'format' => '%d', 'default' => '1' ),
+        'position'    => array( 'format' => '%d', 'default' => 9999 ),
+    );
 
     /**
      * @return string

@@ -2,8 +2,6 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-include 'forms/AB_CouponForm.php';
-
 /**
  * Class AB_CouponsController
  */
@@ -13,6 +11,32 @@ class AB_CouponsController extends AB_Controller {
      *
      */
     public function index() {
+        $this->enqueueStyles( array(
+            'backend' => array(
+                'css/ab_style.css',
+                'bootstrap/css/bootstrap.min.css',
+            ),
+            'module' => array(
+                'css/coupons.css',
+            )
+        ) );
+
+        $this->enqueueScripts( array(
+            'backend' => array(
+                'js/ab_popup.js' => array( 'jquery' ),
+                'bootstrap/js/bootstrap.min.js' => array( 'jquery' ),
+//                'js/jquery.ajaxQueue.js' => array( 'jquery' ),
+            ),
+            'module' => array(
+                'js/coupons.js' => array( 'jquery' ),
+            )
+        ) );
+
+        wp_localize_script( 'ab-coupons.js', 'BooklyL10n', array(
+            'are_you_sure' => __( 'Are you sure?', 'ab' ),
+            'please_select_at_least_one_coupon' => __( 'Please select at least one coupon.', 'ab'),
+        ) );
+
         $this->coupons_collection  = $this->getCouponsCollection();
 
         $this->render( 'index' );

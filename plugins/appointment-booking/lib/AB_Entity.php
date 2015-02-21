@@ -1,4 +1,4 @@
-<?php
+<?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 /**
  * Database entity.
@@ -15,23 +15,25 @@ abstract class AB_Entity {
 
     /**
      * Name of table in database.
-     * Must be defined in child class.
+     * Must be defined in the child class.
+     * @static
      * @var string
      */
-    protected $table_name = null;
+    protected static $table_name = null;
 
     /**
      * Schema of entity fields in database.
-     * Must be defined in child class as
+     * Must be defined in the child class as
      * array(
      *     '[FIELD_NAME]' => array(
      *         'format'  => '[FORMAT]',
      *         'default' => '[DEFAULT_VALUE]',
      *     )
      * )
+     * @static
      * @var array
      */
-    protected $schema = null;
+    protected static $schema = null;
 
     // Private properties.
 
@@ -67,7 +69,7 @@ abstract class AB_Entity {
       $this->wpdb = $wpdb;
 
       // Initialize $values and $formats.
-      foreach ( $this->schema as $field_name => $options ) {
+      foreach ( static::$schema as $field_name => $options ) {
           $this->values[ $field_name ]  = array_key_exists( 'default', $options ) ? $options[ 'default' ] : null;
           $this->formats[ $field_name ] = array_key_exists( 'format', $options ) ? $options[ 'format' ] : '%s';
       }
@@ -153,14 +155,15 @@ abstract class AB_Entity {
             }
         }
 
-        $row = $this->wpdb->get_row( $this->wpdb->prepare(
-            sprintf(
-                'SELECT * FROM `%s` WHERE %s LIMIT 1',
-                $this->table_name,
-                implode( ' AND ', $where )
-            ),
-            $values
-        ) );
+        $query = sprintf(
+            'SELECT * FROM `%s` WHERE %s LIMIT 1',
+            static::$table_name,
+            implode( ' AND ', $where )
+        );
+
+        $row = $this->wpdb->get_row(
+            empty ( $values ) ? $query : $this->wpdb->prepare( $query, $values )
+        );
 
         if ( $row ) {
             $this->setData( $row );
@@ -187,13 +190,19 @@ abstract class AB_Entity {
      * The method can be used to update only some fields.
      *
      * @param array|object $data
+     * @param bool $overwrite_loaded_values
      */
-    public function setData( $data ) {
+    public function setData( $data, $overwrite_loaded_values = false ) {
         if ( is_array( $data ) || $data instanceof stdClass ) {
             foreach ( $data as $field => $value ) {
                 if ( array_key_exists( $field, $this->values ) ) {
                     $this->values[ $field ] = $value;
                 }
+            }
+
+            // This parameter is used by the entity manager.
+            if ( $overwrite_loaded_values ) {
+                $this->loaded_values = $this->values;
             }
         }
     }
@@ -242,7 +251,7 @@ abstract class AB_Entity {
             $res = $this->wpdb->query( $this->wpdb->prepare(
                 sprintf(
                     'UPDATE `%s` SET %s WHERE `id` = %d',
-                    $this->table_name,
+                    static::$table_name,
                     implode( ', ', $set ),
                     $this->values[ 'id' ]
                 ),
@@ -253,7 +262,7 @@ abstract class AB_Entity {
             $res = $this->wpdb->query( $this->wpdb->prepare(
                 sprintf(
                     'INSERT INTO `%s` SET %s',
-                    $this->table_name,
+                    static::$table_name,
                     implode( ', ', $set )
                 ),
                 $values
@@ -278,9 +287,29 @@ abstract class AB_Entity {
      */
     public function delete() {
         if ( $this->values[ 'id' ] ) {
-            return $this->wpdb->delete( $this->table_name, array( 'id' => $this->values[ 'id' ] ), array( '%d' ) );
+            return $this->wpdb->delete( static::$table_name, array( 'id' => $this->values[ 'id' ] ), array( '%d' ) );
         }
 
         return false;
+    }
+
+    /**
+     * Get table name.
+     *
+     * @static
+     * @return string
+     */
+    public static function getTableName() {
+        return static::$table_name;
+    }
+
+    /**
+     * Get schema.
+     *
+     * @static
+     * @return array
+     */
+    public static function getSchema() {
+        return static::$schema;
     }
 }

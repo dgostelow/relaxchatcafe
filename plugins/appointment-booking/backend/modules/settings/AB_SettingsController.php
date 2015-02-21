@@ -2,16 +2,40 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-include 'forms/AB_CompanyForm.php';
-include 'forms/AB_PaymentsForm.php';
-include 'forms/AB_BusinessHoursForm.php';
-
 /**
  * Class AB_SettingsController
  */
 class AB_SettingsController extends AB_Controller {
 
     public function index() {
+        /** @var WP_Locale $wp_locale */
+        global $wp_locale;
+
+        $this->enqueueStyles( array(
+            'backend' => array(
+                'css/ab_style.css',
+                'bootstrap/css/bootstrap.min.css',
+                'css/jCal.css',
+            )
+        ) );
+
+        $this->enqueueScripts( array(
+            'backend' => array(
+                'bootstrap/js/bootstrap.min.js' => array( 'jquery' ),
+                'js/jCal.js' => array( 'jquery' ),
+            ),
+            'module' => array(
+                'js/settings.js' => array( 'jquery' ),
+            ),
+        ) );
+
+        wp_localize_script( 'ab-jCal.js', 'BooklyL10n',  array(
+            'we_are_not_working' => __( 'We are not working on this day', 'ab' ),
+            'repeat'             => __( 'Repeat every year', 'ab' ),
+            'months'             => array_values( $wp_locale->month ),
+            'days'               => array_values( $wp_locale->weekday_abbrev )
+        ) );
+
         // save the settings
         if ( !empty ( $_POST ) ) {
             // Payments form
@@ -38,10 +62,15 @@ class AB_SettingsController extends AB_Controller {
                 update_option( 'ab_settings_minimum_time_prior_booking', (int)$this->getParameter( 'ab_settings_minimum_time_prior_booking' ) );
                 update_option( 'ab_settings_use_client_time_zone', (int)$this->getParameter( 'ab_settings_use_client_time_zone' ) );
                 update_option( 'ab_settings_cancel_page_url', $this->getParameter( 'ab_settings_cancel_page_url' ) );
+                update_option( 'ab_settings_final_step_url', $this->getParameter( 'ab_settings_final_step_url' ) );
+                $this->message_g = __( 'Settings saved.', 'ab' );
+            }
+            // Google calendar form
+            else if ( $this->getParameter( 'type' ) == '_google_calendar' ) {
                 update_option( 'ab_settings_google_client_id', $this->getParameter( 'ab_settings_google_client_id' ) );
                 update_option( 'ab_settings_google_client_secret', $this->getParameter( 'ab_settings_google_client_secret' ) );
-
-                $this->message_g = __( 'Settings saved.', 'ab' );
+                update_option( 'ab_settings_google_two_way_sync', $this->getParameter( 'ab_settings_google_two_way_sync' ) );
+                $this->message_gc = __( 'Settings saved.', 'ab' );
             }
             // Holidays form
             else if ( $this->getParameter( 'type' ) == '_holidays' ) {
@@ -52,7 +81,7 @@ class AB_SettingsController extends AB_Controller {
                 $this->message_c = __( 'Settings saved.', 'ab' );
             }
             if ( $this->getParameter( 'type' ) != '_purchase_code' && $this->getParameter( 'type' ) != '_holidays'
-                && $this->getParameter( 'type' ) != '_import' && $this->getParameter( 'type' ) != '_general' ) {
+                && $this->getParameter( 'type' ) != '_import' && $this->getParameter( 'type' ) != '_general' && $this->getParameter( 'type' ) != '_google_calendar' ) {
                 $this->form->bind( $this->getPostParameters(), $_FILES );
                 $this->form->save();
             }

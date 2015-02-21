@@ -14,9 +14,9 @@
             <button class="btn btn-info ab-calendar-today right-margin left"><?php _e('Today','ab') ?></button>
             <div id="week-calendar-picker" class="ab-week-picker-wrapper left right-margin" data-first_day="<?php echo $week_start_day ?>">
                 <div class="input-prepend input-append">
-                    <span class="ab-week-picker-arrow prev add-on col-arrow">&#9668;</span>
+                    <span class="ab-week-picker-arrow prev add-on ab-col-arrow">&#9668;</span>
                     <input class="span2 ab-date-calendar" readonly="readonly" id="appendedPrependedInput" size="16" type="text" value="" />
-                    <span class="ab-week-picker-arrow next add-on col-arrow">&#9658;</span>
+                    <span class="ab-week-picker-arrow next add-on ab-col-arrow">&#9658;</span>
                 </div>
                 <div class="ab-week-picker"></div>
             </div>
@@ -28,7 +28,7 @@
                     </ul>
                 </div>
                 <div class="input-append left" style="margin-right:-1px">
-                    <input style="width:131px;margin-left:-2px;border-radius:0" class="span2" id="appendedInput" size="16" type="text" value="" /><span style="border-radius:0" class="add-on col-arrow">▼</span>
+                    <input style="width:131px;margin-left:-2px;border-radius:0" class="span2" id="appendedInput" size="16" type="text" value="" /><span style="border-radius:0" class="add-on ab-col-arrow">▼</span>
                 </div>
                 <div class="pagination left">
                     <ul>
@@ -115,8 +115,9 @@
                 <div class="ab-calendar-element"></div>
             </div>
         </div>
-        <?php include 'appointment_form.php' ?>
-        </div>
+
+        <?php include '_appointment_form.php' ?>
+
         <span id="staff_ids" style="display: none"><?php echo json_encode($user_ids) ?></span>
         <span id="ab_calendar_data_holder" style="display: none">
             <span class="ab-calendar-first-day"><?php echo $week_start_day ?></span>

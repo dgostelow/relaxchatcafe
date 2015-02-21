@@ -3,7 +3,7 @@
 Plugin Name: Bookly
 Plugin URI: http://bookly.ladela.com
 Description: Bookly is a great easy-to-use and easy-to-manage appointment booking tool for Service providers who think about their customers. Plugin supports wide range of services, provided by business and individuals service providers offering reservations through websites. Setup any reservations quickly, pleasantly and easy with Bookly!
-Version: 3.4.2
+Version: 4.3
 Author: Ladela Interactive
 Author URI: http://www.ladela.com
 License: Commercial
@@ -12,25 +12,11 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 define( 'AB_PATH', __DIR__ );
 
-// core-includes
-include 'lib/AB_Controller.php';
-include 'lib/AB_Entity.php';
-include 'lib/AB_Form.php';
-include 'lib/AB_BookingConfiguration.php';
-include 'lib/AB_NotificationReplacement.php';
-include 'lib/utils/AB_DateTime.php';
-include 'lib/utils/AB_DateInterval.php';
-include 'lib/utils/AB_DateUtils.php';
-include 'lib/utils/AB_CommonUtils.php';
-include 'lib/google_api_v3/autoload.php';
-include 'backend/AB_Backend.php';
-include 'frontend/AB_Frontend.php';
-include 'installer.php';
-include 'updates.php';
+include 'includes.php';
 
 // auto updating
-require 'lib/utils/plugin-updates/plugin-update-checker.php';
-$MyUpdateChecker = new PluginUpdateChecker(
+require 'lib/utils/plugin-updates/ab-plugin-update-checker.php';
+$MyUpdateChecker = new AB_PluginUpdateChecker(
     'http://bookly.ladela.com/index.php',
     __FILE__,
     basename( __DIR__ )

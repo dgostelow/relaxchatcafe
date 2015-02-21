@@ -133,16 +133,16 @@ jQuery(function($) {
                             );
                         };
 
-                        // Select all services related to choosen category
+                        // Select all services related to chosen category
                         $('.ab-category-checkbox', services_form).bind('click', function () {
-                            $('.ab-category-services .ab-category-' + $(this).data('category-id')).attr('checked', $(this).is(':checked')).change();
+                            $('.ab-category-services .ab-category-' + $(this).data('category-id')).prop('checked', $(this).is(':checked')).change();
                             auto_tick_checkboxes();
                         });
 
-                        // Select all services
+                        // Check and uncheck all services
                         $('#ab-all-services').bind('click', function () {
-                            $('.ab-service-checkbox', services_form).attr('checked', $(this).is(':checked')).change();
-                            $('.ab-category-checkbox').attr('checked', $(this).is(':checked'));
+                            $('.ab-service-checkbox', services_form).prop('checked', $(this).is(':checked')).change();
+                            $('.ab-category-checkbox').prop('checked', $(this).is(':checked'));
                         });
 
                         // Select service
@@ -164,6 +164,11 @@ jQuery(function($) {
                             $.post(ajaxurl, services_form.serialize(), function (response) {
                                 $('.spinner', services_form).fadeOut('slow');
                             });
+                        });
+
+                        // After reset auto tick group checkboxes.
+                        $('.ab-reset-form').on('click', function() {
+                            setTimeout(auto_tick_checkboxes, 0);
                         });
 
                         auto_tick_checkboxes();
@@ -196,7 +201,7 @@ jQuery(function($) {
                         $('#ab-schedule-reset').bind('click', function () {
                             $('.working-start', schedule_container).each(function () {
                                 $(this).val($(this).data('default_value'));
-                                $(this).trigger('click');
+                                $(this).trigger('change');
                             });
 
                             $('.working-end', schedule_container).each(function () {
@@ -281,14 +286,14 @@ jQuery(function($) {
 
                         // when the working day is disabled (working start time is set to "OFF")
                         // hide all the elements inside the row
-                        schedule_container.find('.working-start').bind('click', function(){
+                        schedule_container.find('.working-start').bind('change', function(){
                             var $this = $(this),
                                 $row  = $this.parents('.staff-schedule-item-row');
 
                             if (!$this.val()) {
                                 $row.find('.hide-on-non-working-day').hide();
                             } else {
-                                $row.find('.hide-on-non-working-day:hidden').show();
+                                $row.find('.hide-on-non-working-day').show();
                             }
                         });
 
@@ -477,4 +482,25 @@ jQuery(function($) {
     $staff_member.filter('[data-active="true"]').click();
 
     helpInit();
+
+    var $staff = $('ul#ab-staff-list');
+    $staff.sortable({
+        axis   : 'y',
+        handle : '.ab-handle',
+        update : function( event, ui ) {
+            var data = [];
+            $staff.children('li').each(function() {
+                var $this = $(this);
+                var position = $this.data('staff-id');
+                //alert($this.data('staff-id'));
+                data.push(position);
+            });
+            $.ajax({
+                type : 'POST',
+                url  : ajaxurl,
+                data : { action: 'ab_update_staff_position', position: data }
+            });
+        }
+    });
+
 });

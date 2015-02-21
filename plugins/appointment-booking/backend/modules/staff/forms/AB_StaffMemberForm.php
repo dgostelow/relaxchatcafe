@@ -2,8 +2,6 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-include AB_PATH . '/lib/entities/AB_Staff.php';
-
 /**
  * Class AB_StaffMemberForm
  *

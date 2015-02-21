@@ -2,15 +2,21 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-include 'AB_NotificationsForm.php';
-
 class AB_NotificationsController extends AB_Controller {
 
     public function index() {
-        $path = dirname( __DIR__ );
-        wp_enqueue_style( 'ab-style', plugins_url( 'resources/css/ab_style.css', $path ) );
-        wp_enqueue_style( 'ab-bootstrap', plugins_url( 'resources/bootstrap/css/bootstrap.min.css', $path ) );
-        wp_enqueue_script( 'ab-bootstrap', plugins_url( 'resources/bootstrap/js/bootstrap.min.js', $path ), array( 'jquery' ) );
+        $this->enqueueStyles( array(
+            'backend' => array(
+                'css/ab_style.css',
+                'bootstrap/css/bootstrap.min.css',
+            )
+        ) );
+
+        $this->enqueueScripts( array(
+            'backend' => array(
+                'bootstrap/js/bootstrap.min.js' => array( 'jquery' ),
+            )
+        ) );
 
         $this->form = new AB_NotificationsForm();
 

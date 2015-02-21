@@ -2,8 +2,6 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-include 'forms/AB_CustomerForm.php';
-
 class AB_CustomerController extends AB_Controller {
 
     protected function getPermissions() {
@@ -18,16 +16,31 @@ class AB_CustomerController extends AB_Controller {
             $this->importCustomers();
         }
 
-        $path = dirname( __DIR__ );
+        $this->enqueueStyles( array(
+            'backend' => array(
+                'css/ab_style.css',
+                'bootstrap/css/bootstrap.min.css',
+            )
+        ) );
 
-        wp_enqueue_style( 'ab-style', plugins_url( 'resources/css/ab_style.css', $path ) );
-        wp_enqueue_style( 'ab-bootstrap', plugins_url( 'resources/bootstrap/css/bootstrap.min.css', $path ) );
-        wp_enqueue_script( 'ab-bootstrap', plugins_url( 'resources/bootstrap/js/bootstrap.min.js', $path ), array( 'jquery' ) );
-        wp_enqueue_script( 'ab-angularjs', plugins_url( 'resources/js/angular-1.0.6.min.js', $path ) );
-        wp_enqueue_script( 'ab-angularui', plugins_url( 'resources/js/angular-ui-0.4.0.min.js', $path ) );
-        wp_enqueue_script( 'ab-ng-sanitize', plugins_url( 'resources/js/angular-sanitize-1.0.6.min.js', $path ) );
-        wp_enqueue_script( 'ab-ng-app',  plugins_url( 'resources/js/ng-app.js', __FILE__ ), array( 'jquery', 'ab-angularjs', 'ab-angularui', 'ab-ng-sanitize' ) );
-        wp_enqueue_script( 'ab-ng-new_customer_dialog', plugins_url( 'resources/js/ng-new_customer_dialog.js', dirname(__FILE__) . '/../../AB_Backend.php' ), array( 'jquery', 'ab-angularjs' ) );
+        $this->enqueueScripts( array(
+            'backend' => array(
+                'bootstrap/js/bootstrap.min.js' => array( 'jquery' ),
+                'js/angular-1.3.11.min.js',
+                'js/angular-sanitize.min.js',
+                'js/angular-ui-utils-0.2.1.min.js',
+                'js/angular-ui-date-0.0.7.js',
+                'js/ng-new_customer_dialog.js' => array( 'jquery', 'ab-angular-1.3.11.min.js' ),
+            ),
+            'module' => array(
+                'js/ng-app.js' => array( 'jquery', 'ab-angular-1.3.11.min.js', 'ab-angular-ui-utils-0.2.1.min.js', 'ab-angular-ui-date-0.0.7.js' ),
+            )
+        ) );
+
+        wp_localize_script( 'ab-ng-app.js', 'BooklyL10n', array(
+            'are_you_sure'  => __( 'Are you sure?', 'ab' ),
+            'module'        => 'customer',
+        ));
 
         $this->render('index');
     }
@@ -66,7 +79,7 @@ class AB_CustomerController extends AB_Controller {
                         FROM `ab_customer` `c`
                         LEFT JOIN `ab_customer_appointment` `ca` ON `ca`.`customer_id` = `c`.`id`
                         LEFT JOIN `ab_appointment` `a` ON `a`.`id` = `ca`.`appointment_id`
-                        LEFT JOIN `ab_payment` `p` ON `p`.`appointment_id` = `a`.`id` and `p`.`customer_id`  = `c`.`id`";
+                        LEFT JOIN `ab_payment` `p` ON `p`.`customer_appointment_id` = `ca`.`id`";
             // WHERE
             if ( $filter !== '' ) {
                 $query .= " WHERE `c`.`name` LIKE '%{$filter}%' OR `c`.`phone` LIKE '%{$filter}%' OR `c`.`email` LIKE '%{$filter}%'";
@@ -171,7 +184,10 @@ class AB_CustomerController extends AB_Controller {
      * Get angulars template for new customer dialog.
      */
     public function executeGetNgNewCustomerDialogTemplate() {
-        $this->render( 'ng-new_customer_dialog' );
+        $this->render( 'ng-new_customer_dialog', array(
+            'custom_fields' => json_decode( get_option( 'ab_custom_fields' ) ),
+            'module'        => $this->getParameter('module')
+        ) );
         exit ( 0 );
     }
 

@@ -25,7 +25,7 @@
             </td>
             <td>
                 <img
-                    src="<?php echo plugins_url( 'backend/resources/images/help.png', AB_PATH . '/main.php' ) ?>"
+                    src="<?php echo esc_attr( plugins_url( 'backend/resources/images/help.png', AB_PATH . '/main.php' ) ) ?>"
                     alt=""
                     class="ab-popover"
                     data-content="<?php echo esc_attr( __( 'Select the time interval that will be used in frontend and backend, e.g. in calendar, second step of the booking process, while indicating the working hours, etc.', 'ab' ) ) ?>"
@@ -38,15 +38,15 @@
             </td>
             <td style="vertical-align: top">
                 <select name="ab_settings_minimum_time_prior_booking" style="width: 200px;">
-                    <option value="0" <?php echo !get_option( 'ab_settings_minimum_time_prior_booking' ) ? 'selected' : '' ?>><?php _e( 'Disabled', 'ab' ) ?></option>
+                    <option value="0" <?php selected( get_option( 'ab_settings_minimum_time_prior_booking' ), 0 ) ?>><?php _e( 'Disabled', 'ab' ) ?></option>
                     <?php foreach ( array_merge(range(1, 12), array(24, 48)) as $hour): ?>
-                        <option value="<?php echo $hour ?>" <?php echo get_option( 'ab_settings_minimum_time_prior_booking' ) == $hour ? 'selected' : '' ?>><?php echo $hour ?> h</option>
+                        <option value="<?php echo $hour ?>" <?php selected( get_option( 'ab_settings_minimum_time_prior_booking' ), $hour ) ?>><?php echo AB_Service::durationToString( $hour * 3600 ) ?></option>
                     <?php endforeach ?>
                 </select>
             </td>
             <td>
                 <img
-                    src="<?php echo plugins_url( 'backend/resources/images/help.png', AB_PATH . '/main.php' ) ?>"
+                    src="<?php echo esc_attr( plugins_url( 'backend/resources/images/help.png', AB_PATH . '/main.php' ) ) ?>"
                     alt=""
                     class="ab-popover"
                     data-content="<?php echo esc_attr( __( 'Set a minimum amount of time before the chosen appointment (for example, require the customer to book at least 1 hour before the appointment time).', 'ab' ) ) ?>"
@@ -60,13 +60,13 @@
             <td>
                 <select name="ab_settings_use_client_time_zone" style="width: 200px;">
                     <?php foreach ( array( __( 'Disabled', 'ab' ) => '0', __( 'Enabled', 'ab' ) => '1' ) as $text => $mode ): ?>
-                        <option value="<?php echo $mode ?>" <?php selected( get_option( 'ab_settings_use_client_time_zone' ), $mode ); ?> ><?php echo $text ?></option>
+                        <option value="<?php echo $mode ?>" <?php selected( get_option( 'ab_settings_use_client_time_zone' ), $mode ) ?> ><?php echo $text ?></option>
                     <?php endforeach ?>
                 </select>
             </td>
             <td>
                 <img
-                    src="<?php echo plugins_url( 'backend/resources/images/help.png', AB_PATH . '/main.php' ) ?>"
+                    src="<?php echo esc_attr( plugins_url( 'backend/resources/images/help.png', AB_PATH . '/main.php' ) ) ?>"
                     alt=""
                     class="ab-popover"
                     data-content="<?php echo esc_attr( __( 'The value is taken from client’s browser.', 'ab' ) ) ?>"
@@ -78,94 +78,46 @@
                 <label><?php _e( 'Cancel appointment page URL', 'ab' ) ?></label>
             </td>
             <td>
-                <input type="text" name="ab_settings_cancel_page_url" value="<?php echo get_option( 'ab_settings_cancel_page_url' ) ?>" >
+                <input type="text" name="ab_settings_cancel_page_url" value="<?php echo esc_attr( get_option( 'ab_settings_cancel_page_url' ) ) ?>" placeholder="<?php echo esc_attr( __( 'Enter a URL', 'ab' ) ) ?>" />
             </td>
             <td>
                 <img
-                    src="<?php echo plugins_url( 'backend/resources/images/help.png', AB_PATH . '/main.php' ) ?>"
+                    src="<?php echo esc_attr( plugins_url( 'backend/resources/images/help.png', AB_PATH . '/main.php' ) ) ?>"
                     alt=""
                     class="ab-popover"
-                    data-content="<?php echo esc_attr( __( 'Insert the URL of the page that is shown to clients after they have cancelled their booking.', 'ab' ) ) ?>"
-                    />
-            </td>
-        </tr>
-        <tr>
-            <td colspan="3">
-                <h4 style="float:left"><?php _e( 'Google Calendar', 'ab' ) ?></h4>
-                <img style="float: left;margin-top: 8px;margin-left:15px;"
-                     src="<?php echo plugins_url( 'backend/resources/images/help.png', AB_PATH . '/main.php' ) ?>"
-                     alt=""
-                     class="ab-popover-ext"
-                     data-ext_id="ab-gc-popover-ext"
+                    data-content="<?php echo esc_attr( __( 'Insert a URL of a page that is shown to clients after they have cancelled their booking.', 'ab' ) ) ?>"
                     />
             </td>
         </tr>
         <tr>
             <td>
-                <label><?php _e( 'Client ID', 'ab' ) ?></label>
+                <label><?php _e( 'Final step URL', 'ab' ) ?></label>
             </td>
             <td>
-                <input type="text" name="ab_settings_google_client_id" value="<?php echo get_option( 'ab_settings_google_client_id' ) ?>" >
-            </td>
-            <td>
-                <img
-                    src="<?php echo plugins_url( 'backend/resources/images/help.png', AB_PATH . '/main.php' ) ?>"
-                    alt=""
-                    class="ab-popover"
-                    data-content="<?php echo esc_attr( __( 'The client ID obtained from the Developers Console', 'ab' ) ) ?>"
-                    />
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <label><?php _e( 'Client secret', 'ab' ) ?></label>
-            </td>
-            <td>
-                <input type="text" name="ab_settings_google_client_secret" value="<?php echo get_option( 'ab_settings_google_client_secret' ) ?>" >
+                <select id="ab_settings_final_step_url_mode" style="width: 200px;">
+                    <?php foreach ( array( __( 'Disabled', 'ab' ) => 0, __( 'Enabled', 'ab' ) => 1 ) as $text => $mode ): ?>
+                        <option value="<?php echo $mode ?>" <?php selected( get_option( 'ab_settings_final_step_url' ), $mode ) ?> ><?php echo $text ?></option>
+                    <?php endforeach ?>
+                </select>
+                <br>
+                <input style="margin-top: 5px; <?php echo get_option( 'ab_settings_final_step_url' ) == ''? 'display: none':''; ?>" type="text" name="ab_settings_final_step_url" value="<?php echo esc_attr( get_option( 'ab_settings_final_step_url' ) ) ?>" placeholder="<?php echo esc_attr( __( 'Enter a URL', 'ab' ) ) ?>" />
             </td>
             <td>
                 <img
-                    src="<?php echo plugins_url( 'backend/resources/images/help.png', AB_PATH . '/main.php' ) ?>"
+                    src="<?php echo esc_attr( plugins_url( 'backend/resources/images/help.png', AB_PATH . '/main.php' ) ) ?>"
                     alt=""
                     class="ab-popover"
-                    data-content="<?php echo esc_attr( __( 'The client secret obtained from the Developers Console', 'ab' ) ) ?>"
-                    />
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <label><?php _e( 'Redirect URI', 'ab' ) ?></label>
-            </td>
-            <td>
-                <input type="text" readonly value="<?php echo AB_Google::generateRedirectURI() ?>" onclick="this.select();" style="cursor: pointer;">
-            </td>
-            <td>
-                <img
-                    src="<?php echo plugins_url( 'backend/resources/images/help.png', AB_PATH . '/main.php' ) ?>"
-                    alt=""
-                    class="ab-popover"
-                    data-content="<?php _e('Enter this URL as a redirect URI in the Developers Console', 'ab') ?>"
+                    data-content="<?php echo esc_attr( __( 'Set a URL of a page that the user will be forwarded to after successful booking. If disabled then the default step 5 is displayed.', 'ab' ) ) ?>"
                     />
             </td>
         </tr>
         <tr>
             <td></td>
             <td>
-                <input type="submit" value="<?php _e( 'Save', 'ab' ) ?>" class="btn btn-info ab-update-button" />
+                <input type="submit" value="<?php echo esc_attr( __( 'Save', 'ab' ) ) ?>" class="btn btn-info ab-update-button" />
                 <button class="ab-reset-form" type="reset"><?php _e( ' Reset ', 'ab' ) ?></button>
             </td>
         </tr>
     </table>
 </form>
 
-<div id="ab-gc-popover-ext" style="display:none">
-    <p><?php _e( 'To find your client ID and client secret, do the following:', 'ab' ) ?></p>
-    <ol>
-        <li><?php _e( 'Go to the <a href="https://console.developers.google.com/" target="_blank">Google Developers Console</a>.', 'ab' ) ?></li>
-        <li><?php _e( 'Select a project, or create a new one.', 'ab' ) ?></li>
-        <li><?php _e( 'In the sidebar on the left, expand <b>APIs & auth</b>. Next, click <b>APIs</b>. In the list of APIs, make sure the status is <b>ON</b> for the Google Calendar API.', 'ab' ) ?></li>
-        <li><?php _e( 'In the sidebar on the left, select <b>Credentials</b>.', 'ab' ) ?></li>
-        <li><?php _e( 'Create your project\'s OAuth 2.0 credentials by clicking <b>Create new Client ID</b>, selecting <b>Web application</b>, and providing the information needed to create the credentials. For <b>AUTHORIZED REDIRECT URIS</b> enter the <b>Redirect URI</b> found below on this page.', 'ab' ) ?></li>
-        <li><?php _e( 'Look for the <b>Client ID</b> and <b>Client secret</b> in the table associated with each of your credentials.', 'ab' ) ?></li>
-    </ol>
-</div>

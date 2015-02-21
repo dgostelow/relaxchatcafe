@@ -1,8 +1,6 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-if ( !class_exists( 'Stripe' ) ) include AB_PATH.'/lib/Payment/stripe/Stripe.php';
-
 /**
  * Class AB_StripeController
  */
@@ -61,11 +59,16 @@ class AB_StripeController extends AB_Controller {
                 if ($charge->paid){
                     $appointment = $userData->save();
 
+                    $customer_appointment = new AB_Customer_Appointment();
+                    $customer_appointment->loadBy( array(
+                        'appointment_id' => $appointment->get('id'),
+                        'customer_id'    => $userData->getCustomerId()
+                    ) );
+
                     $payment = new AB_Payment();
                     $payment->set( 'total', $price);
                     $payment->set( 'type', 'stripe' );
-                    $payment->set( 'customer_id', $userData->getCustomerId() );
-                    $payment->set( 'appointment_id', $appointment->get( 'id' ) );
+                    $payment->set( 'customer_appointment_id', $customer_appointment->get( 'id' ) );
                     $payment->set( 'created', date('Y-m-d H:i:s') );
 
                     if ($userData->getCoupon()) {
@@ -74,11 +77,6 @@ class AB_StripeController extends AB_Controller {
                     }
 
                     $payment->save();
-
-                    if ( isset( $_SESSION[ 'tmp_booking_data' ] ) ) {
-                        unset( $_SESSION[ 'tmp_booking_data' ] );
-                    }
-                    $_SESSION[ 'tmp_booking_data' ] = serialize( $userData );
 
                     $userData->clean();
                     $userData->setPaymentId( $payment->get( 'id' ) );

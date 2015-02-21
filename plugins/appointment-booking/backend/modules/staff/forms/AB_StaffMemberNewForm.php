@@ -1,6 +1,5 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
-include 'AB_StaffMemberForm.php';
 
 /**
  * Class AB_StaffMemberNewForm

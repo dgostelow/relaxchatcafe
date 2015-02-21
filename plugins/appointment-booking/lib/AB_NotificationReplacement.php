@@ -1,137 +1,39 @@
-<?php
+<?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
  
 class AB_NotificationReplacement {
 
-    private $client_name = '';
+    private $data = array(
+        'appointment_time'   => '',
+        'appointment_token'  => '',
+        'client_email'       => '',
+        'client_name'        => '',
+        'client_phone'       => '',
+        'custom_fields'      => '',
+        'service_name'       => '',
+        'service_price'      => '',
+        'staff_email'        => '',
+        'staff_name'         => '',
+        'staff_phone'        => '',
+        'staff_photo'        => '',
+        'cancel_appointment' => '',
+        'category_name'      => '',
+        'next_day_agenda'    => '',
+    );
 
-    private $appointment_token = '';
+    public function set( $name, $value ) {
+        if ( !array_key_exists( $name, $this->data ) ) {
+            throw new InvalidArgumentException( sprintf( 'Trying to set unknown replacement "%s" for email notifications', $name ) );
+        }
 
-    private $cancel_appointment = '';
-
-    private $client_phone = '';
-
-    private $client_email = '';
-
-    private $client_notes = '';
-
-    private $staff_name = '';
-
-    private $appointment_time = '';
-
-    private $service_name = '';
-
-    private $service_price = 0;
-
-    private $category_name = '';
-
-    private $company_name = '';
-
-    private $company_logo = '';
-
-    private $company_address = '';
-
-    private $company_phone = '';
-
-    private $company_website = '';
-
-    private $next_day_agenda = '';
-
-    public function __construct() {
-        $this->company_name    = get_option( 'ab_settings_company_name' );
-        $this->company_logo    = get_option( 'ab_settings_company_logo_url' );
-        $this->company_address = nl2br( get_option( 'ab_settings_company_address' ) );
-        $this->company_phone   = get_option( 'ab_settings_company_phone' );
-        $this->company_website = get_option( 'ab_settings_company_website' );
+        $this->data[ $name ] = $value;
     }
 
-    /**
-     * @param $appointment_time
-     */
-    public function setAppointmentTime( $appointment_time ) {
-        $this->appointment_time = $appointment_time;
-    }
+    public function get( $name ) {
+        if ( !array_key_exists( $name, $this->data ) ) {
+            throw new InvalidArgumentException( sprintf( 'Trying to get unknown replacement "%s" for email notifications', $name ) );
+        }
 
-    /**
-     * @param $client_name
-     */
-    public function setClientName( $client_name ) {
-        $this->client_name = $client_name;
-    }
-
-    /**
-     * @param $appointment_token
-     */
-    public function setAppointmentToken ( $appointment_token ) {
-        $this->appointment_token = $appointment_token;
-    }
-
-    /**
-     * @param $client_phone
-     */
-    public function setClientPhone( $client_phone ) {
-        $this->client_phone = $client_phone;
-    }
-
-    /**
-     * @param $client_email
-     */
-    public function setClientEmail( $client_email ) {
-        $this->client_email = $client_email;
-    }
-
-    /**
-     * @param $client_notes
-     */
-    public function setClientNotes( $client_notes ) {
-        $this->client_notes = $client_notes;
-    }
-
-    /**
-     * @param $service_name
-     */
-    public function setServiceName( $service_name ) {
-        $this->service_name = $service_name;
-    }
-
-    /**
-     * @param $service_price
-     */
-    public function setServicePrice( $service_price ) {
-        $this->service_price = AB_CommonUtils::formatPrice( $service_price );
-    }
-
-    /**
-     * @param $category_name
-     */
-    public function setCategoryName( $category_name ) {
-        $this->category_name = $category_name;
-    }
-
-    /**
-     * @param $agenda
-     */
-    public function setNextDayAgenda( $agenda ) {
-        $this->next_day_agenda = $agenda;
-    }
-
-    /**
-     * @param $staff_name
-     */
-    public function setStaffName( $staff_name ) {
-        $this->staff_name = $staff_name;
-    }
-
-    /**
-     * @param $text
-     * @return mixed
-     */
-    public function replaceSubject( $text ) {
-        $replacement = array(
-            '[[COMPANY_NAME]]'  => $this->company_name,
-//            '[[TOMORROW_DATE]]' => ''
-        );
-
-        return str_replace( array_keys( $replacement ), array_values( $replacement ), $text );
+        return $this->data[ $name ];
     }
 
     /**
@@ -139,31 +41,51 @@ class AB_NotificationReplacement {
      * @return mixed
      */
     public function replace( $text ) {
-        $company_logo = isset( $this->company_logo ) ? $this->company_logo : '';
-        if ( ! empty( $company_logo ) ) {
-            $this->company_logo = '<img src="' . esc_attr( $company_logo ) . '" />';
+        $company_logo = '';
+        if ( get_option( 'ab_settings_company_logo_url' ) != '' ) {
+            $company_logo = sprintf(
+                '<img src="%s" alt="%s" />',
+                esc_attr( get_option( 'ab_settings_company_logo_url' ) ),
+                esc_attr( get_option( 'ab_settings_company_name' ) )
+            );
         }
 
-        $this->cancel_appointment = sprintf( '<a href="%1$s">%1$s</a>', get_site_url() . '/wp-admin/admin-ajax.php?action=ab_cancel_appointment&token=' . $this->appointment_token );
+        $staff_photo = '';
+        if ( $this->data[ 'staff_photo' ] != '' ) {
+            $staff_photo = sprintf(
+                '<img src="%s" alt="%s" />',
+                esc_attr( $this->data[ 'staff_photo' ] ),
+                esc_attr( $this->data[ 'staff_name' ] )
+            );
+        }
+
+        $cancel_appointment = sprintf(
+            '<a href="%1$s">%1$s</a>',
+            admin_url( 'admin-ajax.php' ) . '?action=ab_cancel_appointment&token=' . $this->data[ 'appointment_token' ]
+        );
 
         $replacement = array(
-            '[[STAFF_NAME]]'         => $this->staff_name,
-            '[[CLIENT_NAME]]'        => $this->client_name,
-            '[[CLIENT_PHONE]]'       => $this->client_phone,
-            '[[CLIENT_EMAIL]]'       => $this->client_email,
-            '[[CLIENT_NOTES]]'       => $this->client_notes,
-            '[[APPOINTMENT_TIME]]'   => date_i18n( get_option( 'time_format' ), strtotime( $this->appointment_time ) ),
-            '[[APPOINTMENT_DATE]]'   => date_i18n( get_option( 'date_format' ), strtotime( $this->appointment_time ) ),
-            '[[SERVICE_NAME]]'       => $this->service_name,
-            '[[SERVICE_PRICE]]'      => $this->service_price,
-            '[[CATEGORY_NAME]]'      => $this->category_name,
-            '[[COMPANY_NAME]]'       => $this->company_name,
-            '[[COMPANY_LOGO]]'       => $this->company_logo,
-            '[[COMPANY_ADDRESS]]'    => $this->company_address,
-            '[[COMPANY_PHONE]]'      => $this->company_phone,
-            '[[COMPANY_WEBSITE]]'    => $this->company_website,
-            '[[NEXT_DAY_AGENDA]]'    => $this->next_day_agenda,
-            '[[CANCEL_APPOINTMENT]]' => $this->cancel_appointment,
+            '[[APPOINTMENT_TIME]]'   => date_i18n( get_option( 'time_format' ), strtotime( $this->data[ 'appointment_time' ] ) ),
+            '[[APPOINTMENT_DATE]]'   => date_i18n( get_option( 'date_format' ), strtotime( $this->data[ 'appointment_time' ] ) ),
+            '[[CUSTOM_FIELDS]]'      => $this->data[ 'custom_fields' ],
+            '[[CLIENT_NAME]]'        => $this->data[ 'client_name' ],
+            '[[CLIENT_PHONE]]'       => $this->data[ 'client_phone' ],
+            '[[CLIENT_EMAIL]]'       => $this->data[ 'client_email' ],
+            '[[SERVICE_NAME]]'       => $this->data[ 'service_name' ],
+            '[[SERVICE_PRICE]]'      => $this->data[ 'service_price' ],
+            '[[STAFF_EMAIL]]'        => $this->data[ 'staff_email' ],
+            '[[STAFF_NAME]]'         => $this->data[ 'staff_name' ],
+            '[[STAFF_PHONE]]'        => $this->data[ 'staff_phone' ],
+            '[[STAFF_PHOTO]]'        => $staff_photo,
+            '[[CANCEL_APPOINTMENT]]' => $cancel_appointment,
+            '[[CATEGORY_NAME]]'      => $this->data[ 'category_name' ],
+            '[[COMPANY_ADDRESS]]'    => nl2br( get_option( 'ab_settings_company_address' ) ),
+            '[[COMPANY_LOGO]]'       => $company_logo,
+            '[[COMPANY_NAME]]'       => get_option( 'ab_settings_company_name' ),
+            '[[COMPANY_PHONE]]'      => get_option( 'ab_settings_company_phone' ),
+            '[[COMPANY_WEBSITE]]'    => get_option( 'ab_settings_company_website' ),
+            '[[NEXT_DAY_AGENDA]]'    => $this->data[ 'next_day_agenda' ],
+            '[[TOMORROW_DATE]]'      => date_i18n( get_option( 'date_format' ), strtotime( $this->data[ 'appointment_time' ] ) ),
         );
 
         return str_replace( array_keys( $replacement ), array_values( $replacement ), $text );

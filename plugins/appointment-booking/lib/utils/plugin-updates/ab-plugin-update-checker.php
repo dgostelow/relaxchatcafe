@@ -8,7 +8,7 @@
  * http://www.gnu.org/licenses/gpl.html
  */
 
-if ( !class_exists('PluginUpdateChecker_1_3') ):
+if ( !class_exists('AB_PluginUpdateChecker_1_3') ):
 
 /**
  * A custom plugin update checker. 
@@ -18,7 +18,7 @@ if ( !class_exists('PluginUpdateChecker_1_3') ):
  * @version 1.2
  * @access public
  */
-class PluginUpdateChecker_1_3 {
+class AB_PluginUpdateChecker_1_3 {
 	public $metadataUrl = ''; //The URL of the plugin's metadata file.
 	public $pluginFile = '';  //Plugin filename relative to the plugins directory.
 	public $slug = '';        //Plugin slug.
@@ -149,7 +149,7 @@ class PluginUpdateChecker_1_3 {
 	 * @uses wp_remote_get()
 	 * 
 	 * @param array $queryArgs Additional query arguments to append to the request. Optional.
-	 * @return PluginInfo
+	 * @return AB_PluginInfo
 	 */
 	public function requestInfo($queryArgs = array()){
 		//Query args to append to the URL. Plugins can add their own by using a filter callback (see addQueryArgFilter()).
@@ -182,7 +182,7 @@ class PluginUpdateChecker_1_3 {
 		//Try to parse the response
 		$pluginInfo = null;
 		if ( !is_wp_error($result) && isset($result['response']['code']) && ($result['response']['code'] == 200) && !empty($result['body']) ){
-			$pluginInfo = PluginInfo_1_3::fromJson($result['body'], $this->debugMode);
+			$pluginInfo = AB_PluginInfo_1_3::fromJson($result['body'], $this->debugMode);
 		} else if ( $this->debugMode ) {
 			$message = sprintf("The URL %s does not point to a valid plugin metadata file. ", $url);
 			if ( is_wp_error($result) ) {
@@ -202,9 +202,9 @@ class PluginUpdateChecker_1_3 {
 	/**
 	 * Retrieve the latest update (if any) from the configured API endpoint.
 	 * 
-	 * @uses PluginUpdateChecker::requestInfo()
+	 * @uses AB_PluginUpdateChecker::requestInfo()
 	 * 
-	 * @return PluginUpdate An instance of PluginUpdate, or NULL when no updates are available.
+	 * @return AB_PluginUpdate An instance of AB_PluginUpdate, or NULL when no updates are available.
 	 */
 	public function requestUpdate(){
 		//For the sake of simplicity, this function just calls requestInfo() 
@@ -213,7 +213,7 @@ class PluginUpdateChecker_1_3 {
 		if ( $pluginInfo == null ){
 			return null;
 		}
-		return PluginUpdate_1_3::fromPluginInfo($pluginInfo);
+		return AB_PluginUpdate_1_3::fromPluginInfo($pluginInfo);
 	}
 	
 	/**
@@ -247,7 +247,7 @@ class PluginUpdateChecker_1_3 {
 	 * Check for plugin updates. 
 	 * The results are stored in the DB option specified in $optionName.
 	 * 
-	 * @return PluginUpdate|null
+	 * @return AB_PluginUpdate|null
 	 */
 	public function checkForUpdates(){
 		$installedVersion = $this->getInstalledVersion();
@@ -309,7 +309,7 @@ class PluginUpdateChecker_1_3 {
 	public function getUpdateState() {
 		$state = get_site_option($this->optionName);
 		if ( !empty($state) && isset($state->update) && is_object($state->update) ){
-			$state->update = PluginUpdate_1_3::fromObject($state->update);
+			$state->update = AB_PluginUpdate_1_3::fromObject($state->update);
 		}
 		return $state;
 	}
@@ -323,7 +323,7 @@ class PluginUpdateChecker_1_3 {
 	 */
 	private function setUpdateState($state) {
 		if ( isset($state->update) && is_object($state->update) && method_exists($state->update, 'toStdClass') ) {
-			$update = $state->update; /** @var PluginUpdate $update */
+			$update = $state->update; /** @var AB_PluginUpdate $update */
 			$state->update = $update->toStdClass();
 		}
 		update_site_option($this->optionName, $state);
@@ -398,7 +398,7 @@ class PluginUpdateChecker_1_3 {
 	 * Uses cached update data. To retrieve update information straight from
 	 * the metadata URL, call requestUpdate() instead.
 	 *
-	 * @return PluginUpdate|null
+	 * @return AB_PluginUpdate|null
 	 */
 	public function getUpdate() {
 		$state = $this->getUpdateState(); /** @var StdClass $state */
@@ -520,11 +520,11 @@ class PluginUpdateChecker_1_3 {
 	 * Register a callback for filtering the plugin info retrieved from the external API.
 	 * 
 	 * The callback function should take two arguments. If the plugin info was retrieved 
-	 * successfully, the first argument passed will be an instance of  PluginInfo. Otherwise, 
+	 * successfully, the first argument passed will be an instance of AB_PluginInfo. Otherwise,
 	 * it will be NULL. The second argument will be the corresponding return value of 
 	 * wp_remote_get (see WP docs for details).
 	 *  
-	 * The callback function should return a new or modified instance of PluginInfo or NULL.
+	 * The callback function should return a new or modified instance of AB_PluginInfo or NULL.
 	 * 
 	 * @uses add_filter() This method is a convenience wrapper for add_filter().
 	 * 
@@ -564,7 +564,7 @@ class PluginUpdateChecker_1_3 {
 
 endif;
 
-if ( !class_exists('PluginInfo_1_3') ):
+if ( !class_exists('AB_PluginInfo_1_3') ):
 
 /**
  * A container class for holding and transforming various plugin metadata.
@@ -574,7 +574,7 @@ if ( !class_exists('PluginInfo_1_3') ):
  * @version 1.3
  * @access public
  */
-class PluginInfo_1_3 {
+class AB_PluginInfo_1_3 {
 	//Most fields map directly to the contents of the plugin's info.json file.
 	//See the relevant docs for a description of their meaning.  
 	public $name;
@@ -615,12 +615,12 @@ class PluginInfo_1_3 {
     }
 
 	/**
-	 * Create a new instance of PluginInfo from JSON-encoded plugin info 
+	 * Create a new instance of AB_PluginInfo from JSON-encoded plugin info
 	 * returned by an external update API.
 	 * 
 	 * @param string $json Valid JSON string representing plugin info.
 	 * @param bool $triggerErrors
-	 * @return PluginInfo|null New instance of PluginInfo, or NULL on error.
+	 * @return AB_PluginInfo|null New instance of AB_PluginInfo, or NULL on error.
 	 */
 	public static function fromJson($json, $triggerErrors = false){
 		/** @var StdClass $apiResponse */
@@ -701,7 +701,7 @@ class PluginInfo_1_3 {
 	
 endif;
 
-if ( !class_exists('PluginUpdate_1_3') ):
+if ( !class_exists('AB_PluginUpdate_1_3') ):
 
 /**
  * A simple container class for holding information about an available update.
@@ -711,7 +711,7 @@ if ( !class_exists('PluginUpdate_1_3') ):
  * @version 1.2
  * @access public
  */
-class PluginUpdate_1_3 {
+class AB_PluginUpdate_1_3 {
 	public $id = 0;
 	public $slug;
 	public $version;
@@ -721,17 +721,17 @@ class PluginUpdate_1_3 {
 	private static $fields = array('id', 'slug', 'version', 'homepage', 'download_url', 'upgrade_notice');
 	
 	/**
-	 * Create a new instance of PluginUpdate from its JSON-encoded representation.
+	 * Create a new instance of AB_PluginUpdate from its JSON-encoded representation.
 	 * 
 	 * @param string $json
 	 * @param bool $triggerErrors
-	 * @return PluginUpdate|null
+	 * @return AB_PluginUpdate|null
 	 */
 	public static function fromJson($json, $triggerErrors = false){
 		//Since update-related information is simply a subset of the full plugin info,
 		//we can parse the update JSON as if it was a plugin info string, then copy over
 		//the parts that we care about.
-		$pluginInfo = PluginInfo_1_3::fromJson($json, $triggerErrors);
+		$pluginInfo = AB_PluginInfo_1_3::fromJson($json, $triggerErrors);
 		if ( $pluginInfo != null ) {
 			return self::fromPluginInfo($pluginInfo);
 		} else {
@@ -740,22 +740,22 @@ class PluginUpdate_1_3 {
 	}
 
 	/**
-	 * Create a new instance of PluginUpdate based on an instance of PluginInfo.
+	 * Create a new instance of AB_PluginUpdate based on an instance of AB_PluginInfo.
 	 * Basically, this just copies a subset of fields from one object to another.
 	 * 
-	 * @param PluginInfo $info
-	 * @return PluginUpdate
+	 * @param AB_PluginInfo $info
+	 * @return AB_PluginUpdate
 	 */
 	public static function fromPluginInfo($info){
 		return self::fromObject($info);
 	}
 	
 	/**
-	 * Create a new instance of PluginUpdate by copying the necessary fields from 
+	 * Create a new instance of AB_PluginUpdate by copying the necessary fields from
 	 * another object.
 	 *  
-	 * @param StdClass|PluginInfo|PluginUpdate $object The source object.
-	 * @return PluginUpdate The new copy.
+	 * @param StdClass|AB_PluginInfo|AB_PluginUpdate $object The source object.
+	 * @return AB_PluginUpdate The new copy.
 	 */
 	public static function fromObject($object) {
 		$update = new self();
@@ -767,7 +767,7 @@ class PluginUpdate_1_3 {
 	
 	/**
 	 * Create an instance of StdClass that can later be converted back to 
-	 * a PluginUpdate. Useful for serialization and caching, as it avoids
+	 * a AB_PluginUpdate. Useful for serialization and caching, as it avoids
 	 * the "incomplete object" problem if the cached value is loaded before
 	 * this class.
 	 * 
@@ -805,38 +805,38 @@ class PluginUpdate_1_3 {
 	
 endif;
 
-if ( !class_exists('PucFactory') ):
+if ( !class_exists('AB_PucFactory') ):
 
 /**
  * A factory that builds instances of other classes from this library.
  *
- * When multiple versions of the same class have been loaded (e.g. PluginUpdateChecker 1.2
+ * When multiple versions of the same class have been loaded (e.g. AB_PluginUpdateChecker 1.2
  * and 1.3), this factory will always use the latest available version. Register class
  * versions by calling {@link PucFactory::addVersion()}.
  *
- * At the moment it can only build instances of the PluginUpdateChecker class. Other classes
+ * At the moment it can only build instances of the AB_PluginUpdateChecker class. Other classes
  * are intended mainly for internal use and refer directly to specific implementations. If you
  * want to instantiate one of them anyway, you can use {@link PucFactory::getLatestClassVersion()}
  * to get the class name and then create it with <code>new $class(...)</code>.
  */
-class PucFactory {
+class AB_PucFactory {
 	protected static $classVersions = array();
 	protected static $sorted = false;
 
 	/**
-	 * Create a new instance of PluginUpdateChecker.
+	 * Create a new instance of AB_PluginUpdateChecker.
 	 *
-	 * @see PluginUpdateChecker::__construct()
+	 * @see AB_PluginUpdateChecker::__construct()
 	 *
 	 * @param $metadataUrl
 	 * @param $pluginFile
 	 * @param string $slug
 	 * @param int $checkPeriod
 	 * @param string $optionName
-	 * @return PluginUpdateChecker
+	 * @return AB_PluginUpdateChecker
 	 */
 	public static function buildUpdateChecker($metadataUrl, $pluginFile, $slug = '', $checkPeriod = 12, $optionName = '') {
-		$class = self::getLatestClassVersion('PluginUpdateChecker');
+		$class = self::getLatestClassVersion('AB_PluginUpdateChecker');
 		return new $class($metadataUrl, $pluginFile, $slug, $checkPeriod, $optionName);
 	}
 
@@ -878,8 +878,8 @@ class PucFactory {
 	 *
 	 * @access private This method is only for internal use by the library.
 	 *
-	 * @param string $generalClass Class name without version numbers, e.g. 'PluginUpdateChecker'.
-	 * @param string $versionedClass Actual class name, e.g. 'PluginUpdateChecker_1_2'.
+	 * @param string $generalClass Class name without version numbers, e.g. 'AB_PluginUpdateChecker'.
+	 * @param string $versionedClass Actual class name, e.g. 'AB_PluginUpdateChecker_1_2'.
 	 * @param string $version Version number, e.g. '1.2'.
 	 */
 	public static function addVersion($generalClass, $versionedClass, $version) {
@@ -894,22 +894,22 @@ class PucFactory {
 endif;
 
 //Register classes defined in this file with the factory.
-PucFactory::addVersion('PluginUpdateChecker', 'PluginUpdateChecker_1_3', '1.3');
-PucFactory::addVersion('PluginUpdate', 'PluginUpdate_1_3', '1.3');
-PucFactory::addVersion('PluginInfo', 'PluginInfo_1_3', '1.3');
+AB_PucFactory::addVersion('AB_PluginUpdateChecker', 'AB_PluginUpdateChecker_1_3', '1.3');
+AB_PucFactory::addVersion('AB_PluginUpdate', 'AB_PluginUpdate_1_3', '1.3');
+AB_PucFactory::addVersion('AB_PluginInfo', 'AB_PluginInfo_1_3', '1.3');
 
 /**
  * Create non-versioned variants of the update checker classes. This allows for backwards
  * compatibility with versions that did not use a factory, and it simplifies doc-comments.
  */
-if ( !class_exists('PluginUpdateChecker') ) {
-	class PluginUpdateChecker extends PluginUpdateChecker_1_3 { }
+if ( !class_exists('AB_PluginUpdateChecker') ) {
+	class AB_PluginUpdateChecker extends AB_PluginUpdateChecker_1_3 { }
 }
 
-if ( !class_exists('PluginUpdate') ) {
-	class PluginUpdate extends PluginUpdate_1_3 {}
+if ( !class_exists('AB_PluginUpdate') ) {
+	class AB_PluginUpdate extends AB_PluginUpdate_1_3 {}
 }
 
-if ( !class_exists('PluginInfo') ) {
-	class PluginInfo extends PluginInfo_1_3 {}
+if ( !class_exists('AB_PluginInfo') ) {
+	class AB_PluginInfo extends AB_PluginInfo_1_3 {}
 }

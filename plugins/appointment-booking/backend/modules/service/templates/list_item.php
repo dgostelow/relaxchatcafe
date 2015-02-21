@@ -5,11 +5,19 @@
  * @var AB_Service $service
  */
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
+$time_interval  = get_option( 'ab_settings_time_slot_length' );
 ?>
-<tr id="<?php echo $service->id ?>" class="<?php echo $row_class ?>">
+
+<tr id="<?php echo $service->id ?>" class="<?php echo $row_class ?>" data-id="<?php echo $service->id ?>">
+    <td>
+        <span class="ab-handle">
+            <i class="ab-inner-handle icon-move"></i>
+        </span>
+    </td>
     <td class="first service-color-cell">
         <div class="service-color-wrapper">
-            <input type="hidden" class="service-color" name="color" value="<?php echo $service->color ?>" />
+            <input type="hidden" class="service-color" name="color" value="<?php echo esc_attr( $service->color ) ?>" />
         </div>
     </td>
     <td class="title editable-cell">
@@ -23,19 +31,18 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
     </td>
     <td>
         <select name="duration">
-            <?php
-                $time_interval  = get_option( 'ab_settings_time_slot_length' );
-            ?>
             <!-- Build service duration choices with the range from Time Interval Option to 12. -->
-                <?php for ( $j = $time_interval; $j <= 720; $j += $time_interval ) : ?>
-                    <?php
-                        $duration =  $j * 60;
-                        $duration_output = AB_Service::durationToString( $duration );
-                    ?>
-                    <option value="<?php echo $duration ?>" <?php selected($service->duration, $duration) ?>>
-                        <?php echo $duration_output ?>
+            <?php for ( $j = $time_interval; $j <= 720; $j += $time_interval ) : ?>
+                <?php if ($service->duration / 60 > $j - $time_interval && $service->duration / 60 < $j): ?>
+                    <option value="<?php echo esc_attr( $service->duration ) ?>" selected>
+                        <?php echo AB_Service::durationToString( $service->duration ) ?>
                     </option>
-                <?php endfor; ?>
+                <?php endif; ?>
+
+                <option value="<?php echo $j * 60 ?>" <?php selected($service->duration, $j * 60) ?>>
+                    <?php echo AB_Service::durationToString( $j * 60 ) ?>
+                </option>
+            <?php endfor; ?>
         </select>
     </td>
     <td align='right' class="editable-cell price">
@@ -54,8 +61,8 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
         <?php if ( count( $staff_collection ) ) : ?>
             <div class="btn-group">
                 <?php
-                    $assigned_staff_ids = $service->staff_ids ? explode(',', $service->staff_ids) : array();
-                    $all_staff_selected = count( $assigned_staff_ids ) == count( $staff_collection );
+                $assigned_staff_ids = $service->staff_ids ? explode(',', $service->staff_ids) : array();
+                $all_staff_selected = count( $assigned_staff_ids ) == count( $staff_collection );
                 ?>
                 <button class="btn btn-info"><i class="icon-user icon-white"></i> <span class=staff-count><?php echo $service->total_staff ?></span></button>
                 <button class="btn btn-info dropdown-toggle" data-toggle="dropdown">
@@ -65,7 +72,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
                     <li>
                         <a href="javascript:void(0)">
                             <input type="checkbox" id="service_<?php echo $service->id ?>_all_staff" class="all-staff"<?php if ( $all_staff_selected ) : ?> checked="checked" <?php endif; ?> />
-                            <label class="inline" for="service_<?php echo $service->id ?>_all_staff"><?php _e('All staff','ab') ?></label>
+                            <label class="ab-inline" for="service_<?php echo $service->id ?>_all_staff"><?php _e('All staff','ab') ?></label>
                         </a>
                     </li>
                     <?php foreach ( $staff_collection as $i => $staff ) : ?>
@@ -73,7 +80,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
                             <a href="javascript:void(0)" style="padding-left: 30px">
                                 <?php $staff_checked = in_array( $staff->id, $assigned_staff_ids ) ?>
                                 <input type="checkbox" name="staff_ids[]" class="staff" id="service_<?php echo $service->id ?>_staff_<?php echo $i ?>" value="<?php echo $staff->id ?>"<?php if ( $staff_checked ) : ?> checked="checked"<?php endif; ?>/>
-                                <label class="inline" for="service_<?php echo $service->id ?>_staff_<?php echo $i ?>">
+                                <label class="ab-inline" for="service_<?php echo $service->id ?>_staff_<?php echo $i ?>">
                                     <?php echo esc_html($staff->full_name) ?>
                                 </label>
                             </a>
@@ -86,20 +93,21 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
         <?php endif; ?>
     </td>
     <td>
-      <?php if ( count( $category_collection ) ) : ?>
-          <select name="category_id">
-              <option value="0"></option>
-              <?php foreach ( $category_collection as $category ) : ?>
-                  <option value="<?php echo $category->id ?>" <?php selected($category->id,  $service->category_id) ?>>
-                      <?php echo esc_html($category->name) ?>
-                  </option>
-              <?php endforeach; ?>
-          </select>
-      <?php else: ?>
-          &nbsp;
-      <?php endif; ?>
+        <?php if ( count( $category_collection ) ) : ?>
+            <select name="category_id">
+                <option value="0"></option>
+                <?php foreach ( $category_collection as $category ) : ?>
+                    <option value="<?php echo $category->id ?>" <?php selected($category->id,  $service->category_id) ?>>
+                        <?php echo esc_html($category->name) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        <?php else: ?>
+            &nbsp;
+        <?php endif; ?>
     </td>
     <td class="last">
         <input type="checkbox" class="row-checker" />
     </td>
 </tr>
+

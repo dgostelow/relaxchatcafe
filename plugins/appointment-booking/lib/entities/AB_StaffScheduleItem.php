@@ -1,27 +1,22 @@
-<?php
+<?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 /**
 * Class AB_StaffService
 */
 class AB_StaffScheduleItem extends AB_Entity {
 
+    protected static $table_name = 'ab_staff_schedule_item';
+
+    protected static $schema = array(
+        'id'               => array( 'format' => '%d' ),
+        'staff_id'         => array( 'format' => '%d' ),
+        'day_index'        => array( 'format' => '%d' ),
+        'start_time'       => array( 'format' => '%s' ),
+        'end_time'         => array( 'format' => '%s' ),
+    );
+
     const WORKING_START_TIME = '00:00:00';
     const WORKING_END_TIME   = '23:45:00';
-
-    /**
-     * Constructor.
-     */
-    public function __construct() {
-        $this->table_name = 'ab_staff_schedule_item';
-        $this->schema = array(
-            'id'               => array( 'format' => '%d' ),
-            'staff_id'         => array( 'format' => '%d' ),
-            'day_index'        => array( 'format' => '%d' ),
-            'start_time'       => array( 'format' => '%s' ),
-            'end_time'         => array( 'format' => '%s' ),
-        );
-        parent::__construct();
-    }
 
     /**
      * Checks if

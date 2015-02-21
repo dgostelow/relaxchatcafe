@@ -37,8 +37,8 @@
             toLabel:    BooklyL10n.to,
             weekLabel: 'W',
             customRangeLabel: BooklyL10n.custom_range,
-            daysOfWeek: BooklyL10n.day,
-            monthNames: BooklyL10n.month,
+            daysOfWeek: BooklyL10n.days,
+            monthNames: BooklyL10n.months,
             firstDay: 0
         };
 

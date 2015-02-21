@@ -49,31 +49,37 @@
                     <div my-slide-up=errors.date_interval_warning id=date_interval_warning_msg>
                         <?php _e('The selected period does\'t match default duration for the selected service', 'ab') ?>
                     </div>
+                    <div my-slide-up="errors.time_interval" ng-bind="errors.time_interval" style="color: red;"></div>
                 </div>
             </div>
 
             <div class=control-group>
-                <label class=control-label><?php _e('Customer', 'ab') ?></label>
-
+                <label class=control-label>
+                    <?php _e('Customers', 'ab') ?><br/>
+                    <span ng-show="form.service" title="<?php echo esc_attr( __( 'Selected / maximum', 'ab' ) ) ?>">{{form.customers.length}}/{{form.service.capacity}}</span>
+                </label>
                 <div class=controls>
-                    <div my-slide-up="errors.customers_required" style="color: red;">
-                        <?php _e('Please select a customer', 'ab') ?>
+                    <ul class="ab-customer-list">
+                        <li ng-repeat="customer in form.customers">
+                            <a ng-click="editCustomFields(customer)" title="<?php echo esc_attr( __( 'Edit custom fields values', 'ab' ) ) ?>">{{customer.name}}</a>
+                            <span ng-click="removeCustomer(customer)" class="icon icon-remove" title="<?php echo esc_attr( __( 'Remove customer', 'ab' ) ) ?>"></span>
+                        </li>
+                    </ul>
+
+                    <div ng-show="!form.service || form.customers.length < form.service.capacity">
+                        <div>
+                            <div my-slide-up="errors.customers_required" style="color: red;"><?php _e('Please select a customer', 'ab') ?></div>
+
+                            <div my-slide-up="errors.overflow_capacity" ng-bind="errors.overflow_capacity" style="color: red;"></div>
+
+                            <select id="chosen" multiple data-placeholder="<?php _e('-- Search customers --', 'ab') ?>"
+                                    class="field chzn-select" chosen="dataSource.data.customers"
+                                    ng-model="form.customers" ng-options="c.name for c in dataSource.data.customers">
+                            </select>
+                        </div>
+
+                        <div style="margin-bottom: 2px;" class="ab-inline-block ab-create-customer" new-customer-dialog=createCustomer(customer) backdrop=false btn-class=""></div>
                     </div>
-                    <div my-slide-up="errors.overflow_capacity" ng-bind="errors.overflow_capacity" style="color: red;"></div>
-                    <select id="chosen" multiple data-placeholder="<?php _e('-- Select a customer --', 'ab') ?>"
-                            class="field chzn-select" chosen="dataSource.data.customers"
-                            ng-model="form.customers" ng-options="c.name for c in dataSource.data.customers">
-                    </select>
-
-                    <div new-customer-dialog=createCustomer(customer) backdrop=false btn-class=""></div>
-                </div>
-            </div>
-
-            <div class="control-group" ng-show="show_notes">
-                <label class=control-label><?php _e('Notes', 'ab') ?></label>
-
-                <div class=controls>
-                    <textarea class="field" ng-model=form.notes></textarea>
                 </div>
             </div>
 
@@ -110,4 +116,12 @@
         <img src="<?php echo plugins_url( 'backend/resources/images/ajax_loader_32x32.gif', AB_PATH . '/main.php' ) ?>" alt="" />
     </div>
 
+    <?php include '_custom_fields_form.php' ?>
+
 </div>
+
+<style>
+    .search-choice {
+        display: none;
+    }
+</style>

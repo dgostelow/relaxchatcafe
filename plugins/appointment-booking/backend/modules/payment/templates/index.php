@@ -62,7 +62,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
         </div>
     </div>
     <div id=ab-alert-div class=alert style="display: none"></div>
-    <table class="table table-bordered" cellspacing=0 cellpadding=0 border=0 id=ab_payments_list style="clear: both;">
+    <table class="table table-bordered" cellspacing=0 cellpadding=0 border=0 id=ab_payments_list>
         <thead>
         <tr>
             <th width=150 class="desc active" order-by=created><a href="javascript:void(0)"><?php _e( 'Date', 'ab' ) ?></a></th>

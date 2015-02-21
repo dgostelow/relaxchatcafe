@@ -1,4 +1,4 @@
-<?php
+<?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 /**
  * Web Controller abstract class.
@@ -88,13 +88,33 @@ abstract class AB_Controller
             call_user_func( array( $this, $action ) );
         } else {
             do_action( 'admin_page_access_denied' );
-            wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+            wp_die( __( 'Bookly: You do not have sufficient permissions to access this page.' ) );
         }
     }
 
     /******************************************************************************************************************
      * Protected methods                                                                                              *
      ******************************************************************************************************************/
+
+    /**
+     * Enqueue scripts with wp_enqueue_script.
+     *
+     * @see _enqueue
+     * @param array $sources
+     */
+    protected function enqueueScripts( array $sources ) {
+        $this->_enqueue( 'scripts', $sources );
+    }
+
+    /**
+     * Enqueue styles with wp_enqueue_style.
+     *
+     * @see _enqueue
+     * @param array $sources
+     */
+    protected function enqueueStyles( array $sources ) {
+        $this->_enqueue( 'styles', $sources );
+    }
 
     /**
      * Get path to directory of the current module.
@@ -203,8 +223,7 @@ abstract class AB_Controller
      * @param string $name
      * @return bool
      */
-    protected function hasParameter($name)
-    {
+    protected function hasParameter($name) {
         return array_key_exists($name, $_REQUEST);
     }
 
@@ -246,5 +265,57 @@ abstract class AB_Controller
         global $wpdb;
 
         return $wpdb;
+    }
+
+    /******************************************************************************************************************
+     * Private methods                                                                                              *
+     ******************************************************************************************************************/
+
+    /**
+     * Enqueue scripts or styles with wp_enqueue_script/wp_enqueue_style.
+     *
+     * @param string $type
+     * @param array $sources
+     * array(
+     *  resource_directory => array(
+     *      file[ => deps],
+     *      ...
+     *  ),
+     *  ...
+     * )
+     */
+    private function _enqueue( $type, array $sources ) {
+        $func = ($type == 'scripts') ? 'wp_enqueue_script' : 'wp_enqueue_style';
+
+        foreach ( $sources as $source => $files ) {
+            switch ( $source ) {
+                case 'wp':
+                    $path = false;
+                    break;
+                case 'backend':
+                    $path = AB_PATH . '/backend/resources/path';
+                    break;
+                case 'frontend':
+                    $path = AB_PATH . '/frontend/resources/path';
+                    break;
+                case 'module':
+                    $path = $this->getModuleDirectory() . '/resources/path';
+                    break;
+                default:
+                    $path = AB_PATH . '/' . $source . '/path';
+            }
+
+            foreach ( $files as $key => $value ) {
+                $file = is_array( $value ) ? $key : $value;
+                $deps = is_array( $value ) ? $value : array();
+
+                if ( $path === false ) {
+                    $func( $file, false, $deps );
+                }
+                else {
+                    $func( 'ab-' . basename( $file ), plugins_url( $file, $path ), $deps );
+                }
+            }
+        }
     }
 }

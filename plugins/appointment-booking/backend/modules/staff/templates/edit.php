@@ -8,9 +8,9 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 ?>
 <div id="ab-edit-staff">
     <?php if( isset($update) ): ?>
-        <div class="alert">
+        <div style="margin: 0!important;" class="updated below-h2">
             <button type="button" class="close" data-dismiss="alert">&times;</button>
-            <?php _e( 'Settings saved.', 'ab' )?>
+            <p><?php _e( 'Settings saved.', 'ab' )?></p>
         </div>
     <?php endif ?>
     <?php if ($staff_errors): ?>
@@ -77,7 +77,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
                                 <td class="control-group">
                                     <label class="control-label" for="ab-staff-full-name"><?php _e( 'Full name', 'ab') ?></label>
                                     <div class="controls">
-                                        <input id="ab-staff-full-name" name="full_name" value="<?php echo esc_attr($staff->get('full_name')) ?>" type="text"/><span class="red"> *</span>
+                                        <input id="ab-staff-full-name" name="full_name" value="<?php echo esc_attr($staff->get('full_name')) ?>" type="text"/><span class="ab-red"> *</span>
                                     </div>
                                 </td>
                             </tr>
@@ -115,7 +115,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
                                             <?php if ( $authUrl ): ?>
                                                 <a href="<?php echo $authUrl ?>"><?php _e( 'Connect', 'ab' ) ?></a>
                                             <?php else: ?>
-                                                <?php _e( 'Please configure Google Calendar <a href="?page=ab-system-settings">settings</a> first', 'ab' ) ?>
+                                                <?php _e( 'Please configure Google Calendar <a href="?page=ab-settings&type=_google_calendar">settings</a> first', 'ab' ) ?>
                                             <?php endif ?>
                                         <?php else: ?>
                                             <?php _e( 'Connected', 'ab' ) ?> (<a href="?page=ab-system-staff&google_logout=<?php echo $staff->get('id') ;?>"><?php _e( 'disconnect', 'ab' ) ?></a>)

@@ -1,9 +1,9 @@
 <?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly ?>
 <div id="ab-annual-calendar-scroll" style="text-align: center;">
   <div class="input-prepend input-append">
-    <span class="ab-week-picker-arrow prev add-on col-arrow">◄</span>
+    <span class="ab-week-picker-arrow prev add-on ab-col-arrow">◄</span>
     <input style="width: 70px; text-align: center;background: white" class="span2 jcal_year" readonly="readonly" id="appendedPrependedInput" size="16" type="text" value="2014">
-    <span class="ab-week-picker-arrow next add-on col-arrow">►</span>
+    <span class="ab-week-picker-arrow next add-on ab-col-arrow">►</span>
   </div>
 </div>
 <div id="ab-annual-calendar"></div>

@@ -1,4 +1,4 @@
-<?php
+<?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 class AB_BookingConfiguration {
 
@@ -11,6 +11,11 @@ class AB_BookingConfiguration {
      * @var array
      */
     private $services = array();
+
+//    /**
+//     * @var array
+//     */
+//    private $capacity = array();
 
     /**
      * @var array
@@ -27,21 +32,33 @@ class AB_BookingConfiguration {
 
         // Select all services (with categories and staff members)
         // which have at least one staff member assigned.
-        $rows = $wpdb->get_results( '
+        $rows = $wpdb->get_results( $wpdb->prepare('
             SELECT
-                `c`.`id`         AS `category_id`,
-                `c`.`name`       AS `category_name`,
-                `s`.`id`         AS `service_id`,
-                `s`.`title`      AS `service_name`,
-                `st`.`id`        AS `staff_id`,
-                `st`.`full_name` AS `staff_name`,
-                `ss`.`price`     AS `price`
+                IFNULL(`c`.`id`,0)    AS `category_id`,
+                IFNULL(`c`.`name`,%s) AS `category_name`,
+                `c`.`position`        AS `category_position`,
+                `s`.`id`              AS `service_id`,
+                `s`.`position`        AS `service_position`,
+                `s`.`title`           AS `service_name`,
+                `st`.`id`             AS `staff_id`,
+                `st`.`position`       AS `staff_position`,
+                `st`.`full_name`      AS `staff_name`,
+--                `ss`.`capacity`  AS `capacity`,
+                `ss`.`price`          AS `price`
             FROM `ab_service` `s`
-                INNER JOIN `ab_staff_service` `ss` ON `s`.`id` = `ss`.`service_id`
-                LEFT JOIN `ab_category` `c`        ON `s`.`category_id` = `c`.`id`
-                LEFT JOIN `ab_staff` `st`          ON `ss`.`staff_id` = `st`.`id`
+                INNER JOIN `ab_staff_service` `ss`    ON `s`.`id` = `ss`.`service_id`
+                LEFT JOIN `ab_category` `c`           ON `s`.`category_id` = `c`.`id`
+                LEFT JOIN `ab_staff` `st`             ON `ss`.`staff_id` = `st`.`id`
             ORDER BY `service_name`
-        ', ARRAY_A );
+        ', __( 'Uncategorized', 'ab' )), ARRAY_A );
+
+//        // detect the max capacity of each service (is the max capacity from each staff which use this service)
+//        foreach ( $rows as $row ) {
+//            if (!isset($this->capacity[ $row[ 'service_id' ] ]) ) {
+//                $this->capacity[ $row[ 'service_id' ] ] = 0;
+//            }
+//            $this->capacity[ $row[ 'service_id' ] ] = max( $row['capacity'], $this->capacity[ $row[ 'service_id' ] ] );
+//        }
 
         foreach ( $rows as $row ) {
             if ( !isset( $this->services[ $row[ 'service_id' ] ] ) ) {
@@ -49,7 +66,9 @@ class AB_BookingConfiguration {
                     'id'          => $row[ 'service_id' ],
                     'name'        => $row[ 'service_name' ],
                     'category_id' => $row[ 'category_id' ],
-                    'staff'       => array()
+                    'staff'       => array(),
+                    'position'    => $row[ 'service_position' ],
+//                    'capacity'    => $this->capacity[ $row[ 'service_id' ] ],
                 );
             }
 
@@ -58,21 +77,17 @@ class AB_BookingConfiguration {
                     'id'          => $row[ 'staff_id' ],
                     'name'        => $row[ 'staff_name' ],
                     'category_id' => $row[ 'category_id' ],
-                    'service_id'  => $row[ 'service_id' ]
+                    'service_id'  => $row[ 'service_id' ],
+                    'position'    => $row[ 'staff_position' ],
                 );
             }
 
-            if ( $row[ 'category_id' ] && !isset( $this->categories[ $row[ 'category_id' ] ] ) ) {
+            if ( $row[ 'category_id' ] != '' && !isset( $this->categories[ $row[ 'category_id' ] ] ) ) {
                 $this->categories[ $row[ 'category_id' ] ] = array(
                     'id'       => $row[ 'category_id' ],
                     'name'     => $row[ 'category_name' ],
-                    'services' => array()
-                );
-            } else if ( !$row[ 'category_id' ] && !isset( $this->categories[ 0 ]) ) {
-                $this->categories[ 0 ] = array(
-                    'id'       => 0,
-                    'name'     => __( 'Uncategorized', 'ab' ),
-                    'services' => array()
+                    'services' => array(),
+                    'position' => $row[ 'category_position' ],
                 );
             }
 
@@ -112,6 +127,7 @@ class AB_BookingConfiguration {
                 $this->categories[ intval( $row[ 'category_id' ] ) ][ 'services' ][ $row[ 'service_id' ] ] = $service;
             }
         }
+
     }
 
     /**
@@ -124,6 +140,9 @@ class AB_BookingConfiguration {
     {
         /** @var wpdb $wpdb */
         global $wpdb;
+        /** @var WP_Locale $wp_locale */
+        global $wp_locale;
+
         $data = $wpdb->get_row( '
             SELECT
               GROUP_CONCAT(
@@ -144,25 +163,17 @@ class AB_BookingConfiguration {
             if ( $data->available_day_ids ) {
                 $wp_week_start_day  = get_option( 'start_of_week', 1 );
                 $available_day_ids = explode( ',', $data->available_day_ids );
-                $week_days         = array(
-                    1 => __( 'Sun', 'ab' ),
-                    2 => __( 'Mon', 'ab' ),
-                    3 => __( 'Tue', 'ab' ),
-                    4 => __( 'Wed', 'ab' ),
-                    5 => __( 'Thu', 'ab' ),
-                    6 => __( 'Fri', 'ab' ),
-                    7 => __( 'Sat', 'ab' )
-                );
+                $week_days         = array_values( $wp_locale->weekday_abbrev );
 
-                if( $wp_week_start_day > $available_day_ids[0] - 1) {
+                if( $wp_week_start_day > $available_day_ids[0] ) {
                     $list_start = array_slice( $week_days, $wp_week_start_day, 7, TRUE );
                     $list_end   = array_slice( $week_days, 0, $wp_week_start_day, TRUE );
                     $week_days  = $list_start + $list_end;
                 }
 
                 foreach ( $week_days as $day_id => $day_name ) {
-                    if ( in_array( $day_id, $available_day_ids ) ) {
-                        $result['available_days'][$day_id] = $day_name;
+                    if ( in_array( $day_id + 1, $available_day_ids ) ) {
+                        $result['available_days'][$day_id + 1] = $day_name;
                     }
                 }
             }

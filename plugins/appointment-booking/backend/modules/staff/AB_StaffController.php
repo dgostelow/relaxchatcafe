@@ -2,13 +2,6 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-include 'forms/AB_StaffMemberNewForm.php';
-include 'forms/AB_StaffMemberEditForm.php';
-include 'forms/AB_StaffServicesForm.php';
-include 'forms/AB_StaffScheduleForm.php';
-include 'forms/AB_StaffScheduleItemBreakForm.php';
-include 'forms/widget/AB_TimeChoiceWidget.php';
-
 /**
  * Class AB_StaffController
  *
@@ -20,46 +13,41 @@ include 'forms/widget/AB_TimeChoiceWidget.php';
  */
 class AB_StaffController extends AB_Controller {
 
-    public function renderStaffMembers() {
-        $path = dirname( __DIR__ );
-        wp_enqueue_style( 'ab-style', plugins_url( 'resources/css/ab_style.css', $path ) );
-        wp_enqueue_style( 'ab-staff', plugins_url( 'resources/css/staff.css', __FILE__ ) );
-        wp_enqueue_style( 'ab-bootstrap', plugins_url( 'resources/bootstrap/css/bootstrap.min.css', $path ) );
-        wp_enqueue_script( 'ab-bootstrap', plugins_url( 'resources/bootstrap/js/bootstrap.min.js', $path ), array( 'jquery' ) );
-        wp_enqueue_script( 'ab-popup', plugins_url( 'resources/js/ab_popup.js', $path ), array( 'jquery' ) );
-        wp_enqueue_script( 'ab-system-staff', plugins_url( 'resources/js/staff.js', __FILE__ ), array( 'jquery' ) );
-        wp_enqueue_script( 'ab-jCal', plugins_url( 'resources/js/jCal.js', $path ), array( 'jquery' ) );
-        wp_enqueue_style( 'ab-jCal', plugins_url( 'resources/css/jCal.css', $path ) );
-        wp_localize_script( 'ab-jCal', 'BooklyL10n',  array(
-            'we_are_not_working' => __( 'We are not working on this day', 'ab' ),
-            'repeat'             => __( 'Repeat every year', 'ab' ),
-            'month'              => array(
-                'January'    => __( 'January', 'ab' ),
-                'February'   => __( 'February', 'ab' ),
-                'March'      => __( 'March', 'ab' ),
-                'April'      => __( 'April', 'ab' ),
-                'May'        => __( 'May', 'ab' ),
-                'June'       => __( 'June', 'ab' ),
-                'July'       => __( 'July', 'ab' ),
-                'August'     => __( 'August', 'ab' ),
-                'September'  => __( 'September', 'ab' ),
-                'October'    => __( 'October', 'ab' ),
-                'November'   => __( 'November', 'ab' ),
-                'December'   => __( 'December', 'ab' )
+    public function index() {
+        /** @var WP_Locale $wp_locale */
+        global $wp_locale;
+
+        $this->enqueueStyles( array(
+            'backend' => array(
+                'css/ab_style.css',
+                'bootstrap/css/bootstrap.min.css',
+                'css/jCal.css',
             ),
-            'day'                => array(
-                'Mon'        => __( 'Mon', 'ab' ),
-                'Tue'        => __( 'Tue', 'ab' ),
-                'Wed'        => __( 'Wed', 'ab' ),
-                'Thu'        => __( 'Thu', 'ab' ),
-                'Fri'        => __( 'Fri', 'ab' ),
-                'Sat'        => __( 'Sat', 'ab' ),
-                'Sun'        => __( 'Sun', 'ab' )
+            'module' => array(
+                'css/staff.css'
             )
         ) );
 
+        $this->enqueueScripts( array(
+            'backend' => array(
+                'bootstrap/js/bootstrap.min.js' => array( 'jquery' ),
+                'js/ab_popup.js' => array( 'jquery' ),
+                'js/jCal.js' => array( 'jquery' ),
+            ),
+            'module' => array(
+                'js/staff.js' => array( 'jquery-ui-sortable', 'jquery' ),
+            )
+        ) );
+
+        wp_localize_script( 'ab-jCal.js', 'BooklyL10n',  array(
+            'we_are_not_working' => __( 'We are not working on this day', 'ab' ),
+            'repeat'             => __( 'Repeat every year', 'ab' ),
+            'months'             => array_values( $wp_locale->month ),
+            'days'               => array_values( $wp_locale->weekday_abbrev )
+        ) );
+
         $this->form = new AB_StaffMemberNewForm();
-        $this->collection = $this->getWpdb()->get_results( "SELECT * FROM ab_staff" );
+        $this->collection = $this->getWpdb()->get_results( "SELECT * FROM ab_staff ORDER BY position" );
         if ( !isset ( $this->active_staff_id ) ) {
             if ( $this->hasParameter( 'staff_id' ) ) {
                 $this->active_staff_id = $this->getParameter( 'staff_id' );
@@ -107,6 +95,16 @@ class AB_StaffController extends AB_Controller {
             $this->render( 'list_item', array( 'staff' => $staff ) );
         }
         exit;
+    }
+
+    public function executeUpdateStaffPosition() {
+        $staff_sorts = $this->getParameter( 'position' );
+        foreach ( $staff_sorts as $position => $staff_id ) {
+            $staff_sort = new AB_Staff();
+            $staff_sort->load($staff_id);
+            $staff_sort->set( 'position', $position );
+            $staff_sort->save();
+        }
     }
 
     public function executeStaffServices() {

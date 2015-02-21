@@ -110,8 +110,8 @@ jQuery(function($) {
         });
     }
 
-    $.ajaxSetup({
+/*    $.ajaxSetup({
         mode: 'abort',
         port: 'ab_coupons'
-    });
+    });*/
 });

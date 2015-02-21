@@ -11,6 +11,59 @@ class AB_AppearanceController extends AB_Controller {
      *  Default Action
      */
     public function index() {
+        /** @var WP_Locale $wp_locale */
+        global $wp_locale;
+
+        $this->enqueueStyles( array(
+            'backend' => array(
+                'css/ab_style.css',
+                'bootstrap/css/bootstrap.min.css',
+                'bootstrap/css/bootstrap-editable.css',
+            ),
+            'frontend' => array(
+                'css/ladda-themeless.min.css',
+                'css/ladda.min.css',
+                'css/ab-core.css',
+                'css/ab-columnizer.css',
+                'css/picker.classic.css',
+                'css/picker.classic.date.css',
+                'css/ab-picker.css',
+
+            ),
+            'wp' => array(
+                'wp-color-picker',
+            ),
+            'module' => array(
+                'css/appearance.css',
+            )
+        ) );
+
+        $this->enqueueScripts( array(
+            'backend' => array(
+                'bootstrap/js/bootstrap.min.js' => array( 'jquery' ),
+                'bootstrap/js/bootstrap-editable.min.js' => array( 'jquery' ),
+            ),
+            'frontend' => array(
+                'js/picker.js' => array( 'jquery' ),
+                'js/picker.date.js' => array( 'jquery' ),
+
+            ),
+            'wp' => array(
+                'wp-color-picker',
+            ),
+            'module' => array(
+                'js/appearance.js' => array( 'jquery' ),
+            )
+        ) );
+
+        wp_localize_script( 'ab-picker.date.js', 'BooklyL10n', array(
+            'today'     => __( 'Today', 'ab' ),
+            'months'    => array_values( $wp_locale->month ),
+            'days'      => array_values( $wp_locale->weekday_abbrev ),
+            'nextMonth' => __( 'Next month', 'ab' ),
+            'prevMonth' => __( 'Previous month', 'ab' ),
+        ) );
+
         // initialize steps (tabs)
         $this->steps = array(
             1 => get_option( 'ab_appearance_text_step_service' ),
@@ -48,6 +101,7 @@ class AB_AppearanceController extends AB_Controller {
                 'ab_appearance_text_step_done'         => $get_option[ 'text_step_done' ],
                 'ab_appearance_text_label_category'    => $get_option[ 'text_label_category' ],
                 'ab_appearance_text_label_service'     => $get_option[ 'text_label_service' ],
+//                'ab_appearance_text_label_place'       => $get_option[ 'text_label_place' ],
                 'ab_appearance_text_label_employee'    => $get_option[ 'text_label_employee' ],
                 'ab_appearance_text_label_select_date' => $get_option[ 'text_label_select_date' ],
                 'ab_appearance_text_label_start_from'  => $get_option[ 'text_label_start_from' ],
@@ -55,13 +109,15 @@ class AB_AppearanceController extends AB_Controller {
                 'ab_appearance_text_label_name'        => $get_option[ 'text_label_name' ],
                 'ab_appearance_text_label_phone'       => $get_option[ 'text_label_phone' ],
                 'ab_appearance_text_label_email'       => $get_option[ 'text_label_email' ],
-                'ab_appearance_text_label_notes'       => $get_option[ 'text_label_notes' ],
                 'ab_appearance_text_option_service'    => $get_option[ 'text_option_service' ],
                 'ab_appearance_text_option_category'   => $get_option[ 'text_option_category' ],
                 'ab_appearance_text_option_employee'   => $get_option[ 'text_option_employee' ],
                 'ab_appearance_text_label_coupon'      => $get_option[ 'text_label_coupon' ],
+                'ab_appearance_text_label_pay_locally' => $get_option[ 'text_label_pay_locally' ],
                 // Checkboxes.
                 'ab_appearance_show_progress_tracker'  => $get_option[ 'progress_tracker' ],
+                'ab_appearance_show_blocked_timeslots' => $get_option[ 'blocked_timeslots' ],
+                'ab_appearance_show_day_one_column'    => $get_option[ 'day_one_column' ],
             );
 
             // Save options.

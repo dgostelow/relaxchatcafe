@@ -2,8 +2,6 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-include AB_PATH . '/lib/entities/AB_Notifications.php';
-
 class AB_NotificationsForm extends AB_Form {
 
     public $slugs = array(

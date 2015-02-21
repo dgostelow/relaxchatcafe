@@ -1,30 +1,24 @@
-<?php
-
-include 'AB_StaffScheduleItem.php';
+<?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 /**
  * Class AB_Staff
  */
 class AB_Staff extends AB_Entity {
 
-    /**
-     * Constructor.
-     */
-    public function __construct() {
-        $this->table_name = 'ab_staff';
-        $this->schema = array(
-            'id'                 => array( 'format' => '%d' ),
-            'wp_user_id'         => array( 'format' => '%d' ),
-            'full_name'          => array( 'format' => '%s' ),
-            'email'              => array( 'format' => '%s' ),
-            'avatar_path'        => array( 'format' => '%s' ),
-            'avatar_url'         => array( 'format' => '%s' ),
-            'phone'              => array( 'format' => '%s' ),
-            'google_data'        => array( 'format' => '%s' ),
-            'google_calendar_id' => array( 'format' => '%s' ),
-        );
-        parent::__construct();
-    }
+    protected static $table_name = 'ab_staff';
+
+    protected static $schema = array(
+        'id'                 => array( 'format' => '%d' ),
+        'wp_user_id'         => array( 'format' => '%d' ),
+        'full_name'          => array( 'format' => '%s' ),
+        'email'              => array( 'format' => '%s' ),
+        'avatar_path'        => array( 'format' => '%s' ),
+        'avatar_url'         => array( 'format' => '%s' ),
+        'phone'              => array( 'format' => '%s' ),
+        'google_data'        => array( 'format' => '%s' ),
+        'google_calendar_id' => array( 'format' => '%s' ),
+        'position'           => array( 'format' => '%d', 'default' => 9999 ),
+    );
 
     public function save() {
         if ( $this->get( 'id' ) ) {
@@ -138,8 +132,7 @@ class AB_Staff extends AB_Entity {
                   staff.full_name,
                   ss.capacity AS max_capacity,
                   COUNT( ca.id ) AS current_capacity,
-                  ca.customer_id,
-                  ca.notes
+                  ca.customer_id
               FROM ab_appointment a
               LEFT JOIN ab_customer_appointment ca ON ca.appointment_id = a.id
               LEFT JOIN ab_service service ON a.service_id = service.id
@@ -163,6 +156,45 @@ class AB_Staff extends AB_Entity {
         $args[0] .= ' GROUP BY a.start_date';
 
         return $this->wpdb->get_results( call_user_func_array( array( $this->wpdb, 'prepare' ), $args ) );
+    }
+
+    /**
+     * Get AB_StaffService entities associated with this staff member.
+     *
+     * @return array  Array of entities
+     */
+    public function getStaffServices() {
+        $result = array();
+
+        if ( $this->get( 'id' ) ) {
+            $records = $this->wpdb->get_results( $this->wpdb->prepare(
+                'SELECT `ss`.*,
+                        `s`.`title`,
+                        `s`.`duration`,
+                        `s`.`price` AS `service_price`,
+                        `s`.`color`,
+                        `s`.`capacity` AS `service_capacity`
+                FROM `ab_staff_service` `ss` LEFT JOIN `ab_service` `s` ON `s`.`id` = `ss`.`service_id`
+                WHERE `ss`.`staff_id` = %d',
+                $this->get( 'id' )
+            ), ARRAY_A);
+
+            foreach( $records as $data ) {
+                $ss = new AB_StaffService();
+                $ss->setData( $data );
+
+                // Inject AB_Service entity.
+                $ss->service        = new AB_Service();
+                $data[ 'id' ]       = $data[ 'service_id' ];
+                $data[ 'price' ]    = $data[ 'service_price' ];
+                $data[ 'capacity' ] = $data[ 'service_capacity' ];
+                $ss->service->setData( $data, true );
+
+                $result[] = $ss;
+            }
+        }
+
+        return $result;
     }
 
     public function delete() {

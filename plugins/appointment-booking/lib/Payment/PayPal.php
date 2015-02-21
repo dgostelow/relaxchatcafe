@@ -19,7 +19,7 @@ class PayPal {
     protected $products = array();
 
     public static function getCurrencyCodes() {
-        return array( 'AUD', 'BRL', 'CAD', 'RMB', 'CZK', 'DKK', 'EUR', 'HKD', 'HUF', 'IDR', 'INR', 'ILS', 'JPY', 'KRW', 'MYR', 'MXN', 'NOK', 'NZD', 'PHP', 'PLN', 'GBP', 'RON', 'RUB', 'SGD', 'ZAR', 'SEK', 'CHF', 'TWD', 'THB', 'TRY', 'USD' );
+        return array( 'AUD', 'BRL', 'CAD', 'RMB', 'CZK', 'DKK', 'EUR', 'GTQ', 'HKD', 'HUF', 'IDR', 'INR', 'ILS', 'JPY', 'KRW', 'MYR', 'MXN', 'NOK', 'NZD', 'PHP', 'PLN', 'GBP', 'RON', 'RUB', 'SGD', 'ZAR', 'SEK', 'CHF', 'TWD', 'THB', 'TRY', 'USD' );
     }
 
     /**
@@ -30,13 +30,13 @@ class PayPal {
             switch ( $_GET[ 'action' ] ) {
                 // process the Express Checkout redirects from the PayPal
                 case 'ab-paypal-returnurl':
-                    $this->process_EC_ReturnUrl( $_GET[ 'form_id' ] );
+                    $this->process_EC_ReturnUrl( $_GET[ 'ab_fid' ] );
                     break;
                 case 'ab-paypal-cancelurl':
-                    $this->process_EC_CancelUrl( $_GET[ 'form_id' ] );
+                    $this->process_EC_CancelUrl( $_GET[ 'ab_fid' ] );
                     break;
                 case 'ab-paypal-errorurl':
-                    $this->process_EC_ErrorUrl( $_GET[ 'form_id' ] );
+                    $this->process_EC_ErrorUrl( $_GET[ 'ab_fid' ] );
                     break;
             }
         }
@@ -64,8 +64,8 @@ class PayPal {
             '&SOLUTIONTYPE='                   . 'Sole'.
             '&PAYMENTREQUEST_0_PAYMENTACTION=' . 'Sale'.
             '&PAYMENTREQUEST_0_CURRENCYCODE='  . urlencode( get_option( 'ab_paypal_currency' ) ) .
-            '&RETURNURL='. urlencode( site_url( add_query_arg( array( 'action' => 'ab-paypal-returnurl', 'form_id' => $form_id) ) ) ) .
-            '&CANCELURL='. urlencode( site_url( add_query_arg( array( 'action' => 'ab-paypal-cancelurl', 'form_id' => $form_id) ) ) );
+            '&RETURNURL='. urlencode( add_query_arg( array( 'action' => 'ab-paypal-returnurl', 'ab_fid' => $form_id), AB_CommonUtils::getCurrentPageURL() ) ) .
+            '&CANCELURL='. urlencode( add_query_arg( array( 'action' => 'ab-paypal-cancelurl', 'ab_fid' => $form_id), AB_CommonUtils::getCurrentPageURL() ) );
 
         foreach ( $this->products as $k => $product ) {
             $data .=
@@ -89,11 +89,11 @@ class PayPal {
         if ( "SUCCESS" == strtoupper( $response["ACK"] ) || "SUCCESSWITHWARNING" == strtoupper( $response["ACK"] ) ) {
             $_SESSION['appointment_booking'][$form_id]['pay_pal_response'] = array( $response, $form_id );
 
-            $paypalurl ='https://www'.get_option( 'ab_paypal_ec_mode' ).'.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token='.urldecode( $response["TOKEN"] );
+            $paypalurl ='https://www'.get_option( 'ab_paypal_ec_mode' ).'.paypal.com/cgi-bin/webscr?cmd=_express-checkout&useraction=commit&token='.urldecode( $response["TOKEN"] );
             header('Location: '.$paypalurl);
             exit;
         } else {
-            header('Location: ' . site_url( add_query_arg( array( 'action' => 'ab-paypal-errorurl', 'form_id' => $form_id, 'error_msg' => $response["L_LONGMESSAGE0"]) ) ) );
+            header('Location: ' . add_query_arg( array( 'action' => 'ab-paypal-errorurl', 'ab_fid' => $form_id, 'error_msg' => $response["L_LONGMESSAGE0"]), AB_CommonUtils::getCurrentPageURL() ) );
             exit;
         }
     }
@@ -107,27 +107,48 @@ class PayPal {
         }
 
         if ( isset( $_GET["token"] ) && isset( $_GET["PayerID"] ) ) {
-            $data =
-                '&TOKEN='                          . $_GET["token"].
-                '&PAYERID='                        . $_GET["PayerID"].
-                '&PAYMENTREQUEST_0_AMT='           . (isset($_SESSION['ab_payment_total']) ? urlencode($_SESSION['ab_payment_total']) : '0.00').
-                '&PAYMENTREQUEST_0_PAYMENTACTION=' . 'Sale'.
-                '&PAYMENTREQUEST_0_CURRENCYCODE='  . urlencode( get_option( 'ab_paypal_currency' ) );
+            $token    = $_GET["token"];
+            $payer_id = $_GET["PayerID"];
 
-            //We need to execute the "DoExpressCheckoutPayment" at this point to Receive payment from user.
-            $response = self::sendNvpRequest( 'DoExpressCheckoutPayment', $data );
-            if ( "SUCCESS" == strtoupper( $response["ACK"] ) || "SUCCESSWITHWARNING" == strtoupper( $response["ACK"] ) ) {
-                // get transaction info
-                $response = self::sendNvpRequest( 'GetTransactionDetails', "&TRANSACTIONID=" . urlencode( $response["PAYMENTINFO_0_TRANSACTIONID"] ) );
+            // send the request to PayPal
+            $response = self::sendNvpRequest( 'GetExpressCheckoutDetails', sprintf( '&TOKEN=%s', $token ) );
+
+            if ( strtoupper( $response["ACK"] ) == "SUCCESS" ) {
+                $data = sprintf( '&TOKEN=%s&PAYERID=%s&PAYMENTREQUEST_0_PAYMENTACTION=Sale', $token, $payer_id );
+
+                // response keys containing useful data to send via DoExpressCheckoutPayment operation
+                $response_data_keys_pattern = sprintf( '/^(%s)/', implode( '|', array(
+                    'PAYMENTREQUEST_0_AMT',
+                    'PAYMENTREQUEST_0_ITEMAMT',
+                    'PAYMENTREQUEST_0_CURRENCYCODE',
+                    'L_PAYMENTREQUEST_0',
+                ) ) );
+
+                foreach ( $response as $key => $value ) {
+                    // collect product data from response using defined response keys
+                    if ( preg_match( $response_data_keys_pattern, $key ) ) {
+                        $data .= sprintf( '&%s=%s', $key, $value );
+                    }
+                }
+
+                //We need to execute the "DoExpressCheckoutPayment" at this point to Receive payment from user.
+                $response = self::sendNvpRequest( 'DoExpressCheckoutPayment', $data );
                 if ( "SUCCESS" == strtoupper( $response["ACK"] ) || "SUCCESSWITHWARNING" == strtoupper( $response["ACK"] ) ) {
-                    do_action( 'ab_paypal_order_accepted', array( $response, $form_id ) );
-                    return true;
+                    // get transaction info
+                    $response = self::sendNvpRequest( 'GetTransactionDetails', "&TRANSACTIONID=" . urlencode( $response["PAYMENTINFO_0_TRANSACTIONID"] ) );
+                    if ( "SUCCESS" == strtoupper( $response["ACK"] ) || "SUCCESSWITHWARNING" == strtoupper( $response["ACK"] ) ) {
+                        do_action( 'ab_paypal_order_accepted', array( $response, $form_id ) );
+                        return true;
+                    } else {
+                        header('Location: ' . add_query_arg( array( 'action' => 'ab-paypal-errorurl', 'ab_fid' => $form_id, 'error_msg' => $response["L_LONGMESSAGE0"]), AB_CommonUtils::getCurrentPageURL() ) );
+                        exit;
+                    }
                 } else {
-                    header('Location: ' . site_url( add_query_arg( array( 'action' => 'ab-paypal-errorurl', 'form_id' => $form_id, 'error_msg' => $response["L_LONGMESSAGE0"]) ) ) );
+                    header('Location: ' . add_query_arg( array( 'action' => 'ab-paypal-errorurl', 'ab_fid' => $form_id, 'error_msg' => $response["L_LONGMESSAGE0"]), AB_CommonUtils::getCurrentPageURL() ) );
                     exit;
                 }
             } else {
-                header('Location: ' . site_url( add_query_arg( array( 'action' => 'ab-paypal-errorurl', 'form_id' => $form_id, 'error_msg' => $response["L_LONGMESSAGE0"]) ) ) );
+                header('Location: ' . add_query_arg( array( 'action' => 'ab-paypal-errorurl', 'ab_fid' => $form_id, 'error_msg' => 'Invalid token provided' ), AB_CommonUtils::getCurrentPageURL() ) );
                 exit;
             }
         } else {
@@ -145,13 +166,9 @@ class PayPal {
         $form_id = null;
         if ( isset( $_GET[ 'token'] ) ) {
             unset( $_SESSION[ 'ab_payment_total' ] );
-            if ( isset( $_SESSION[ 'tmp_booking_data' ] ) ) {
-                unset( $_SESSION[ 'tmp_booking_data' ] );
-            }
 
             $last_appointment = end( $_SESSION[ 'appointment_booking' ] );
             $form_id = $last_appointment[ 'form_id' ];
-            $_SESSION[ 'tmp_booking_data' ] = serialize( $last_appointment );
 
             do_action( 'ab_paypal_order_cancel' , @$_GET[ 'form_id' ] ? @urldecode( @$_GET[ 'form_id' ] ) : @$form_id );
         } else {
@@ -168,13 +185,9 @@ class PayPal {
         }
         $form_id = null;
         unset( $_SESSION[ 'ab_payment_total' ] );
-        if ( isset( $_SESSION[ 'tmp_booking_data' ] ) ) {
-            unset( $_SESSION[ 'tmp_booking_data' ] );
-        }
 
         $last_appointment = end( $_SESSION[ 'appointment_booking' ] );
         $form_id = $last_appointment[ 'form_id' ];
-        $_SESSION[ 'tmp_booking_data' ] = serialize( $last_appointment );
 
         do_action( 'ab_paypal_order_error' , @$_GET[ 'form_id' ] ? @urldecode( @$_GET[ 'form_id' ] ) : @$form_id );
     }

@@ -1,7 +1,10 @@
 jQuery(function ($) {
-    var $form      = $('#business-hours'),
-        $all_tabs  = $('#ab_settings_company, #ab_settings_payments, #ab_settings_hours, #ab_settings_holidays, #ab_settings_purchase_code, #ab_settings_general'),
-        $all_forms = $('#company-form, #payments-form, #hours-form, #holidays-form, #purchase-code-form, #general-form');
+    var $form                = $('#business-hours'),
+        $all_tabs            = $('#ab_settings_company, #ab_settings_payments, #ab_settings_hours, #ab_settings_holidays, #ab_settings_purchase_code, #ab_settings_google_calendar, #ab_settings_general'),
+        $all_forms           = $('#company-form, #payments-form, #hours-form, #holidays-form, #purchase-code-form, #general-form, #google-calendar-form'),
+        $final_step_url      = $('input[name=ab_settings_final_step_url]'),
+        $final_step_url_mode = $('#ab_settings_final_step_url_mode');
+
     $('.select_start', $form).on('change', function () {
         var $row = $(this).parent(),
             $end_select = $('.select_end', $row),
@@ -88,6 +91,10 @@ jQuery(function ($) {
         $all_forms.addClass('hidden');
         $('#general-form').removeClass('hidden');
     });
+    $('#ab_settings_google_calendar').on('click', function() {
+        $all_forms.addClass('hidden');
+        $('#google-calendar-form').removeClass('hidden');
+    });
 
     // Company Tab
     $('#ab-delete-logo').on('click', function() {
@@ -128,6 +135,15 @@ jQuery(function ($) {
             return $('#' + $(this).data('ext_id')).html();
         },
         html: true
+    });
+
+    if ($final_step_url.val()) { $final_step_url_mode.val(1); }
+    $final_step_url_mode.change(function(){
+        if (this.value == 0){
+            $final_step_url.hide().val('');
+        }else{
+            $final_step_url.show();
+        }
     });
 });
 

@@ -1,7 +1,7 @@
 <?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly ?>
 <div id="ab_import_customers_dialog" class="modal hide fade" tabindex=-1 role="dialog" aria-labelledby="importCustomersModalLabel" aria-hidden="true">
     <div class="dialog-content">
-        <form class="form-horizontal" enctype="multipart/form-data" action="?page=ab-system-customers" method="POST">
+        <form class="form-horizontal" enctype="multipart/form-data" action="?page=ab-customers" method="POST">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                 <h3 id="importCustomersModalLabel"><?php _e( 'Import', 'ab' ) ?></h3>

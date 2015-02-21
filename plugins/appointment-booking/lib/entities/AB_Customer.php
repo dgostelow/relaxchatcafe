@@ -1,22 +1,17 @@
-<?php
+<?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 /**
  * Class AB_Customer
  */
 class AB_Customer extends AB_Entity {
 
-    /**
-     * Constructor.
-     */
-    public function __construct() {
-        $this->table_name = 'ab_customer';
-        $this->schema = array(
-            'id'      => array( 'format' => '%d' ),
-            'name'    => array( 'format' => '%s', 'default' => '' ),
-            'phone'   => array( 'format' => '%s', 'default' => '' ),
-            'email'   => array( 'format' => '%s', 'default' => '' ),
-            'notes'   => array( 'format' => '%s', 'default' => '' ),
-        );
-        parent::__construct();
-    }
+    protected static $table_name = 'ab_customer';
+
+    protected static $schema = array(
+        'id'      => array( 'format' => '%d' ),
+        'name'    => array( 'format' => '%s', 'default' => '' ),
+        'phone'   => array( 'format' => '%s', 'default' => '' ),
+        'email'   => array( 'format' => '%s', 'default' => '' ),
+        'notes'   => array( 'format' => '%s', 'default' => '' ),
+    );
 }

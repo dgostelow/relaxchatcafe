@@ -3,11 +3,87 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 class AB_Updates {
 
+//    function update_4_4() {
+//        /* @var WPDB $wpdb */
+//        global $wpdb;
+//
+//        add_option('ab_appearance_text_label_place', __( 'Places number', 'ab' ), '', 'yes');
+//    }
+
+    function update_4_3() {
+        /* @var WPDB $wpdb */
+        global $wpdb;
+
+        // Positioning in lists.
+        $wpdb->query("ALTER TABLE `ab_staff` ADD `position` INT NOT NULL DEFAULT 9999;");
+        $wpdb->query("ALTER TABLE `ab_category` ADD `position` INT NOT NULL DEFAULT 9999;");
+        $wpdb->query("ALTER TABLE `ab_service` ADD `position` INT NOT NULL DEFAULT 9999;");
+
+        add_option('ab_appearance_show_blocked_timeslots', 0, '', 'yes');
+        add_option('ab_appearance_show_day_one_column', 0, '', 'yes');
+    }
+
+    function update_4_2() {
+        /* @var WPDB $wpdb */
+        global $wpdb;
+
+        $wpdb->query( "ALTER TABLE ab_payment ADD `customer_appointment_id` INT UNSIGNED DEFAULT NULL" );
+        $payments = $wpdb->get_results('SELECT id, customer_id, appointment_id from `ab_payment` ');
+
+        foreach ($payments as $payment) {
+            $customer_appointment = $wpdb->get_row($wpdb->prepare('SELECT id from `ab_customer_appointment` WHERE `customer_id` = %d and `appointment_id` = %d LIMIT 1', $payment->customer_id, $payment->appointment_id));
+            if ($customer_appointment) {
+                $wpdb->update('ab_payment', array('customer_appointment_id' => $customer_appointment->id), array('id' => $payment->id));
+            }
+        }
+
+        $wpdb->query("ALTER TABLE ab_payment
+                        DROP FOREIGN KEY fk_ab_payment_customer_id, DROP FOREIGN KEY fk_ab_payment_appointment_id, DROP customer_id, DROP appointment_id,
+                        ADD INDEX ab_payment_customer_appointment_id_idx (customer_appointment_id),
+                        ADD CONSTRAINT fk_ab_payment_customer_appointment_id
+                          FOREIGN KEY ab_payment_customer_appointment_id_idx (customer_appointment_id)
+                          REFERENCES  ab_customer_appointment(id)
+                          ON DELETE   CASCADE
+                          ON UPDATE   CASCADE;
+            ");
+
+        add_option('ab_appearance_text_label_pay_locally', __( 'I will pay locally', 'ab' ), '', 'yes');
+        add_option('ab_settings_google_two_way_sync', 1, '', 'yes');
+    }
+
+    function update_4_1() {
+        add_option('ab_settings_final_step_url', '', '', 'yes');
+    }
+
+    function update_4_0() {
+        /* @var WPDB $wpdb */
+        global $wpdb;
+
+        add_option('ab_custom_fields', '[{"type":"textarea","label":"Notes","required":false,"id":1}]', '', 'yes');
+
+        // Create relation between customer and appointment
+        $ab_customer_appointments = $wpdb->get_results('SELECT * from `ab_customer_appointment` ');
+        foreach ($ab_customer_appointments as $ab_customer_appointment){
+            $wpdb->update(
+                'ab_customer_appointment',
+                array('notes' => json_encode(array(array('id' => 1, 'value' => $ab_customer_appointment->notes)))),
+                array('id' => $ab_customer_appointment->id)
+            );
+        }
+
+        $wpdb->query( "ALTER TABLE ab_customer_appointment CHANGE `notes` `custom_fields` TEXT" );
+
+        delete_option('ab_appearance_text_label_notes');
+
+        $wpdb->query( "ALTER TABLE ab_payment CHANGE `type` `type` ENUM('local', 'coupon', 'paypal', 'authorizeNet', 'stripe') NOT NULL DEFAULT 'local';" );
+    }
+
     function update_3_4() {
         /* @var WPDB $wpdb */
         global $wpdb;
 
         $wpdb->query("ALTER TABLE `ab_payment` DROP `status`;");
+
         add_option('ab_settings_minimum_time_prior_booking', 0, '', 'yes');
 
         delete_option('ab_settings_no_current_day_appointments');

@@ -24,7 +24,7 @@ class AB_Installer {
             ),
             'provider_info' => array(
                 'subject' => __( 'New booking information', 'ab' ),
-                'message' => wpautop( __( "Hello.\n\nYou have new booking.\n\nService: [[SERVICE_NAME]]\nDate: [[APPOINTMENT_DATE]]\nTime: [[APPOINTMENT_TIME]]\nClient name: [[CLIENT_NAME]]\nClient phone: [[CLIENT_PHONE]]\nClient email: [[CLIENT_EMAIL]]\nClient notes: [[CLIENT_NOTES]]", 'ab' ) ),
+                'message' => wpautop( __( "Hello.\n\nYou have new booking.\n\nService: [[SERVICE_NAME]]\nDate: [[APPOINTMENT_DATE]]\nTime: [[APPOINTMENT_TIME]]\nClient name: [[CLIENT_NAME]]\nClient phone: [[CLIENT_PHONE]]\nClient email: [[CLIENT_EMAIL]]", 'ab' ) ),
                 'active'  => 0
             ),
             'evening_next_day' => array(
@@ -69,6 +69,8 @@ class AB_Installer {
             'ab_settings_coupons'                     => '0',
             'ab_settings_google_client_id'            => '',
             'ab_settings_google_client_secret'        => '',
+            'ab_settings_google_two_way_sync'         => 1,
+            'ab_settings_final_step_url'              => '',
             // Business hours.
             'ab_settings_monday_start'                => '08:00',
             'ab_settings_monday_end'                  => '18:00',
@@ -108,13 +110,16 @@ class AB_Installer {
             'ab_appearance_text_label_name'           => __( 'Name', 'ab' ),
             'ab_appearance_text_label_phone'          => __( 'Phone', 'ab' ),
             'ab_appearance_text_label_email'          => __( 'Email', 'ab' ),
-            'ab_appearance_text_label_notes'          => __( 'Notes (optional)', 'ab' ),
             'ab_appearance_text_label_coupon'         => __( 'Coupon', 'ab' ),
+            'ab_appearance_text_label_pay_locally'    => __( 'I will pay locally', 'ab' ),
             'ab_appearance_text_option_service'       => __( 'Select service', 'ab' ),
             'ab_appearance_text_option_category'      => __( 'Select category', 'ab' ),
             'ab_appearance_text_option_employee'      => __( 'Any', 'ab' ),
             // Progress tracker.
             'ab_appearance_show_progress_tracker'     => '1',
+            // Time slots setting
+            'ab_appearance_show_blocked_timeslots'    => '0',
+            'ab_appearance_show_day_one_column'       => '0',
             // Envato Marketplace Purchase Code.
             'ab_envato_purchase_code'                 => '',
             // PayPal.
@@ -132,7 +137,9 @@ class AB_Installer {
             'ab_authorizenet_type'                    => 'disabled',
             // Stripe
             'ab_stripe'                               => '0',
-            'ab_stripe_secret_key'                    => ''
+            'ab_stripe_secret_key'                    => '',
+            // Custom Fields
+            'ab_custom_fields'                        => '[{"type":"textarea","label":"Notes","required":false,"id":1}]'
         );
     }
 
@@ -210,7 +217,8 @@ class AB_Installer {
                 email varchar(128) default '',
                 phone varchar(128) default '',
                 google_data varchar(255) default '',
-                google_calendar_id varchar(255) default ''
+                google_calendar_id varchar(255) default '',
+                position INT NOT NULL DEFAULT 9999
             ) ENGINE = INNODB
             DEFAULT CHARACTER SET = utf8
             COLLATE = utf8_general_ci"
@@ -219,7 +227,8 @@ class AB_Installer {
         $wpdb->query(
             "CREATE TABLE IF NOT EXISTS ab_category (
                 id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR( 255 ) NOT NULL
+                name VARCHAR( 255 ) NOT NULL,
+                position INT NOT NULL DEFAULT 9999
              ) ENGINE = INNODB
              DEFAULT CHARACTER SET = utf8
              COLLATE = utf8_general_ci"
@@ -234,6 +243,7 @@ class AB_Installer {
                 color VARCHAR( 255 ) NOT NULL DEFAULT '#FFFFFF',
                 category_id INT UNSIGNED ,
                 capacity INT NOT NULL DEFAULT '1',
+                position INT NOT NULL DEFAULT 9999,
                 INDEX ab_service_category_id_idx (category_id),
                 CONSTRAINT fk_ab_service_category_id
                     FOREIGN KEY ab_service_category_id_idx (category_id)
@@ -381,34 +391,6 @@ class AB_Installer {
         );
 
         $wpdb->query(
-            "CREATE TABLE IF NOT EXISTS ab_payment (
-                id              INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                created         DATETIME NOT NULL,
-                type            ENUM('local', 'paypal', 'authorizeNet', 'stripe') NOT NULL DEFAULT 'local',
-                customer_id     INT UNSIGNED NOT NULL,
-                appointment_id  INT UNSIGNED DEFAULT NULL,
-                token           VARCHAR(255) NOT NULL,
-                transaction     VARCHAR(255) NOT NULL,
-                coupon          VARCHAR(255) DEFAULT NULL,
-                total           DECIMAL(10, 2) NOT NULL DEFAULT  '0.00',
-                INDEX           ab_payment_customer_id_idx (customer_id),
-                INDEX           ab_payment_appointment_id_idx (appointment_id),
-                CONSTRAINT      fk_ab_payment_customer_id
-                    FOREIGN KEY ab_payment_customer_id_idx (customer_id)
-                    REFERENCES  ab_customer(id)
-                    ON DELETE   CASCADE
-                    ON UPDATE   CASCADE,
-                CONSTRAINT      fk_ab_payment_appointment_id
-                    FOREIGN KEY ab_payment_appointment_id_idx (appointment_id)
-                    REFERENCES  ab_appointment(id)
-                    ON DELETE   SET NULL
-                    ON UPDATE   CASCADE
-            ) ENGINE = INNODB
-            DEFAULT CHARACTER SET = utf8
-            COLLATE = utf8_general_ci"
-        );
-
-        $wpdb->query(
             "CREATE TABLE IF NOT EXISTS ab_holiday (
                   id        INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
                   staff_id  INT UNSIGNED NULL DEFAULT NULL,
@@ -427,7 +409,7 @@ class AB_Installer {
                 id              INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
                 customer_id     INT UNSIGNED NOT NULL,
                 appointment_id  INT UNSIGNED NOT NULL,
-                notes           TEXT,
+                custom_fields   TEXT,
                 token           VARCHAR(255) DEFAULT NULL,
                 INDEX ab_customer_appointment_customer_id_idx (customer_id),
                 INDEX ab_customer_appointment_appointment_id_idx (appointment_id),
@@ -441,6 +423,27 @@ class AB_Installer {
                   REFERENCES  ab_appointment(id)
                   ON DELETE   CASCADE
                   ON UPDATE   CASCADE
+            ) ENGINE = INNODB
+            DEFAULT CHARACTER SET = utf8
+            COLLATE = utf8_general_ci"
+        );
+
+        $wpdb->query(
+            "CREATE TABLE IF NOT EXISTS ab_payment (
+                id                      INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                created                 DATETIME NOT NULL,
+                type                    ENUM('local', 'coupon', 'paypal', 'authorizeNet', 'stripe') NOT NULL DEFAULT 'local',
+                customer_appointment_id INT UNSIGNED NOT NULL,
+                token                   VARCHAR(255) NOT NULL,
+                transaction             VARCHAR(255) NOT NULL,
+                coupon                  VARCHAR(255) DEFAULT NULL,
+                total                   DECIMAL(10, 2) NOT NULL DEFAULT  '0.00',
+                INDEX                   ab_payment_customer_appointment_id_idx (customer_appointment_id),
+                CONSTRAINT      fk_ab_payment_customer_appointment_id
+                    FOREIGN KEY ab_payment_customer_appointment_id_idx (customer_appointment_id)
+                    REFERENCES  ab_customer_appointment(id)
+                    ON DELETE   CASCADE
+                    ON UPDATE   CASCADE
             ) ENGINE = INNODB
             DEFAULT CHARACTER SET = utf8
             COLLATE = utf8_general_ci"
@@ -469,8 +472,7 @@ class AB_Installer {
         $wpdb->query( 'ALTER TABLE ab_schedule_item_break DROP FOREIGN KEY fk_ab_schedule_item_break_staff_schedule_item_id' );
         $wpdb->query( 'ALTER TABLE ab_appointment DROP FOREIGN KEY fk_ab_appointment_staff_id' );
         $wpdb->query( 'ALTER TABLE ab_appointment DROP FOREIGN KEY fk_ab_appointment_service_id' );
-        $wpdb->query( 'ALTER TABLE ab_payment DROP FOREIGN KEY fk_ab_payment_customer_id' );
-        $wpdb->query( 'ALTER TABLE ab_payment DROP FOREIGN KEY fk_ab_payment_appointment_id' );
+        $wpdb->query( 'ALTER TABLE ab_payment DROP FOREIGN KEY fk_ab_payment_customer_appointment_id' );
         $wpdb->query( 'ALTER TABLE ab_email_notification DROP FOREIGN KEY fk_ab_email_notification_customer_id' );
         $wpdb->query( 'ALTER TABLE ab_email_notification DROP FOREIGN KEY fk_ab_email_notification_staff_id' );
         $wpdb->query( 'ALTER TABLE ab_holiday DROP FOREIGN KEY fk_ab_holiday_staff_id' );

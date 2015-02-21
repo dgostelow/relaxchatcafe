@@ -9,7 +9,7 @@
                 <tr>
                     <td><label for="ab-newstaff-wpuser"><?php _e('User','ab') ?></label></td>
                     <td>
-                        <select class="auto-w" name="ab_newstaff_wpuser" id="ab-newstaff-wpuser">
+                        <select class="ab-auto-w" name="ab_newstaff_wpuser" id="ab-newstaff-wpuser">
                             <option value=""><?php _e('Select from WP users', 'ab') ?></option>
                             <?php foreach ( $form->getUsersForStaff() as $user ) : ?>
                                 <option value="<?php echo $user->ID ?>"><?php echo $user->display_name ?></option>
@@ -20,7 +20,7 @@
                 </tr>
                 <tr class="form-field form-required">
                     <td><label for="ab-newstaff-fullname"><?php _e('Full name', 'ab') ?></label></td>
-                    <td><input class="ab-clear-text" id="ab-newstaff-fullname" name="ab_newstaff_fullname" type="text"/><span class="red" style="vertical-align: bottom;font-size: 26px;"> *</span></td>
+                    <td><input class="ab-clear-text" id="ab-newstaff-fullname" name="ab_newstaff_fullname" type="text"/><span class="ab-red" style="vertical-align: bottom;font-size: 26px;"> *</span></td>
                 </tr>
                 <tr>
                     <td></td>

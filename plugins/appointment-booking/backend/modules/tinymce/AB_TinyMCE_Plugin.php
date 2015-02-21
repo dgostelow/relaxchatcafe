@@ -39,11 +39,11 @@ class AB_TinyMCE_Plugin {
 
         if ($version < 3.5) {
             // show button for v 3.4 and below
-            echo '<a href="#TB_inline?width=640&amp;inlineId=ab-tinymce-popup&amp;height=650"  id="add-ap-booking" title="' . esc_attr__( 'Add Booking Form', 'ab' ) . '">' . __('Add Booking Form', 'ab' ) . '</a>';
+            echo '<a href="#TB_inline?width=640&amp;inlineId=ab-tinymce-popup&amp;height=650"  id="add-bookly-form" title="' . esc_attr__( 'Add Booking Form', 'ab' ) . '">' . __('Add Booking Form', 'ab' ) . '</a>';
         } else {
             // display button matching new UI
             $img = '<span class="ab-media-icon"></span> ';
-            echo '<a href="#TB_inline?width=640&amp;inlineId=ab-tinymce-popup&amp;height=650" id="add-ap-booking" class="button ab-media-button" title="' . esc_attr__( 'Add Booking Form', 'ab' ) . '">' . $img . __( 'Add Booking Form', 'ab' ) . '</a>';
+            echo '<a href="#TB_inline?width=640&amp;inlineId=ab-tinymce-popup&amp;height=650" id="add-bookly-form" class="thickbox button ab-media-button" title="' . esc_attr__( 'Add Booking Form', 'ab' ) . '">' . $img . __( 'Add Booking Form', 'ab' ) . '</a>';
         }
     }
 

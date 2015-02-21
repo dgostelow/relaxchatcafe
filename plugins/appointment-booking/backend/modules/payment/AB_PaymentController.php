@@ -12,8 +12,9 @@ class AB_PaymentController extends AB_Controller {
             s.title      service,
             a.start_date
         FROM ab_payment p
-        LEFT JOIN ab_customer c ON c.id = p.customer_id
-        LEFT JOIN ab_appointment a ON p.appointment_id = a.id
+        LEFT JOIN ab_customer_appointment ca ON ca.id = p.customer_appointment_id
+        LEFT JOIN ab_customer c ON c.id = ca.customer_id
+        LEFT JOIN ab_appointment a ON ca.appointment_id = a.id
         LEFT JOIN ab_service s ON a.service_id = s.id
         LEFT JOIN ab_staff st ON st.id = a.staff_id
     ";
@@ -86,16 +87,28 @@ class AB_PaymentController extends AB_Controller {
     }
 
     public function index() {
-        $path = dirname( __DIR__ );
-        wp_enqueue_style( 'ab-style', plugins_url( 'resources/css/ab_style.css', $path ) );
-        wp_enqueue_style( 'ab-bootstrap', plugins_url( 'resources/bootstrap/css/bootstrap.min.css', $path ) );
-        wp_enqueue_script( 'ab-bootstrap', plugins_url( 'resources/bootstrap/js/bootstrap.min.js', $path ), array( 'jquery' ) );
-        wp_enqueue_script( 'ab-date', plugins_url( 'resources/js/date.js', $path ), array( 'jquery' ) );
-        wp_enqueue_script( 'ab-daterangepicker-js', plugins_url( 'resources/js/daterangepicker.js', $path ), array( 'jquery' ) );
-        wp_enqueue_style( 'ab-daterangepicker-css', plugins_url( 'resources/css/daterangepicker.css', $path ) );
-        wp_enqueue_script( 'ab-bootstrap-select-js', plugins_url( 'resources/js/bootstrap-select.min.js', $path ));
-        wp_enqueue_style( 'ab-bootstrap-select-css', plugins_url( 'resources/css/bootstrap-select.min.css', $path ));
-        wp_localize_script( 'ab-daterangepicker-js', 'BooklyL10n', array(
+        /** @var WP_Locale $wp_locale */
+        global $wp_locale;
+
+        $this->enqueueStyles( array(
+            'backend' => array(
+                'css/ab_style.css',
+                'bootstrap/css/bootstrap.min.css',
+                'css/daterangepicker.css',
+                'css/bootstrap-select.min.css',
+            )
+        ) );
+
+        $this->enqueueScripts( array(
+            'backend' => array(
+                'bootstrap/js/bootstrap.min.js' => array( 'jquery' ),
+                'js/date.js' => array( 'jquery' ),
+                'js/daterangepicker.js' => array( 'jquery' ),
+                'js/bootstrap-select.min.js',
+            )
+        ) );
+
+        wp_localize_script( 'ab-daterangepicker.js', 'BooklyL10n', array(
             'today'        => __( 'Today', 'ab' ),
             'yesterday'    => __( 'Yesterday', 'ab' ),
             'last_7'       => __( 'Last 7 Days', 'ab' ),
@@ -107,29 +120,8 @@ class AB_PaymentController extends AB_Controller {
             'clear'        => __( 'Clear', 'ab' ),
             'to'           => __( 'To', 'ab' ),
             'from'         => __( 'From', 'ab' ),
-            'month'        => array(
-                0      => __( 'January', 'ab' ),
-                1      => __( 'February', 'ab' ),
-                2      => __( 'March', 'ab' ),
-                3      => __( 'April', 'ab' ),
-                4      => __( 'May', 'ab' ),
-                5      => __( 'June', 'ab' ),
-                6      => __( 'July', 'ab' ),
-                7      => __( 'August', 'ab' ),
-                8      => __( 'September', 'ab' ),
-                9      => __( 'October', 'ab' ),
-                10     => __( 'November', 'ab' ),
-                11     => __( 'December', 'ab' )
-            ),
-            'day'          => array(
-                'Mon'  => __( 'Mon', 'ab' ),
-                'Tue'  => __( 'Tue', 'ab' ),
-                'Wed'  => __( 'Wed', 'ab' ),
-                'Thu'  => __( 'Thu', 'ab' ),
-                'Fri'  => __( 'Fri', 'ab' ),
-                'Sat'  => __( 'Sat', 'ab' ),
-                'Sun'  => __( 'Sun', 'ab' )
-            )
+            'months'       => array_values( $wp_locale->month ),
+            'days'         => array_values( $wp_locale->weekday_abbrev )
         ));
 
         $request = array(
