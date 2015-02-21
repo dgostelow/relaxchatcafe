@@ -136,7 +136,7 @@ class AB_UserBookingData {
                         $validator->validateEmail( $field_name, $data[ $field_name ], true );
                         break;
                     case 'phone':
-                        $validator->validatePhone( $field_name, $data[ $field_name ], true );
+                        $validator->validatePhone( $field_name, $data[ $field_name ], 255, true, true );
                         break;
                     case 'date_from':
                     case 'time_from':
