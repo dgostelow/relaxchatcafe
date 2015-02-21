@@ -24,7 +24,7 @@ class AB_Validator {
      * @param $phone
      * @param bool $required
      */
-    public function validatePhone( $field, $phone, $required = false ) {
+    /*public function validatePhone( $field, $phone, $required = false ) {
         if ( $phone  ) {
             if ( !preg_match('/^[0-9\s\+\-\(\)]+$/', $phone) ) {
                 $this->errors[$field] = __( '* Invalid phone number', 'ab' );
@@ -32,8 +32,34 @@ class AB_Validator {
         } elseif ( $required ) {
             $this->errors[$field] = __( '* Please tell us your Skype ID', 'ab' );
         }
+    }*/ 
+	
+	/**
+     * @param $field
+     * @param $string
+     * @param $max_length
+     * @param bool $required
+     * @param bool $is_name
+     * @param int $min_length
+     */
+    public function validatePhone( $field, $string, $max_length, $required = false, $is_name = false, $min_length = 0 ) {
+        if ( $string ) {
+            $long     =  __( 'is too long', 'ab' );
+            $short    = __( 'is too short', 'ab' );
+            $char_max = __( 'characters max', 'ab' );
+            $char_min = __( 'characters min', 'ab' );
+            if ( strlen( $string ) > $max_length ) {
+                $this->errors[$field] = __(sprintf('"%s" is too ' . $long . ' (%d '. $char_max .').', $string, $max_length ), 'ab');
+            } elseif ( $min_length > strlen( $string ) ) {
+                $this->errors[$field] = __(sprintf('"%s" is too ' . $short . ' (%d '. $char_min .').', $string, $min_length ), 'ab');
+            }
+        } elseif ( $required && $is_name  ) {
+            $this->errors[$field] = __( '* Please tell us your Skype ID', 'ab' );
+        } elseif ( $required ) {
+            $this->errors[$field] = __( '* Required', 'ab' );
+        }
     }
-
+	
     /**
      * @param $field
      * @param $string
