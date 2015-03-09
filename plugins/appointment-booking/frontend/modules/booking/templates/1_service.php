@@ -50,18 +50,18 @@ if ( get_option( 'ab_appearance_show_progress_tracker' ) == 1 ) {
             </div>
  */ ?>
             <div class="ab-nav-steps ab-clear ab-row-fluid">
-                <button class="ab-right ab-mobile-next-step ab-btn ab-none ladda-button orange zoom-in">
-                    <span class="ab_label"><?php _e( 'Next', 'ab' ) ?></span><span class="spinner"></span>
+                <button class="ab-right ab-mobile-next-step ab-btn ab-none ladda-button" data-style="zoom-in" data-spinner-size="40">
+                    <span class="ladda-label"><?php _e( 'Next', 'ab' ) ?></span>
                 </button>
             </div>
         </div>
         <div class="ab-mobile-step_2">
             <div class="ab-row-fluid">
-                <div class="ab-left ab-available-date ab-formGroup ab-lastGroup">
+                <div class="ab-left ab-available-date ab-formGroup ab-lastGroup" style="width: auto">
                     <label class="ab-nowrap"><b><?php echo esc_html( __( get_option( 'ab_appearance_text_label_select_date' ), 'ab' ) ) ?></b></label>
                     <div class="ab-input-wrap ab-formField">
                         <span class="ab-date-wrap">
-                           <input class="ab-date-from ab-formElement" type="text" value="<?php echo esc_attr($userData->getFormattedDateFrom()) ?>" />
+                           <input class="ab-date-from ab-formElement" type="text" value="<?php echo esc_attr( date_i18n( 'j F, Y', strtotime( $userData->get( 'date_from' ) ) ) ) ?>" />
                         </span>
                     </div>
                 </div>
@@ -87,7 +87,7 @@ if ( get_option( 'ab_appearance_show_progress_tracker' ) == 1 ) {
                             <div class="ab-select-wrap">
                                 <select class="select-list ab-select-time-from" style="width: auto">
                                     <?php foreach ($time_list as $key => $time) : ?>
-                                        <option value="<?php echo $key ?>"<?php if ( $userData->getTimeFrom() == $key ) echo ' selected="selected"' ?>><?php echo $time ?></option>
+                                        <option value="<?php echo $key ?>"<?php if ( $userData->get( 'time_from' ) == $key ) echo ' selected="selected"' ?>><?php echo $time ?></option>
                                     <?php endforeach ?>
                                 </select>
                             </div>
@@ -97,7 +97,7 @@ if ( get_option( 'ab_appearance_show_progress_tracker' ) == 1 ) {
                             <div class="ab-select-wrap">
                                 <select class="select-list ab-select-time-to" style="width: auto">
                                     <?php foreach ($time_list as $key => $time) : ?>
-                                        <option value="<?php echo $key ?>"<?php if ( $userData->getTimeTo() == $key ) echo ' selected="selected"' ?>><?php echo $time ?></option>
+                                        <option value="<?php echo $key ?>"<?php if ( $userData->get( 'time_to' ) == $key ) echo ' selected="selected"' ?>><?php echo $time ?></option>
                                     <?php endforeach ?>
                                 </select>
                             </div>
@@ -107,11 +107,11 @@ if ( get_option( 'ab_appearance_show_progress_tracker' ) == 1 ) {
                 <?php endif; ?>
             </div>
             <div class="ab-nav-steps ab-clear ab-row-fluid">
-                <button class="ab-left ab-mobile-prev-step ab-btn ab-none ladda-button orange zoom-in">
-                    <span class="ab_label"><?php _e( 'Back', 'ab' ) ?></span><span class="spinner"></span>
+                <button class="ab-left ab-mobile-prev-step ab-btn ab-none ladda-button" data-style="zoom-in" data-spinner-size="40">
+                    <span class="ladda-label"><?php _e( 'Back', 'ab' ) ?></span>
                 </button>
-                <button class="ab-right ab-next-step ab-btn ladda-button orange zoom-in">
-                    <span class="ab_label"><?php _e( 'Next', 'ab' ) ?></span><span class="spinner"></span>
+                <button class="ab-right ab-next-step ab-btn ladda-button" data-style="zoom-in" data-spinner-size="40">
+                    <span class="ladda-label"><?php _e( 'Next', 'ab' ) ?></span>
                 </button>
             </div>
         </div>

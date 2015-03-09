@@ -116,7 +116,7 @@ class AB_ExportController extends AB_Controller {
                 $appointment['customer_email'],
             );
 
-            $customer_appointment = new AB_Customer_Appointment();
+            $customer_appointment = new AB_CustomerAppointment();
             $customer_appointment->load($appointment['customer_appointment_id']);
             foreach ($customer_appointment->getCustomFields() as $custom_field) {
                 $custom_fields[$custom_field['id']] = $custom_field['value'];

@@ -65,11 +65,13 @@ class AB_Installer {
             'ab_settings_sender_email'                => get_option( 'admin_email' ),
             'ab_settings_time_slot_length'            => '15',
             'ab_settings_minimum_time_prior_booking'  => '0',
+            'ab_settings_maximum_available_days_for_booking'  => '365',
             'ab_settings_use_client_time_zone'        => '0',
             'ab_settings_coupons'                     => '0',
             'ab_settings_google_client_id'            => '',
             'ab_settings_google_client_secret'        => '',
             'ab_settings_google_two_way_sync'         => 1,
+            'ab_settings_google_limit_events'         => 0,
             'ab_settings_final_step_url'              => '',
             // Business hours.
             'ab_settings_monday_start'                => '08:00',

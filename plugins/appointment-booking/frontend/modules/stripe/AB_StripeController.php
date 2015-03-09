@@ -18,24 +18,11 @@ class AB_StripeController extends AB_Controller {
             $userData = new AB_UserBookingData( $form_id );
             $userData->load();
 
-            if ( $userData->hasData() && $userData->getServiceId() ) {
+            if ( $userData->get( 'service_id' ) ) {
                 Stripe::setApiKey(get_option( 'ab_stripe_secret_key' ));
                 Stripe::setApiVersion("2014-10-07");
 
-                $employee = new AB_Staff();
-                $employee->load( $userData->getStaffId() );
-
-                $service = new AB_Service();
-                $service->load( $userData->getServiceId() );
-
-                $price = $this->getWpdb()->get_var( $this->getWpdb()->prepare(
-                    'SELECT price FROM ab_staff_service WHERE staff_id = %d AND service_id = %d',
-                    $employee->get( 'id' ), $service->get( 'id' )
-                ) );
-
-                if ($userData->getCoupon()) {
-                    $price = AB_Coupon::applyCouponOnPrice($userData->getCoupon(), $price);
-                }
+                $price = $userData->getFinalServicePrice();
 
                 $stripe_data = array(
                     'number'    => $this->getParameter( 'ab_card_number' ),
@@ -44,45 +31,46 @@ class AB_StripeController extends AB_Controller {
                     'cvc'       => $this->getParameter( 'ab_card_code' ),
                 );
 
-                try{
+                try {
                     $charge = Stripe_Charge::create(array(
                         'card' => $stripe_data,
-                        'amount' => intval($price * 100), // amount incents
+                        'amount' => intval($price * 100), // amount in cents
                         'currency' => get_option( 'ab_paypal_currency' ),
-                        'description' => "Charge for " . $userData->getEmail(),
+                        'description' => "Charge for " . $userData->get( 'email' ),
                     ));
-                }catch(Exception $e){
+                }
+                catch ( Exception $e ) {
                     echo json_encode(array('error' => $e->getMessage()));
                     exit();
                 }
 
-                if ($charge->paid){
+                if ( $charge->paid ) {
                     $appointment = $userData->save();
 
-                    $customer_appointment = new AB_Customer_Appointment();
+                    $customer_appointment = new AB_CustomerAppointment();
                     $customer_appointment->loadBy( array(
                         'appointment_id' => $appointment->get('id'),
-                        'customer_id'    => $userData->getCustomerId()
+                        'customer_id'    => $userData->get( 'customer_id' )
                     ) );
 
                     $payment = new AB_Payment();
                     $payment->set( 'total', $price);
                     $payment->set( 'type', 'stripe' );
                     $payment->set( 'customer_appointment_id', $customer_appointment->get( 'id' ) );
-                    $payment->set( 'created', date('Y-m-d H:i:s') );
+                    $payment->set( 'created', current_time( 'mysql' ) );
 
-                    if ($userData->getCoupon()) {
-                        $payment->set('coupon', $userData->getCoupon());
-                        AB_Coupon::useCoupon($userData->getCoupon());
+                    $coupon = $userData->getCoupon();
+                    if ( $coupon ) {
+                        $payment->set( 'coupon', $coupon->get( 'code' ) );
+                        $coupon->set( 'used', 1 );
+                        $coupon->save();
                     }
 
                     $payment->save();
 
-                    $userData->clean();
-                    $userData->setPaymentId( $payment->get( 'id' ) );
-                    $userData->setBookingFinished( true );
                     echo json_encode ( array ( 'state' => 'true' ) );
-                }else{
+                }
+                else {
                     echo json_encode ( array ( 'error' => 'unknown error' ) );
                 }
             }

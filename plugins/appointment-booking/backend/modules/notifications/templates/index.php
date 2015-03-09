@@ -39,7 +39,7 @@
                 <?php endif ?>
                 <div class="ab-form-row">
                     <label class="ab-form-label"><?php _e( 'Codes','ab' ) ?></label>
-                    <div class="ab-tags-form left">
+                    <div class="ab-codes left">
                         <table>
                             <tbody>
                                 <?php include $slug == 'event_next_day' ? '_codes_event_next_day.php' : '_codes.php' ?>

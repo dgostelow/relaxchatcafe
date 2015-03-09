@@ -22,8 +22,8 @@
                     <span><?php _e( 'All services', 'ab' ) ?></span>
                     <?php if ( !empty ( $uncategorized_services ) ) : ?>
                         <div class="ab-title-service">
-                            <div><?php _e( 'Price' ) ?></div>
-                            <div><?php _e( 'Capacity' ) ?></div>
+                            <div><?php _e( 'Price', 'ab' ) ?></div>
+                            <div><?php _e( 'Capacity', 'ab' ) ?></div>
                         </div>
                     <?php endif ?>
                 </li>
@@ -58,8 +58,8 @@
                                     <input class="ab-category-checkbox ab-category-<?php echo $category->get( 'id' ) ?>" data-category-id="<?php echo $category->get( 'id' ) ?>" type="checkbox" value="" />
                                     <span><?php echo esc_html($category->get('name')) ?></span>
                                     <div class="ab-title-service">
-                                        <div><?php _e( 'Price' ) ?></div>
-                                        <div><?php _e( 'Capacity' ) ?></div>
+                                        <div><?php _e( 'Price', 'ab' ) ?></div>
+                                        <div><?php _e( 'Capacity', 'ab' ) ?></div>
                                     </div>
                                 </li>
                                 <li class="ab-category-services">

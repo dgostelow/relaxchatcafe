@@ -17,13 +17,6 @@ class AB_PayPalController extends AB_Controller {
         parent::__construct();
 
         $this->paypal = new PayPal();
-
-        // customer accepted the order on PayPal and return their info
-        add_action( 'ab_paypal_order_accepted', array ( $this, 'paypalResponseSuccess' ) );
-        // customer canceled the order on PayPal and redirected to it
-        add_action( 'ab_paypal_order_cancel', array ( $this, 'paypalResponseCancel' ) );
-
-        add_action( 'ab_paypal_order_error', array ( $this, 'paypalResponseError' ) );
     }
 
     public function paypalExpressCheckout() {
@@ -34,21 +27,9 @@ class AB_PayPalController extends AB_Controller {
             $userData = new AB_UserBookingData( $form_id );
             $userData->load();
 
-            if ( $userData->hasData() && $userData->getServiceId() ) {
-                $employee = new AB_Staff();
-                $employee->load( $userData->getStaffId() );
-
-                $service = new AB_Service();
-                $service->load( $userData->getServiceId() );
-
-                $price = $this->getWpdb()->get_var( $this->getWpdb()->prepare(
-                    'SELECT price FROM ab_staff_service WHERE staff_id = %d AND service_id = %d',
-                        $employee->get( 'id' ), $service->get( 'id' )
-                ) );
-
-                if ($userData->getCoupon()) {
-                    $price = AB_Coupon::applyCouponOnPrice($userData->getCoupon(), $price);
-                }
+            if ( $userData->get( 'service_id' ) ) {
+                $service = $userData->getService();
+                $price   = $userData->getFinalServicePrice();
 
                 // get the products information from the $_POST and create the Product objects
                 $product = new stdClass();
@@ -63,8 +44,7 @@ class AB_PayPalController extends AB_Controller {
                     $paypal->send_EC_Request( $form_id );
 
                 } catch ( Exception $e ) {
-                    $userData->setBookingPayPalError( $this->getParameter( 'error_msg' ) );
-                    $userData->setBookingCancelled( true );
+                    $userData->setPayPalStatus( 'error', $this->getParameter( 'error_msg' ) );
                     @wp_safe_redirect( remove_query_arg( array( 'action', 'token', 'PayerID' ), AB_CommonUtils::getCurrentPageURL() ) );
                     exit;
                 }
@@ -73,76 +53,134 @@ class AB_PayPalController extends AB_Controller {
     }
 
     /**
-     * Express Checkout 'RETURNURL' process
-     *
-     * @param $data
-     */
-    public function paypalResponseSuccess( $data ) {
-
-        list( $response, $form_id ) = $data;
-
-        // need session to get Total and Token
-
-        $token = $_SESSION[ 'appointment_booking' ][ $form_id ][ 'pay_pal_response' ][ 0 ][ 'TOKEN' ];
-
-        $userData = new AB_UserBookingData( $form_id );
-        $userData->load();
-
-        if ( $userData->hasData() && $userData->getServiceId() ) {
-            $appointment = $userData->save();
-
-            $customer_appointment = new AB_Customer_Appointment();
-            $customer_appointment->loadBy( array(
-                'appointment_id' => $appointment->get('id'),
-                'customer_id'    => $userData->getCustomerId()
-            ) );
-
-            $payment = new AB_Payment();
-            $payment->set( 'token', urldecode($token) );
-            $payment->set( 'total', isset($_SESSION['ab_payment_total']) ? urlencode($_SESSION['ab_payment_total']) : '0.00' );
-            $payment->set( 'customer_appointment_id', $customer_appointment->get( 'id' ) );
-            $payment->set( 'transaction', urlencode( $response["TRANSACTIONID"] ) );
-            $payment->set( 'created', date('Y-m-d H:i:s') );
-
-            if ($userData->getCoupon()){
-                $payment->set( 'coupon', $userData->getCoupon());
-                AB_Coupon::useCoupon($userData->getCoupon());
-            }
-
-            $payment->save();
-
-            $userData->setPaymentId( $payment->get( 'id' ) );
-            $userData->setBookingFinished( true );
-        }
-
-        @wp_safe_redirect( remove_query_arg( array( 'action', 'token', 'PayerID', 'ab_fid' ), AB_CommonUtils::getCurrentPageURL() ) );
-        exit;
-    }
-
-    /**
      * Express Checkout 'CANCELURL' process
-     *
-     * @param $form_id
      */
-    public function paypalResponseCancel( $form_id ) {
-        $userData = new AB_UserBookingData( $form_id );
+    public function paypalResponseCancel() {
+        $userData = new AB_UserBookingData( $_GET[ 'ab_fid' ] );
         $userData->load();
-        $userData->setBookingCancelled( true );
+        $userData->setPayPalStatus( 'cancelled' );
         @wp_safe_redirect( remove_query_arg( array( 'action', 'token', 'PayerID', 'ab_fid'), AB_CommonUtils::getCurrentPageURL() ) );
         exit;
     }
 
     /**
      * Express Checkout 'ERRORURL' process
-     *
-     * @param $form_id
      */
-    public function paypalResponseError( $form_id ) {
-        $userData = new AB_UserBookingData( $form_id );
+    public function paypalResponseError() {
+        $userData = new AB_UserBookingData( $_GET[ 'ab_fid' ] );
         $userData->load();
-        $userData->setBookingPayPalError( $this->getParameter( 'error_msg' ) );
-        $userData->setBookingCancelled( true );
+        $userData->setPayPalStatus( 'error', $this->getParameter( 'error_msg' ) );
         @wp_safe_redirect( remove_query_arg( array( 'action', 'token', 'PayerID', 'error_msg', 'ab_fid' ), AB_CommonUtils::getCurrentPageURL() ) );
         exit;
+    }
+
+    /**
+     * Process the Express Checkout RETURNURL
+     */
+    public function paypalResponseSuccess() {
+        $form_id = $_GET[ 'ab_fid' ];
+
+        if ( isset( $_GET["token"] ) && isset( $_GET["PayerID"] ) ) {
+            $token    = $_GET["token"];
+            $payer_id = $_GET["PayerID"];
+
+            // send the request to PayPal
+            $response = $this->paypal->sendNvpRequest( 'GetExpressCheckoutDetails', sprintf( '&TOKEN=%s', $token ) );
+
+            if ( strtoupper( $response["ACK"] ) == "SUCCESS" ) {
+                $data = sprintf( '&TOKEN=%s&PAYERID=%s&PAYMENTREQUEST_0_PAYMENTACTION=Sale', $token, $payer_id );
+
+                // response keys containing useful data to send via DoExpressCheckoutPayment operation
+                $response_data_keys_pattern = sprintf( '/^(%s)/', implode( '|', array(
+                    'PAYMENTREQUEST_0_AMT',
+                    'PAYMENTREQUEST_0_ITEMAMT',
+                    'PAYMENTREQUEST_0_CURRENCYCODE',
+                    'L_PAYMENTREQUEST_0',
+                ) ) );
+
+                foreach ( $response as $key => $value ) {
+                    // collect product data from response using defined response keys
+                    if ( preg_match( $response_data_keys_pattern, $key ) ) {
+                        $data .= sprintf( '&%s=%s', $key, $value );
+                    }
+                }
+
+                //We need to execute the "DoExpressCheckoutPayment" at this point to Receive payment from user.
+                $response = $this->paypal->sendNvpRequest( 'DoExpressCheckoutPayment', $data );
+                if ( "SUCCESS" == strtoupper( $response["ACK"] ) || "SUCCESSWITHWARNING" == strtoupper( $response["ACK"] ) ) {
+                    // get transaction info
+                    $response = $this->paypal->sendNvpRequest( 'GetTransactionDetails', "&TRANSACTIONID=" . urlencode( $response["PAYMENTINFO_0_TRANSACTIONID"] ) );
+                    if ( "SUCCESS" == strtoupper( $response["ACK"] ) || "SUCCESSWITHWARNING" == strtoupper( $response["ACK"] ) ) {
+                        // need session to get Total and Token
+
+                        $token = $_SESSION[ 'bookly' ][ $form_id ][ 'paypal_response' ][ 0 ][ 'TOKEN' ];
+
+                        $userData = new AB_UserBookingData( $form_id );
+                        $userData->load();
+
+                        if ( $userData->get( 'service_id' ) ) {
+                            $appointment = $userData->save();
+
+                            $customer_appointment = new AB_CustomerAppointment();
+                            $customer_appointment->loadBy( array(
+                                'appointment_id' => $appointment->get('id'),
+                                'customer_id'    => $userData->get( 'customer_id' )
+                            ) );
+
+                            $payment = new AB_Payment();
+                            $payment->set( 'token', urldecode($token) );
+                            $payment->set( 'total', $userData->getFinalServicePrice() );
+                            $payment->set( 'customer_appointment_id', $customer_appointment->get( 'id' ) );
+                            $payment->set( 'transaction', urlencode( $response["TRANSACTIONID"] ) );
+                            $payment->set( 'created', current_time( 'mysql' ) );
+
+                            $coupon = $userData->getCoupon();
+                            if ( $coupon ){
+                                $payment->set( 'coupon', $coupon->get( 'code' ) );
+                                $coupon->set( 'used', 1 );
+                                $coupon->save();
+                            }
+
+                            $payment->save();
+
+                            $userData->setPayPalStatus( 'success' );
+                        }
+
+                        @wp_safe_redirect( remove_query_arg( array( 'action', 'token', 'PayerID', 'ab_fid' ), AB_CommonUtils::getCurrentPageURL() ) );
+                        exit ( 0 );
+                    }
+                    else {
+                        header('Location: ' . add_query_arg( array(
+                                'action' => 'ab-paypal-errorurl',
+                                'ab_fid' => $form_id,
+                                'error_msg' => $response["L_LONGMESSAGE0"]
+                            ), AB_CommonUtils::getCurrentPageURL()
+                        ) );
+                        exit;
+                    }
+                }
+                else {
+                    header('Location: ' . add_query_arg( array(
+                            'action' => 'ab-paypal-errorurl',
+                            'ab_fid' => $form_id,
+                            'error_msg' => $response["L_LONGMESSAGE0"]
+                        ), AB_CommonUtils::getCurrentPageURL()
+                    ) );
+                    exit;
+                }
+            }
+            else {
+                header('Location: ' . add_query_arg( array(
+                        'action' => 'ab-paypal-errorurl',
+                        'ab_fid' => $form_id,
+                        'error_msg' => 'Invalid token provided'
+                    ), AB_CommonUtils::getCurrentPageURL()
+                ) );
+                exit;
+            }
+        }
+        else {
+            throw new Exception('Token parameter not found!');
+        }
     }
 }

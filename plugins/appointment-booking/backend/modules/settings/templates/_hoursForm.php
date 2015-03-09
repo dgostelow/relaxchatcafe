@@ -1,5 +1,5 @@
 <?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly ?>
-<form method="post" action="<?php echo add_query_arg( 'type', '_hours' ) ?>" class="ab-staff-form" id="business-hours">
+<form method="post" action="<?php echo add_query_arg( 'type', '_hours' ) ?>" class="ab-settings-form" id="business-hours">
     <?php if (isset($message_h)) : ?>
     <div style="margin: 0px!important;" class="updated below-h2">
         <button type="button" class="close" data-dismiss="alert">×</button>

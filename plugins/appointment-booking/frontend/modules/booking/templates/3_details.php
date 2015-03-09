@@ -22,21 +22,21 @@ $current_user = wp_get_current_user();
         <div class="ab-formGroup ab-left">
             <label class="ab-formLabel"><?php echo esc_html( __( get_option( 'ab_appearance_text_label_name' ), 'ab' ) ) ?></label>
             <div class="ab-formField">
-                <input class="ab-formElement ab-full-name" type="text" value="<?php echo (!$userData->getName() && $current_user)? $current_user->display_name : $userData->getName() ?>" maxlength="60"/>
+                <input class="ab-formElement ab-full-name" type="text" value="<?php echo (!$userData->get( 'name' ) && $current_user)? $current_user->display_name : $userData->get( 'name' ) ?>" maxlength="60"/>
             </div>
             <div class="ab-full-name-error ab-label-error ab-bold"></div>
         </div>
         <div class="ab-formGroup ab-left">
             <label class="ab-formLabel"><?php echo esc_html( __( get_option( 'ab_appearance_text_label_phone' ), 'ab' ) ) ?></label>
             <div class="ab-formField">
-                <input class="ab-formElement ab-user-phone" maxlength="30" type="text" value="<?php echo $userData->getPhone() ?>"/>
+                <input class="ab-formElement ab-user-phone" maxlength="30" type="text" value="<?php echo $userData->get( 'phone' ) ?>"/>
             </div>
             <div class="ab-user-phone-error ab-label-error ab-bold"></div>
         </div>
         <div class="ab-formGroup ab-left">
             <label class="ab-formLabel"><?php echo esc_html( __( get_option( 'ab_appearance_text_label_email' ), 'ab' ) ) ?></label>
             <div class="ab-formField" style="margin-right: 0">
-                <input class="ab-formElement ab-user-email" maxlength="40" type="text" value="<?php echo (!$userData->getEmail() && $current_user)? $current_user->user_email : $userData->getEmail() ?>"/>
+                <input class="ab-formElement ab-user-email" maxlength="40" type="text" value="<?php echo (!$userData->get( 'email' ) && $current_user)? $current_user->user_email : $userData->get( 'email' ) ?>"/>
             </div>
             <div class="ab-user-email-error ab-label-error ab-bold"></div>
         </div>
@@ -83,10 +83,10 @@ $current_user = wp_get_current_user();
 
 </form>
 <div class="ab-row-fluid ab-nav-steps ab-clear">
-    <button class="ab-left ab-to-second-step ab-btn ladda-button orange zoom-in" style="margin-right: 10px;">
-        <span class="ab_label"><?php _e( 'Back', 'ab' ) ?></span><span class="spinner"></span>
+    <button class="ab-left ab-to-second-step ab-btn ladda-button" data-style="zoom-in" style="margin-right: 10px;" data-spinner-size="40">
+        <span class="ladda-label"><?php _e( 'Back', 'ab' ) ?></span>
     </button>
-    <button class="ab-right ab-to-fourth-step ab-btn ladda-button orange zoom-in">
-        <span class="ab_label"><?php _e( 'Next', 'ab' ) ?></span><span class="spinner"></span>
+    <button class="ab-right ab-to-fourth-step ab-btn ladda-button" data-style="zoom-in" data-spinner-size="40">
+        <span class="ladda-label"><?php _e( 'Next', 'ab' ) ?></span>
     </button>
 </div>

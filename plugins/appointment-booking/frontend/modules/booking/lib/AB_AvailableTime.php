@@ -23,14 +23,12 @@ class AB_AvailableTime {
 
     private $holidays = array();
 
+    private $has_more_slots = false;
+
     /**
      * @var array
      */
     private $time = array();
-
-    private $client_time_zone_offset = 0;
-
-    private $time_format;
 
     /**
      * Constructor.
@@ -44,15 +42,12 @@ class AB_AvailableTime {
 
         // Prepare staff ids string for SQL queries.
         $this->_staffIdsStr = implode( ', ', array_merge(
-            array_map( 'intval', $userBookingData->getStaffIds() ),
+            array_map( 'intval', $userBookingData->get( 'staff_ids' ) ),
             array( 0 )
         ) );
     }
 
     public function load() {
-        /** @var WPDB $wpdb */
-        global $wpdb;
-
         // Load staff hours with breaks.
         $this->staff_working_hours = $this->_getStaffHours();
 
@@ -77,37 +72,38 @@ class AB_AvailableTime {
         $this->holidays = $this->_getHolidays();
 
         // Service duration
-        $this->service_duration = (int) $wpdb->get_var( $wpdb->prepare(
-            'SELECT `duration` FROM `ab_service` WHERE `id` = %d',
-            $this->_userData->getServiceId()
-        ) );
+        $service = $this->_userData->getService();
+        $this->service_duration = (int) $service->get( 'duration' );
 
-        $date = new DateTime( $this->start_date ? ($this->start_date . '+1 day') : $this->_userData->getDateFrom() );
-        $now = new DateTime();
+        $date = new DateTime( $this->start_date ? ($this->start_date . '+1 day') : $this->_userData->get( 'date_from' ) );
+        $now = new DateTime( '@' . current_time( 'timestamp' ) );
         if ( $now > $date ) {
             $date = $now;
         }
-        $date = $date->format('Y-m-d');
+        $date = $date->format( 'Y-m-d' );
 
-        if ( count( $this->_userData->getDays() ) && !empty ( $this->staff_working_hours ) ) {
-            $this->time_format = get_option('time_format');
-            $i = 0;
-            $items_number = 0;
+        if ( count( $this->_userData->get( 'days' ) ) && !empty ( $this->staff_working_hours ) ) {
+            $items_number = 0; // number of handled slots
+            $now->modify( '+' . AB_BookingConfiguration::getMaximumAvailableDaysForBooking() . ' days' );
+            $maximum_date       = $now->format( 'Y-m-d' );
+            $days               = 0; // number of handled days
+            $day_per_column     = AB_BookingConfiguration::getShowDayPerColumn();
 
-            while ( $i < 8 ) {
+            while (
+                // get the 10 columns/request
+                ( ( $day_per_column && $days < 10 /* one day/column */) || ( !$day_per_column && $items_number < 100 /* 10 slots/column * 10 columns */) )
+                &&
+                // don't exceed limit of days from settings
+                $date <= $maximum_date
+            ) {
                 $date = $this->_findAvailableDay( $date );
                 if ( $date ) {
-                    ++ $i;
                     $available_time = $this->_findAvailableTime( $date );
                     if ( !empty ( $available_time ) ) {
-                        // Adds date into the column if it was not added
-                        if ($this->_addDate($date)){
-                            ++ $items_number;
-                        }
 
                         // Client time zone offset.
                         $client_diff = get_option( 'ab_settings_use_client_time_zone' )
-                            ? get_option( 'gmt_offset' ) * HOUR_IN_SECONDS + $this->client_time_zone_offset * 60
+                            ? get_option( 'gmt_offset' ) * HOUR_IN_SECONDS + $this->_userData->get( 'time_zone_offset' ) * 60
                             : 0;
 
                         foreach ( $available_time as $item ) {
@@ -118,8 +114,8 @@ class AB_AvailableTime {
                                 }
                                 else {
                                     // Change staff member for this slot if the other one has higher price.
-                                    if ( $this->prices[ $this->time[ $date ][ $item[ 'start' ] ]->staff_id ] < $this->prices[ $item[ 'staff_id' ] ] ) {
-                                        $this->time[ $date ][ $item[ 'start' ] ]->staff_id = $item[ 'staff_id' ];
+                                    if ( $this->prices[ $this->time[ $date ][ $item[ 'start' ] ][ 'staff_id' ] ] < $this->prices[ $item[ 'staff_id' ] ] ) {
+                                        $this->time[ $date ][ $item[ 'start' ] ][ 'staff_id' ] = $item[ 'staff_id' ];
                                     }
                                 }
                                 continue;
@@ -132,24 +128,27 @@ class AB_AvailableTime {
                             ) {
                                 // Resolves intersections
                                 if ( !isset($this->time[ $date ][ $time ] ) ) {
-                                    if ($time - $client_diff >= 86400){
-                                        $temp_date = date( 'Y-m-d', strtotime( $date . ' +1 day' ) );
 
-                                        if ($this->_addDate($temp_date)){
-                                            ++ $items_number;
-                                        }
+                                    if ( $client_diff > $time) {
+                                        $slot_date = date( 'Y-m-d', strtotime( $date . ' -1 day' ) );
+                                    } else if ( $time - $client_diff >= 86400 ) {
+                                        $slot_date = date( 'Y-m-d', strtotime( $date . ' +1 day' ) );
+                                    } else {
+                                        $slot_date = $date;
+                                    }
 
-                                        $this->_addTime($temp_date, $time - $client_diff, $item['staff_id'], $time);
+                                    if ($this->_addDate($slot_date)){
+                                        ++ $items_number;
+                                        ++ $days;
                                     }
-                                    else {
-                                        $this->_addTime($date, $time - $client_diff, $item['staff_id'], $time, isset($item['booked']) ? true : false);
-                                    }
+
+                                    $this->_addTime($date, $time - $client_diff, $item['staff_id'], $time, isset($item['booked']) ? true : false);
                                     ++ $items_number;
                                 }
                                 else {
                                     // Change staff member for this slot if the other one has higher price.
-                                    if ( $this->prices[ $this->time[ $date ][ $time ]->staff_id ] < $this->prices[ $item[ 'staff_id' ] ] ) {
-                                        $this->time[ $date ][ $time ]->staff_id = $item[ 'staff_id' ];
+                                    if ( $this->prices[ $this->time[ $date ][ $time ][ 'staff_id' ] ] < $this->prices[ $item[ 'staff_id' ] ] ) {
+                                        $this->time[ $date ][ $time ][ 'staff_id' ] = $item[ 'staff_id' ];
                                     }
                                 }
                             }
@@ -161,12 +160,18 @@ class AB_AvailableTime {
                 }
                 $date = date( 'Y-m-d', strtotime( $date . ' +1 day' ) );
             }
-            if ( !$this->start_date && count($this->time) ) {
-                $current_time = current($this->time);
-                $start = next($current_time);
-                if ( $start ) { // must be true
-                    $this->start_time = $start->timestamp;
-                    $this->start_date = $start->date;
+            // detect if have more slots
+            if ($date <= $maximum_date) {
+                while($date <= $maximum_date) {
+                    $date = $this->_findAvailableDay( $date );
+                    if ( $date ) {
+                        $available_time = $this->_findAvailableTime( $date );
+                        if ( !empty ( $available_time ) ) {
+                            $this->has_more_slots = true;
+                            break;
+                        }
+                    }
+                    $date = date( 'Y-m-d', strtotime( $date . ' +1 day' ) );
                 }
             }
         }
@@ -184,7 +189,7 @@ class AB_AvailableTime {
         $datetime = new DateTime( $date );
         $attempt  = 0;
         // Find available day within requested days.
-        $customer_requested_days = $this->_userData->getDays();
+        $customer_requested_days = $this->_userData->get( 'days' );
         while ( !in_array( $datetime->format( 'w' ) + 1, $customer_requested_days ) ) {
             $datetime->modify( '+1 day' );
             if ( ++ $attempt >= 7 ) {
@@ -219,7 +224,7 @@ class AB_AvailableTime {
 
         foreach ( $this->staff_working_hours as $staff_id => $hours ) {
 //            // if the capacity of staff service is less than selected by user, skip it
-//            $available_capacity = $this->_getAvailableCapacity($staff_id, $this->_userData->getServiceId());
+//            $available_capacity = $this->_getAvailableCapacity($staff_id, $this->_userData->get( 'service_id' ));
 //            if ( $available_capacity < $this->_userData->getCapacity() ) {
 //                continue;
 //            }
@@ -234,8 +239,8 @@ class AB_AvailableTime {
                 $intersection = $this->_findIntersection(
                     $this->_strToTime( $working_start_time ),
                     $this->_strToTime( $hours[ $day_of_week ][ 'end_time' ] ),
-                    $this->_strToTime( $this->_userData->getTimeFrom() ),
-                    $this->_strToTime( $this->_userData->getTimeTo() )
+                    $this->_strToTime( $this->_userData->get( 'time_from' ) ),
+                    $this->_strToTime( $this->_userData->get( 'time_to' ) )
                 );
 
                 if (is_array($intersection) && !array_key_exists('start', $intersection)){
@@ -259,9 +264,9 @@ class AB_AvailableTime {
                             // Remove bookings from the time frames.
                             $bookings = isset ( $this->bookings[ $staff_id ] ) ? $this->bookings[ $staff_id ] : array();
                             foreach ( $bookings as $booking ) {
-                                $bookingStart = new DateTime( $booking->start_date );
+                                $bookingStart = new DateTime( $booking['start_date'] );
                                 if ( $date == $bookingStart->format('Y-m-d') ) {
-                                    $bookingEnd    = new DateTime( $booking->end_date );
+                                    $bookingEnd    = new DateTime( $booking['end_date'] );
                                     $booking_start = $bookingStart->format( 'U' ) % (24 * 60 * 60);
                                     $booking_end   = $bookingEnd->format( 'U' ) % (24 * 60 * 60);
                                     $timeframes    = get_option( 'ab_appearance_show_blocked_timeslots' ) == 1 ?
@@ -292,14 +297,14 @@ class AB_AvailableTime {
                         // Remove bookings from the time frames.
                         $bookings = isset ( $this->bookings[ $staff_id ] ) ? $this->bookings[ $staff_id ] : array();
                         foreach ( $bookings as $booking ) {
-                            $bookingStart = new DateTime( $booking->start_date );
+                            $bookingStart = new DateTime( $booking['start_date'] );
                             if ( $date == $bookingStart->format('Y-m-d') ) {
-                                $bookingEnd    = new DateTime( $booking->end_date );
+                                $bookingEnd    = new DateTime( $booking['end_date'] );
                                 $booking_start = $bookingStart->format( 'U' ) % (24 * 60 * 60);
                                 $booking_end   = $bookingEnd->format( 'U' ) % (24 * 60 * 60);
 
                                 if (get_option( 'ab_appearance_show_blocked_timeslots' ) == 1) {
-                                    if ($booking->number_of_bookings >= $booking->capacity)
+                                    if ($booking['number_of_bookings'] >= $booking['capacity'])
                                     {
                                         $timeframes = $this->_setBookedTimePeriod( $timeframes, $booking_start, $booking_end );
                                     }
@@ -307,8 +312,8 @@ class AB_AvailableTime {
                                     $timeframes = $this->_removeTimePeriod( $timeframes, $booking_start, $booking_end );
 
                                     if (
-                                        $booking->number_of_bookings < $booking->capacity &&
-                                        $booking->service_id == $this->_userData->getServiceId() &&
+                                        $booking['number_of_bookings'] < $booking['capacity'] &&
+                                        $booking['service_id'] == $this->_userData->get( 'service_id' ) &&
                                         $booking_start >= $intersection[ 'start' ]
                                     ) {
                                         $timeframes[] = array(
@@ -491,8 +496,8 @@ class AB_AvailableTime {
         return $this->start_date;
     }
 
-    public function setClientTimeZoneOffset($client_time_zone_offset){
-        $this->client_time_zone_offset = $client_time_zone_offset;
+    public function hasMoreSlots() {
+        return $this->has_more_slots;
     }
 
     /*******************
@@ -602,11 +607,11 @@ class AB_AvailableTime {
                 LEFT JOIN `ab_staff_service` `ss` ON `ss`.`staff_id` = `a`.`staff_id` AND `ss`.`service_id` = `a`.`service_id`
              WHERE `a`.`staff_id` IN ({$this->_staffIdsStr}) AND `a`.`start_date` >= %s
              GROUP BY `a`.`start_date`, `a`.`staff_id`, `a`.`service_id`",
-            $this->_userData->getDateFrom() ) );
+            $this->_userData->get( 'date_from' ) ), ARRAY_A );
 
         if ( is_array( $rows ) ) {
             foreach ( $rows as $row ) {
-                $result[ $row->staff_id ][] = $row;
+                $result[ $row['staff_id'] ][] = $row;
             }
         }
 
@@ -632,7 +637,7 @@ class AB_AvailableTime {
                                     WHERE `id` IN ({$this->_staffIdsStr}) AND `google_data` IS NOT NULL");
 
         if (is_array($rows)) {
-            $startDate = new DateTime($this->_userData->getDateFrom());
+            $startDate = new DateTime($this->_userData->get( 'date_from' ));
             foreach ($rows as $row) {
                 $google = new AB_Google();
                 $google->loadByStaffId($row->staff_id);
@@ -659,7 +664,7 @@ class AB_AvailableTime {
 
         $rows = $wpdb->get_results( $wpdb->prepare(
             "SELECT * FROM `ab_staff_service` WHERE `staff_id` IN ({$this->_staffIdsStr}) AND `service_id` = %d",
-            $this->_userData->getServiceId()
+            $this->_userData->get( 'service_id' )
         ) );
 
         if ( is_array( $rows ) ) {
@@ -696,18 +701,16 @@ class AB_AvailableTime {
     /**
      * Add date to Time Table (step 2)
      *
-     * @param date $date
+     * @param string $date
      * @return bool
      */
     private function _addDate( $date ) {
         if ( !isset ( $this->time[ $date ][ 'day' ] ) ) {
-            $object = new stdClass();
-            $object->label = date_i18n( 'D, M d', strtotime( $date ) );
-            $object->is_day = true;
-            $object->value = $date;
-            $object->staff_id = '';
-            $object->booked = 0;
-            $this->time[ $date ]['day'] = $object;
+            $this->time[ $date ]['day'] = array(
+                'is_day' => true,
+                'label'  => date_i18n( 'D, M d', strtotime( $date ) ),
+                'value'  => $date,
+            );
 
             return true;
         }
@@ -718,23 +721,20 @@ class AB_AvailableTime {
     /**
      * Add time to Time Table (step 2)
      *
-     * @param date $date
+     * @param string $date
      * @param int $label_time
      * @param int $staff_id
      * @param int $time
      * @param boolean $booked
      */
     private function _addTime( $date, $label_time, $staff_id, $time, $booked = false ) {
-        $object = new stdClass();
-
-        $object->label = date_i18n( $this->time_format, $label_time);
-        $object->clean_date = $date;
-        $object->value = date('Y-m-d H:i', strtotime($date) + $time);
-        $object->staff_id = $staff_id;
-        $object->timestamp = $time;
-        $object->date = $date;
-        $object->is_day = false;
-        $object->booked = intval($booked);
-        $this->time[ $date ][ $time ] = $object;
+        $this->time[ $date ][ $time ] = array(
+            'is_day'     => false,
+            'label'      => date_i18n( get_option('time_format'), $label_time ),
+            'value'      => sprintf( '%s %s', $date, date( 'H:i:s', $time ) ),
+            'staff_id'   => $staff_id,
+            'date'       => $date,
+            'booked'     => $booked,
+        );
     }
 }

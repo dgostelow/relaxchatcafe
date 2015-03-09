@@ -297,6 +297,19 @@ class AB_BookingConfiguration {
     }
 
     /**
+     * @return int
+     */
+    public static function getMaximumAvailableDaysForBooking() {
+        return (int)get_option( 'ab_settings_maximum_available_days_for_booking', 365 );
+    }
+
+    /**
+     * @return bool
+     */
+    public static function getShowDayPerColumn() {
+        return (boolean)get_option( 'ab_appearance_show_day_one_column', false );
+    }
+    /**
      * Get dateMin parameter for pickadate.
      *
      * @return float

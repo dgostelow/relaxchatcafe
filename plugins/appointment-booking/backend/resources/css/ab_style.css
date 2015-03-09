@@ -14,9 +14,13 @@
 .ab-ltext { text-align: left; }
 .ab-update-button { margin-right: 10px; }
 .ab-appointment-popup { overflow: visible; }
-.wp-admin select { padding: 4px 6px!important; }
+.ab-valign-top { vertical-align: top; }
+.wp-admin select,
+.wp-admin input { padding: 4px 6px!important; width: 200px; }
 ul.wp-submenu { margin: 0; }
-input[type='text'] { height: 30px!important; }
+input[type='text'],
+input[type='number'],
+input[type='number'] { height: 30px!important; }
 input[type='password'] { height: 30px!important; }
 #ab-staff-delete { position: absolute; top: 15px; left: 320px; }
 
@@ -130,6 +134,7 @@ body { background: none!important; }
 .ab-topmenu-link .ab-list-link li a.ab-active { border-bottom: 1px solid white; margin-bottom: -1px; color: black; }
 .ab-staff-form input[type='text'] { width: 200px; }
 .ab-staff-form input[type='password'] { width: 200px; }
+.ab-staff-form input[type='number'] { width: 200px; }
 
 /** Popups */
 .ab-popup-wrapper { position: relative }
@@ -191,8 +196,10 @@ body { background: none!important; }
 .ab-content #ab-newstaff-fullname { width: 160px; }
 .ab-content td { white-space: nowrap; padding: 5px; border: 0!important; }
 .staff-popup-wrapper .ab-popup .ab-arrow { left: 34px; }
-.ab-staff-form { max-width: 500px; }
-.ab-staff-form table td { padding: 5px; }
+.ab-staff-form,
+.ab-settings-form { max-width: 500px; }
+.ab-staff-form table td,
+.ab-settings-form table td { padding: 5px; }
 
 .ab-static-width { width: 160px; }
 .ab-full-width { margin-left: 175px; float: none; }
@@ -247,8 +254,12 @@ body { background: none!important; }
 .ab-notifications legend { margin: 0; border: 0; line-height: normal; }
 .ab-notifications legend input { margin: 8px 0 0!important; }
 .ab-notifications legend label { display: inline; }
-.ab-notifications .ab-tags-form table tr td { padding: 0 20px 0 0; }
-.ab-notifications .ab-tags-form { font-size: 12px; }
+.ab-notifications .ab-codes table tr td { padding: 0 20px 0 0; font-size: 12px;}
+.ab-notifications .ab-codes table tr td input {
+    cursor: pointer;
+    border: none;
+    width: 220px;
+}
 input.ab-sender {
     margin-left: 20px;
     margin-top: 10px;
@@ -261,7 +272,7 @@ input.ab-sender {
 
 .ab-content form { margin: 0; }
 #message_editor .wp-editor-wrap { margin-left: 81px; }
-.select_start, .select_end { width: auto; margin: 0; }
+.select_start, .select_end { width: auto!important; margin: 0; }
 
 #ab-annual-calendar {
   width: 715px;
@@ -485,4 +496,9 @@ textarea.ab-custom-field { width: 100%; }
     border: 0;
     font-size: 17.5px;
     font-weight: bold;
+}
+
+/* calendar bug */
+.daterangepicker .calendar {
+    max-width: 100%!important;
 }

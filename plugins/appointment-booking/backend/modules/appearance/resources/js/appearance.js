@@ -69,6 +69,7 @@ jQuery(function($) {
         $('.picker__day--selected').attr('style', 'color: ' + color_important);
         $('.picker__button--clear').attr('style', 'color: ' + color_important);
         $('.picker__button--today').attr('style', 'color: ' + color_important);
+        $('.picker__day--highlighted').attr('style', 'color: ' + color_important);
         $('.ab-columnizer .ab-available-day').css({
             'background': $color_picker.wpColorPicker('color'),
             'border-color': $color_picker.wpColorPicker('color')
@@ -359,19 +360,19 @@ jQuery(function($) {
     });
 
     if(jQuery('.ab-authorizenet-payment').is(':checked')) {
-        jQuery('form.authorizenet').show();
+        jQuery('form.ab-authorizenet').show();
     }
 
     if(jQuery('.ab-stripe-payment').is(':checked')) {
-        jQuery('form.stripe').show();
+        jQuery('form.ab-stripe').show();
     }
 
     jQuery('input[type=radio]').change( function() {
-        jQuery('form.authorizenet').add('form.stripe').hide();
+        jQuery('form.ab-authorizenet').add('form.ab-stripe').hide();
         if(jQuery('.ab-authorizenet-payment').is(':checked')) {
-            jQuery('form.authorizenet').show();
+            jQuery('form.ab-authorizenet').show();
         } else if(jQuery('.ab-stripe-payment').is(':checked')) {
-            jQuery('form.stripe').show();
+            jQuery('form.ab-stripe').show();
         }
     });
 }); // jQuery

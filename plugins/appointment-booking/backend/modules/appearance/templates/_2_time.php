@@ -325,15 +325,15 @@
     </div>
 </div>
 <div class="ab-row-fluid ab-nav-steps last-row ab-clear">
-    <button class="ab-time-next ab-btn ab-right ladda-button orange zoom-in">
+    <button class="ab-time-next ab-btn ab-right ladda-button">
         <span class="ab_label">&gt;</span>
         <span class="spinner"></span>
     </button>
-    <button class="ab-time-prev ab-btn ab-right ladda-button orange zoom-in">
+    <button class="ab-time-prev ab-btn ab-right ladda-button">
         <span class="ab_label">&lt;</span>
         <span class="spinner"></span>
     </button>
-    <button class="ab-left ab-to-first-step ab-btn ladda-button orange zoom-in">
+    <button class="ab-left ab-to-first-step ab-btn ladda-button">
         <span><?php _e( 'Back', 'ab' ) ?></span>
     </button>
 </div>

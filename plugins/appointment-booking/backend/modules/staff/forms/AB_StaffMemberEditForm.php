@@ -54,7 +54,7 @@ class AB_StaffMemberEditForm extends AB_StaffMemberForm {
             $google = new AB_Google();
             $google->loadByStaffId($this->data['id']);
             if (!$google->validateCalendar($this->data['google_calendar_id'])){
-                $this->errors['google_calendar'] = true;
+                $this->errors['google_calendar'] = implode('<br>', $google->getErrors());
                 return false;
             }
         }

@@ -484,7 +484,7 @@ class AB_CalendarController extends AB_Controller  {
 
                 // Save custom fields
                 if ( $ac = $appointment->getCustomerAppointments() and count( $ac ) ) {
-                    /** @var AB_Customer_Appointment $customer_appointment */
+                    /** @var AB_CustomerAppointment $customer_appointment */
                     foreach ( $ac as $customer_appointment ) {
                         $customer_appointment->set( 'custom_fields', '' );
                         foreach ( $custom_fields as $fields ) {
@@ -659,7 +659,7 @@ class AB_CalendarController extends AB_Controller  {
                 }
             }
 
-            $customer_appointment = new AB_Customer_Appointment();
+            $customer_appointment = new AB_CustomerAppointment();
             $customer_appointment->loadBy(array(
                 'customer_id'    => $customer->get('id'),
                 'appointment_id' => $appointment->id
@@ -725,6 +725,8 @@ class AB_CalendarController extends AB_Controller  {
             'm' => 'mm', 'n' => 'm', 'F' => 'MM', 'M' => 'M',
             // Year
             'Y' => 'yy', 'y' => 'y',
+            // Others
+            'S' => '',
         );
 
         return strtr((string)get_option('date_format'), $chars);

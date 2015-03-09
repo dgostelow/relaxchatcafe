@@ -9,7 +9,7 @@ require_once( __DIR__ . '/../../../../../' . WPINC . '/link-template.php' );
 require_once( __DIR__ . '/AB_CommonUtils.php' );
 require_once( __DIR__ . '/../AB_NotificationReplacement.php' );
 require_once( __DIR__ . '/../AB_Entity.php' );
-require_once( __DIR__ . '/../entities/AB_Customer_Appointment.php' );
+require_once( __DIR__ . '/../entities/AB_CustomerAppointment.php' );
 
 /**
  * Class Notifications
@@ -102,7 +102,7 @@ class Notifications {
 
                             $replacement = new AB_NotificationReplacement();
                             $replacement->set('next_day_agenda', $schedule);
-                            $replacement->set('appointment_time', $row->start_date);
+                            $replacement->set('appointment_datetime', $row->start_date);
                             $message = $replacement->replace($notifications->message);
                             $subject = $replacement->replace($notifications->subject);
 
@@ -127,7 +127,7 @@ class Notifications {
 
                     if ( $rows ) {
                         foreach ( $rows as $row ) {
-                            $customer_appointment = new AB_Customer_Appointment();
+                            $customer_appointment = new AB_CustomerAppointment();
                             $customer_appointment->load($row->ca_id);
                             $custom_fields = '';
                             foreach ($customer_appointment->getCustomFields() as $custom_field) {
@@ -139,14 +139,14 @@ class Notifications {
 
                             $replacement = new AB_NotificationReplacement();
                             $replacement->set('client_name', $row->name);
-                            $replacement->set('appointment_time', $row->start_date);
-                            $replacement->set('service_name',  $row->title);
-                            $replacement->set('service_price',  AB_CommonUtils::formatPrice( $row->sprice ));
-                            $replacement->set('category_name',  $row->category_name);
-                            $replacement->set('staff_name',  $row->staff_name);
-                            $replacement->set('staff_email',  $row->staff_email);
-                            $replacement->set('staff_phone',  $row->staff_phone);
-                            $replacement->set('staff_photo',  $row->staff_photo);
+                            $replacement->set('appointment_datetime', $row->start_date);
+                            $replacement->set('service_name', $row->title);
+                            $replacement->set('service_price', $row->sprice );
+                            $replacement->set('category_name', $row->category_name);
+                            $replacement->set('staff_name', $row->staff_name);
+                            $replacement->set('staff_email', $row->staff_email);
+                            $replacement->set('staff_phone', $row->staff_phone);
+                            $replacement->set('staff_photo', $row->staff_photo);
                             $replacement->set('custom_fields', $custom_fields );
                             $message = $replacement->replace($notifications->message);
                             $subject = $replacement->replace($notifications->subject);
@@ -170,7 +170,7 @@ class Notifications {
 
                     if ( $rows ) {
                         foreach ( $rows as $row ) {
-                            $customer_appointment = new AB_Customer_Appointment();
+                            $customer_appointment = new AB_CustomerAppointment();
                             $customer_appointment->load($row->ca_id);
                             $custom_fields = '';
                             foreach ($customer_appointment->getCustomFields() as $custom_field) {
@@ -182,14 +182,14 @@ class Notifications {
 
                             $replacement = new AB_NotificationReplacement();
                             $replacement->set('client_name', $row->name);
-                            $replacement->set('appointment_time', $row->start_date);
-                            $replacement->set('service_name',  $row->title);
-                            $replacement->set('service_price',  AB_CommonUtils::formatPrice( $row->sprice ));
-                            $replacement->set('category_name',  $row->category_name);
-                            $replacement->set('staff_name',  $row->staff_name);
-                            $replacement->set('staff_email',  $row->staff_email);
-                            $replacement->set('staff_phone',  $row->staff_phone);
-                            $replacement->set('staff_photo',  $row->staff_photo);
+                            $replacement->set('appointment_datetime', $row->start_date);
+                            $replacement->set('service_name', $row->title);
+                            $replacement->set('service_price', $row->sprice );
+                            $replacement->set('category_name', $row->category_name);
+                            $replacement->set('staff_name', $row->staff_name);
+                            $replacement->set('staff_email', $row->staff_email);
+                            $replacement->set('staff_phone', $row->staff_phone);
+                            $replacement->set('staff_photo', $row->staff_photo);
                             $replacement->set('custom_fields', $custom_fields );
                             $message = $replacement->replace($notifications->message);
                             $subject = $replacement->replace($notifications->subject);

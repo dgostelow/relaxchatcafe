@@ -37,9 +37,9 @@ class AB_Appointment extends AB_Entity {
     }
 
     /**
-     * Get AB_Customer_Appointment entities associated with this appointment.
+     * Get AB_CustomerAppointment entities associated with this appointment.
      *
-     * @return AB_Customer_Appointment[]   Array of entities
+     * @return AB_CustomerAppointment[]   Array of entities
      */
     public function getCustomerAppointments() {
         $result = array();
@@ -56,7 +56,7 @@ class AB_Appointment extends AB_Entity {
             ), ARRAY_A);
 
             foreach( $records as $data ) {
-                $ca = new AB_Customer_Appointment();
+                $ca = new AB_CustomerAppointment();
                 $ca->setData( $data );
 
                 // Inject AB_Customer entity.
@@ -87,7 +87,7 @@ class AB_Appointment extends AB_Entity {
         $current_ids = array_map( function( $ca ) { return $ca->customer->get( 'id' ); }, $this->getCustomerAppointments() );
 
         // Remove redundant customers.
-        $customer_appointment = new AB_Customer_Appointment();
+        $customer_appointment = new AB_CustomerAppointment();
         foreach ( array_diff( $current_ids, $new_ids ) as $id ) {
             if ( $customer_appointment->loadBy( array(
                 'appointment_id' => $this->get( 'id' ),
@@ -99,7 +99,7 @@ class AB_Appointment extends AB_Entity {
 
         // Add new customers.
         foreach ( array_diff( $new_ids, $current_ids ) as $id ) {
-            $customer_appointment = new AB_Customer_Appointment();
+            $customer_appointment = new AB_CustomerAppointment();
             $customer_appointment->set( 'appointment_id', $this->get('id') );
             $customer_appointment->set( 'customer_id', $id );
             $customer_appointment->save();
@@ -217,10 +217,10 @@ class AB_Appointment extends AB_Entity {
     /**
      * Send email notifications to client and staff member.
      *
-     * @param int $client_time_offset
-     * @param null $coupon
+     * @param int $time_zone_offset
+     * @param AB_Coupon|bool $coupon
      */
-    public function sendEmailNotifications( $client_time_offset = 0, $coupon = null ) {
+    public function sendEmailNotifications( $time_zone_offset = 0, $coupon = false ) {
         $client_notification = new AB_Notifications();
         $client_notification->loadBy( array( 'slug' => 'client_info' ) );
 
@@ -240,19 +240,19 @@ class AB_Appointment extends AB_Entity {
         $category->load( $service->get( 'category_id' ) );
 
         $price = $staff_service->get( 'price' );
-        if ($coupon !== null) {
-            $price = AB_Coupon::applyCouponOnPrice($coupon, $price);
+        if ( $coupon ) {
+            $price = $coupon->apply( $price );
         }
 
         foreach ( $this->getCustomerAppointments() as $ca ) {
             $replacement = new AB_NotificationReplacement();
-            $replacement->set( 'appointment_time', $this->get('start_date') );
+            $replacement->set( 'appointment_datetime', $this->get('start_date') );
             $replacement->set( 'appointment_token', $ca->get( 'token' ) );
             $replacement->set( 'category_name', $category->get( 'name' ) );
             $replacement->set( 'client_name', $ca->customer->get( 'name' ) );
             $replacement->set( 'client_phone', $ca->customer->get( 'phone' ) );
             $replacement->set( 'client_email', $ca->customer->get( 'email' ) );
-            $replacement->set( 'service_name', $service->get( 'title' ) ? $service->get( 'title' ) : __( 'Untitled', 'ab' ) );
+            $replacement->set( 'service_name', $service->get( 'title' ) != '' ? $service->get( 'title' ) : __( 'Untitled', 'ab' ) );
             $replacement->set( 'service_price', $price );
             $replacement->set( 'staff_name', $staff->get( 'full_name' ) );
             $replacement->set( 'staff_email', $staff->get( 'email' ) );
@@ -284,7 +284,9 @@ class AB_Appointment extends AB_Entity {
             }
 
             if ( $client_notification->get( 'active' ) ) {
-                $replacement->set( 'appointment_time', date( 'Y-m-d H:i:s', strtotime( $this->get( 'start_date' ) ) - $client_time_offset * 3600 ) );
+                // Client time zone offset.
+                $client_diff = get_option( 'gmt_offset' ) * HOUR_IN_SECONDS + $time_zone_offset * 60;
+                $replacement->set( 'appointment_datetime', date( 'Y-m-d H:i:s', strtotime( $this->get( 'start_date' ) ) - $client_diff ) );
                 // Send email notification to client.
                 $subject = $replacement->replace( $client_notification->get( 'subject' ) );
                 $message = wpautop( $replacement->replace( $client_notification->get( 'message' ) ) );

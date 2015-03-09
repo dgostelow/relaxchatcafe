@@ -21,7 +21,6 @@ class AB_Frontend {
         global $wp_locale;
 
         wp_register_style( 'ab-reset', plugins_url( 'resources/css/ab-reset.css', __FILE__ ) );
-        wp_register_style( 'ab-ladda-themeless', plugins_url( 'resources/css/ladda-themeless.min.css', __FILE__ ) );
         wp_register_style( 'ab-ladda-min', plugins_url( 'resources/css/ladda.min.css',   __FILE__ ) );
         wp_register_style( 'ab-core', plugins_url( 'resources/css/ab-core.css',   __FILE__ ) );
         wp_register_style( 'ab-picker-classic-date', plugins_url( 'resources/css/picker.classic.date.css', __FILE__ ) );
@@ -53,10 +52,19 @@ class AB_Frontend {
         }
 
         // PayPal Express Checkout
-        if ( isset( $_POST['action'] ) ) {
-            switch ( $_POST['action'] ) {
+        if ( isset( $_REQUEST['action'] ) ) {
+            switch ( $_REQUEST['action'] ) {
                 case 'ab_paypal_checkout':
                     $this->paypalController->paypalExpressCheckout();
+                    break;
+                case 'ab-paypal-returnurl':
+                    $this->paypalController->paypalResponseSuccess();
+                    break;
+                case 'ab-paypal-cancelurl':
+                    $this->paypalController->paypalResponseCancel();
+                    break;
+                case 'ab-paypal-errorurl':
+                    $this->paypalController->paypalResponseError();
                     break;
             }
         }

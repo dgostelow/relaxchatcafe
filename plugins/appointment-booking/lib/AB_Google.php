@@ -2,6 +2,8 @@
 
 class AB_Google {
 
+    const EVENTS_PER_REQUEST = 250;
+
     /** @var Google_Client */
     private $client;
 
@@ -40,10 +42,14 @@ class AB_Google {
                 $this->client->setAccessToken($staff->get('google_data'));
                 if ($this->client->isAccessTokenExpired()) {
                     $this->client->refreshToken($this->client->getRefreshToken());
+                    $staff->set( 'google_data', $this->client->getAccessToken() );
+                    $staff->save();
                 }
 
                 $this->service = new Google_Service_Calendar($this->client);
             } catch (Exception $e) {
+                $staff->set( 'google_data', null );
+                $staff->save();
                 $this->errors[] = $e->getMessage();
             }
 
@@ -178,6 +184,8 @@ class AB_Google {
         if ($this->valid){
             $calendar_access = $this->getCalendarAccess();
 
+            $limit_events = get_option( 'ab_settings_google_limit_events' );
+
             $timeMax = clone $startDate;
             $timeMax = $timeMax->modify('-1 day')->format(DateTime::RFC3339);
 
@@ -185,7 +193,8 @@ class AB_Google {
                 'singleEvents'  => true,
                 'orderBy'       => 'startTime',
                 'timeMin'       => $timeMax,
-                'timeZone'      => $this->get_timezone_string()
+                'timeZone'      => $this->get_timezone_string(),
+                'maxResults'    => $limit_events ? $limit_events : self::EVENTS_PER_REQUEST,
             ));
 
             while (true) {
@@ -214,20 +223,19 @@ class AB_Google {
                                     $loop_end = $eventFeedTimeEndDate;
                                 }
 
-                                $ab_event = new StdClass();
-                                $ab_event->staff_id = $this->staff->get('id');
-                                $ab_event->start_date = $loop_start->format('Y:m:d H:i:s');
-                                $ab_event->end_date = $loop_end->format('Y:m:d H:i:s');
-                                $ab_event->capacity = 1;
-                                $ab_event->number_of_bookings = 1;
-
-                                $result[] = $ab_event;
+                                $result[] = array(
+                                    'staff_id'          => $this->staff->get('id'),
+                                    'start_date'        => $loop_start->format('Y:m:d H:i:s'),
+                                    'end_date'          => $loop_end->format('Y:m:d H:i:s'),
+                                    'capacity'          => 1,
+                                    'number_of_bookings'=> 1,
+                                );
                             }
                         }
                     }
                 }
 
-                if ($events->getNextPageToken()) {
+                if (!$limit_events && $events->getNextPageToken()) {
                     $events = $this->service->events->listEvents($this->getCalendarID(), array(
                         'singleEvents'  => true,
                         'orderBy'       => 'startTime',

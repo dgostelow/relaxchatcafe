@@ -16,7 +16,8 @@
     .picker__nav--prev:before {border-right: 6px solid <?php echo $color ?>!important;}
     .picker__day:hover {color: <?php echo $color ?>!important;}
     .picker__day--selected:hover {color: <?php echo $color ?>!important;}
-    .picker__day--selected {color: <?php echo $color ?>!important;}
+    .picker__day--selected,
+    .picker__day--highlighted {color: <?php echo $color ?>!important;}
     .picker__button--clear {color: <?php echo $color ?>!important;}
     .picker__button--today {color: <?php echo $color ?>!important;}
     .ab-first-step .ab-week-days li label.active {background: <?php echo $color ?> url(<?php echo $checkbox_img ?>) 0 0 no-repeat!important;}

@@ -27,9 +27,9 @@ $_stripe       = get_option( 'ab_stripe' ) == 1;
         <div class="ab-formGroup ab-full ab-lastGroup">
             <span style="display: inline-block;"><?php echo esc_html( __( get_option( 'ab_appearance_text_label_coupon' ), 'ab' ) ) ?></span>
             <div class="ab-formField" style="display: inline-block; white-space: nowrap;">
-                <input class="ab-formElement ab-user-coupon" name="ab_coupon" maxlength="100" type="text" value="<?php echo $userData->getCoupon() ?>">
-                <button class="ab-btn ladda-button orange zoom-in btn-apply-coupon" id="apply-coupon">
-                    <span class="ab_label"><?php _e( 'Apply', 'ab' ) ?></span><span class="spinner"></span>
+                <input class="ab-formElement ab-user-coupon" name="ab_coupon" maxlength="100" type="text" value="<?php echo esc_attr( $userData->get( 'coupon' ) ) ?>" />
+                <button class="ab-btn ladda-button btn-apply-coupon" id="apply-coupon" data-style="zoom-in" data-spinner-size="40">
+                    <span class="ab-label"><?php _e( 'Apply', 'ab' ) ?></span><span class="spinner"></span>
                 </button>
             </div>
             <div class="ab-label-error ab-bold ab-coupon-error"></div>
@@ -56,9 +56,9 @@ $_stripe       = get_option( 'ab_stripe' ) == 1;
                 <img src="<?php echo plugins_url( 'frontend/resources/images/paypal.png', AB_PATH . '/main.php' ) ?>" style="margin-left: 10px;" alt="paypal" />
                 <input id="tmp_form_id" type="hidden" value="<?php echo $form_id ? $form_id : '' ?>" />
             </label>
-            <?php if (isset($paypal_error_msg) && !empty($paypal_error_msg)): ?>
-                <div class="ab-select-service-error ab-bold" style="padding-top: 5px;">* <?php echo $paypal_error_msg; ?></div>
-            <?php endif; ?>
+            <?php if ( $paypal_status && $paypal_status[ 'status' ] == 'error' ): ?>
+                <div class="ab-select-service-error ab-bold" style="padding-top: 5px;">* <?php echo $paypal_status[ 'error' ] ?></div>
+            <?php endif ?>
         </div>
     <?php endif ?>
 
@@ -70,7 +70,7 @@ $_stripe       = get_option( 'ab_stripe' ) == 1;
                 <img src="<?php echo plugins_url( 'resources/images/cards.png', dirname( dirname( dirname( __FILE__ ) ) ) ) ?>" style="margin-left: 10px;" alt="cards" />
                 <input id="tmp_form_id" type="hidden" value="<?php echo $form_id ? $form_id : '' ?>" />
             </label>
-            <form class="ab-third-step authorizenet" style="<?php if ( $_local || $_paypal ) echo "display: none;"; ?> margin-top: 15px;">
+            <form class="ab-third-step ab-authorizenet" style="<?php if ( $_local || $_paypal ) echo "display: none;"; ?> margin-top: 15px;">
                 <?php include "_card_payment.php";?>
             </form>
         </div>
@@ -84,7 +84,7 @@ $_stripe       = get_option( 'ab_stripe' ) == 1;
                 <img src="<?php echo plugins_url( 'resources/images/cards.png', dirname( dirname( dirname( __FILE__ ) ) ) ) ?>" style="margin-left: 10px;" alt="cards" />
                 <input id="tmp_form_id" type="hidden" value="<?php echo $form_id ? $form_id : '' ?>" />
             </label>
-            <form class="ab-third-step stripe" style="<?php if ( $_local || $_paypal || $_authorizenet ) echo "display: none;"; ?> margin-top: 15px;">
+            <form class="ab-third-step ab-stripe" style="<?php if ( $_local || $_paypal || $_authorizenet ) echo "display: none;"; ?> margin-top: 15px;">
                 <?php include "_card_payment.php";?>
             </form>
         </div>
@@ -97,11 +97,11 @@ $_stripe       = get_option( 'ab_stripe' ) == 1;
 
 <?php if ($_local) : ?>
     <div class="ab-local-pay-button ab-row-fluid ab-nav-steps">
-        <button class="ab-left ab-to-third-step ab-btn ladda-button orange zoom-in" style="margin-right: 10px;">
-            <span class="ab_label"><?php _e( 'Back', 'ab' ) ?></span><span class="spinner"></span>
+        <button class="ab-left ab-to-third-step ab-btn ladda-button" data-style="zoom-in" style="margin-right: 10px;" data-spinner-size="40">
+            <span class="ladda-label"><?php _e( 'Back', 'ab' ) ?></span>
         </button>
-        <button class="ab-right ab-final-step ab-btn ladda-button orange zoom-in">
-            <span class="ab_label"><?php _e( 'Next', 'ab' ) ?></span><span class="spinner"></span>
+        <button class="ab-right ab-final-step ab-btn ladda-button" data-style="zoom-in" data-spinner-size="40">
+            <span class="ladda-label"><?php _e( 'Next', 'ab' ) ?></span>
         </button>
     </div>
 <?php endif ?>
@@ -114,20 +114,20 @@ $_stripe       = get_option( 'ab_stripe' ) == 1;
 
 <?php if ($_authorizenet || $_stripe) : ?>
     <div class="ab-card-payment-button ab-row-fluid ab-nav-steps" <?php if ($_local || $_paypal) echo 'style="display:none"' ?>>
-        <button class="ab-left ab-to-third-step ab-btn ladda-button orange zoom-in" style="margin-right: 10px;">
-            <span class="ab_label"><?php _e( 'Back', 'ab' ) ?></span><span class="spinner"></span>
+        <button class="ab-left ab-to-third-step ab-btn ladda-button" data-style="zoom-in" style="margin-right: 10px;" data-spinner-size="40">
+            <span class="ladda-label"><?php _e( 'Back', 'ab' ) ?></span>
         </button>
-        <button class="ab-right ab-final-step ab-btn ladda-button orange zoom-in">
-            <span class="ab_label"><?php _e( 'Next', 'ab' ) ?></span><span class="spinner"></span>
+        <button class="ab-right ab-final-step ab-btn ladda-button" data-style="zoom-in" data-spinner-size="40">
+            <span class="ladda-label"><?php _e( 'Next', 'ab' ) ?></span>
         </button>
     </div>
 <?php endif ?>
 
 <div class="ab-coupon-payment-button ab-row-fluid ab-nav-steps" style="display: none">
-    <button class="ab-left ab-to-third-step ab-btn ladda-button orange zoom-in" style="margin-right: 10px;">
-        <span class="ab_label"><?php _e( 'Back', 'ab' ) ?></span><span class="spinner"></span>
+    <button class="ab-left ab-to-third-step ab-btn ladda-button" data-style="zoom-in" style="margin-right: 10px;" data-spinner-size="40">
+        <span class="ladda-label"><?php _e( 'Back', 'ab' ) ?></span>
     </button>
-    <button class="ab-right ab-final-step ab-coupon-payment ab-btn ladda-button orange zoom-in">
-        <span class="ab_label"><?php _e( 'Next', 'ab' ) ?></span><span class="spinner"></span>
+    <button class="ab-right ab-final-step ab-coupon-payment ab-btn ladda-button" data-style="zoom-in" data-spinner-size="40">
+        <span class="ladda-label"><?php _e( 'Next', 'ab' ) ?></span>
     </button>
 </div>

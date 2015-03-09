@@ -54,8 +54,11 @@ class AB_CommonUtils {
             case 'CAD' :
                 $result = 'C$' . $price;
                 break;
-            case 'RMB' :
-                $result = $price . ' ¥';
+            case 'CHF' :
+                $result = $price . ' CHF';
+                break;
+            case 'CLP' :
+                $result = 'CLP $' . $price;
                 break;
             case 'CZK' :
                 $result = $price . ' Kč';
@@ -65,6 +68,9 @@ class AB_CommonUtils {
                 break;
             case 'EUR' :
                 $result = '€' . $price;
+                break;
+            case 'GBP' :
+                $result = '£' . $price;
                 break;
             case 'GTQ' :
                 $result = 'Q' . $price;
@@ -90,11 +96,11 @@ class AB_CommonUtils {
             case 'KRW' :
                 $result = $price . ' ₩';
                 break;
-            case 'MYR' :
-                $result = $price . ' RM';
-                break;
             case 'MXN' :
                 $result = $price . ' $';
+                break;
+            case 'MYR' :
+                $result = $price . ' RM';
                 break;
             case 'NOK' :
                 $result = $price . ' kr';
@@ -108,29 +114,20 @@ class AB_CommonUtils {
             case 'PLN' :
                 $result = $price . ' zł';
                 break;
-            case 'GBP' :
-                $result = '£' . $price;
-                break;
             case 'RON' :
                 $result = $price . ' lei';
+                break;
+            case 'RMB' :
+                $result = $price . ' ¥';
                 break;
             case 'RUB' :
                 $result = $price . ' руб.';
                 break;
-            case 'SGD' :
-                $result = $price . ' $';
-                break;
-            case 'ZAR' :
-                $result = 'R ' . $price;
-                break;
             case 'SEK' :
                 $result = $price . ' kr';
                 break;
-            case 'CHF' :
-                $result = $price . ' CHF';
-                break;
-            case 'TWD' :
-                $result = $price . ' NT$';
+            case 'SGD' :
+                $result = $price . ' $';
                 break;
             case 'THB' :
                 $result = $price . ' ฿';
@@ -138,8 +135,14 @@ class AB_CommonUtils {
             case 'TRY' :
                 $result = $price . ' TL';
                 break;
+            case 'TWD' :
+                $result = $price . ' NT$';
+                break;
             case 'USD' :
                 $result = '$' . $price;
+                break;
+            case 'ZAR' :
+                $result = 'R ' . $price;
                 break;
         } // switch
 

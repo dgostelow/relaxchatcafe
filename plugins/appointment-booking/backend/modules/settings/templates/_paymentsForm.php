@@ -1,5 +1,5 @@
 <?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly ?>
-<form method="post" action="<?php echo add_query_arg( 'type', '_payments' ) ?>" class="ab-staff-form">
+<form method="post" action="<?php echo add_query_arg( 'type', '_payments' ) ?>" class="ab-settings-form">
     <?php if (isset($message_p)) : ?>
     <div id="message" style="margin: 0px!important;" class="updated below-h2">
         <button type="button" class="close" data-dismiss="alert">&times;</button>
@@ -116,7 +116,7 @@
                 </select>
             </td>
         </tr>
-        <tr class="stripe">
+        <tr class="ab-stripe">
             <td><?php _e( 'Secret Key','ab' ) ?></td>
             <td><input type="text" size="33" name="ab_stripe_secret_key" value="<?php echo get_option( 'ab_stripe_secret_key' ) ?>"/></td>
         </tr>

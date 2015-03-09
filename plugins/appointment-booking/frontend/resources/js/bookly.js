@@ -25,7 +25,7 @@
             form_id     : null,
             action      : 'ab_session_save',
             service_id  : null,
-            staff_id    : [],
+            staff_ids   : [],
             category_id : null,
             date_from   : null,
             time_from   : null,
@@ -52,7 +52,7 @@
             } else {
                 $.ajax({
                     url         : Options.ajaxurl,
-                    data        : { action: 'ab_render_service', form_id: Options.form_id, client_time_zone_offset: today.getTimezoneOffset() },
+                    data        : { action: 'ab_render_service', form_id: Options.form_id, time_zone_offset: today.getTimezoneOffset() },
                     dataType    : 'json',
                     xhrFields   : { withCredentials: true },
                     success     : function (response) {
@@ -77,6 +77,7 @@
 
                             // Overwrite attributes if necessary.
                             if (response.attributes) {
+                                Options.attributes.category_id = null;
                                 Options.attributes.service_id = response.attributes.service_id;
                                 Options.attributes.staff_member_id = response.attributes.staff_member_id;
                             }
@@ -116,9 +117,9 @@
                             // Category select change
                             $select_category.on('change', function() {
                                 $.extend(BookingData, {
-                                    service_id          : null,
-                                    staff_id            : [],
-                                    category_id         : $(this).val()
+                                    service_id  : null,
+                                    staff_ids   : [],
+                                    category_id : $(this).val()
                                 });
 
                                 // filter the services and staff
@@ -161,8 +162,8 @@
 
                                     var staff_ids = [];
                                     $.map(services[$(this).val()].staff, function(st) { staff_ids.push(st.id); });
-                                    if (!$select_staff.val() || BookingData.staff_id.length != 1 || $.inArray(BookingData.staff_id[0], staff_ids) == -1 ) {
-                                        BookingData.staff_id = staff_ids;
+                                    if (!$select_staff.val() || BookingData.staff_ids.length != 1 || $.inArray(BookingData.staff_ids[0], staff_ids) == -1 ) {
+                                        BookingData.staff_ids = staff_ids;
                                     }
                                 // filter staff by category
                                 } else {
@@ -177,14 +178,14 @@
                             // Staff select change
                             $select_staff.on('change', function() {
                                 if (!this.value) {
-                                    BookingData.staff_id = [];
+                                    BookingData.staff_ids = [];
                                     if (BookingData.service_id) {
                                         $.map(services[BookingData.service_id].staff, function (st) {
-                                            BookingData.staff_id.push(st.id);
+                                            BookingData.staff_ids.push(st.id);
                                         });
                                     }
                                 }else{
-                                    BookingData.staff_id = [$(this).val()];
+                                    BookingData.staff_ids = [$(this).val()];
                                 }
 
                                 // select the category
@@ -220,7 +221,7 @@
                                 time_to    : $select_time_to.val(),
                                 days       : [],
                                 form_id    : Options.form_id,
-                                staff_id   : []
+                                staff_ids  : []
                             });
 
                             // Category
@@ -408,9 +409,10 @@
 
         //
         function secondStep(time_is_busy) {
+
             $.ajax({
                 url         : Options.ajaxurl,
-                data :      { action: 'ab_render_time', form_id: Options.form_id, client_time_zone_offset: today.getTimezoneOffset() },
+                data :      { action: 'ab_render_time', form_id: Options.form_id },
                 dataType    : 'json',
                 xhrFields   : { withCredentials: true },
                 success     : function (response) {
@@ -451,7 +453,9 @@
                             $current_booking_form = $('#ab-booking-form-' + options.form_id),
                             screen_width    = $current_booking_form.width(),
                             window_height   = $(window).height(),
-                            columns_per_screen = parseInt(screen_width / column_width, 10);
+                            columns_per_screen = parseInt(screen_width / column_width, 10),
+                            has_more_slots  = response.has_more_slots || false
+                        ;
 
                         if (Options.skip_first_step) {
                             $back_button.hide();
@@ -470,7 +474,7 @@
 
                         function createColumns() {
                             var $buttons =  $('> button', $columnizer);
-                            var max_length = $buttons.length > items_per_column ? items_per_column : 0;
+                            var max_length = $buttons.length > items_per_column && has_more_slots ? items_per_column : 0;
 
                             while ($buttons.length > max_length) {
                                 $column = $('<div class="ab-column" />');
@@ -511,10 +515,6 @@
 
                                 // create column
                                 if ($buttons.eq(0).hasClass('ab-available-day')) {
-                                    // calculate max height of columns
-                                    if (column_height > max_height) {
-                                        max_height = column_height;
-                                    }
                                     column_height = 1;
                                     $column = $('<div class="ab-column" />');
                                     $button = $($buttons.splice(0, 1));
@@ -538,6 +538,10 @@
                                         $column.append($button);
                                     }
                                 }
+                                // calculate max height of columns
+                                if (column_height > max_height) {
+                                    max_height = column_height;
+                                }
                             }
                             $columnizer_wrap.css({ height: (max_height * (item_height + 2.5)) });
                         }
@@ -553,7 +557,7 @@
                                 columns_per_screen = $columns.length;
                             }
 
-                            while ($columns.length && $columns.length >= columns_per_screen) {
+                            while ($columns.length && $columns.length >= (has_more_slots ? columns_per_screen : 0)) {
                                 $screen = $('<div class="ab-time-screen"/>');
                                 for (var i = 0; i < columns_per_screen; i++) {
                                     $column = $($columns.splice(0, 1));
@@ -580,8 +584,8 @@
                             e.preventDefault();
                             var data = {
                                     action: 'ab_session_save',
-                                    booked_datetime: el.val(),
-                                    staff_id: [el.data('staff_id')],
+                                    appointment_datetime: el.val(),
+                                    staff_ids: [el.data('staff_id')],
                                     form_id: options.form_id
                                 },
                                 ladda = Ladda.create(el[0]);
@@ -608,14 +612,21 @@
                                 $columnizer.animate(
                                     { left: '-=' + $current_screen.width() },
                                     { duration: 800, complete: function () {
-                                        $next_button.show();
+                                        if (has_more_slots || screen_index + 1 != $screens.length) {
+                                            $next_button.show();
+                                        }
                                         $prev_button.show();
                                         $back_button.show();
                                     } }
                                 );
                                 $current_screen = $screens.eq(++screen_index);
 
-                            } else {
+                                if (screen_index + 1 == $screens.length && !has_more_slots) {
+                                    $next_button.hide();
+                                }
+
+                            // do ajax request when have the more slots
+                            } else if (has_more_slots) {
                                 $button     = $('> button:last', $columnizer);
                                 last_date   = $button.length ? $button.val() : $('.ab-column:last > button:last', $columnizer).val();
 
@@ -623,8 +634,7 @@
                                 var data = {
                                         action: 'ab_render_next_time',
                                         form_id: options.form_id,
-                                        start_date: last_date,
-                                        client_time_zone_offset: today.getTimezoneOffset()
+                                        start_date: last_date
                                     },
                                     ladda = Ladda.create(document.querySelector('.ab-time-next'));
 
@@ -637,11 +647,10 @@
                                     xhrFields : { withCredentials: true },
                                     success : function (response) {
                                         if (response.status == 'error') { // no available time
-                                            $('.ab-teaser').empty();
-                                            $list.html(response.html);
-                                            $prev_button.hide();
+                                            $next_button.hide();
                                         }
                                         else if (response.status == 'success') { // if there are available time
+                                            has_more_slots = response.has_more_slots;
                                             $columnizer.append(response.html);
                                             if (Options.day_one_column == 1) {
                                                 createOneColumnsDay();
@@ -696,6 +705,11 @@
                         createScreens();
                         $current_screen = $screens.eq(0);
 
+                        if (!has_more_slots && $screens.length == 1) {
+                            $next_button.off('click');
+                            $next_button.hide();
+                        }
+
                         // fixing styles
                         $list.css({
                             'width': function() {
@@ -728,7 +742,7 @@
         function thirdStep() {
             $.ajax({
                 url         : Options.ajaxurl,
-                data        : { action: 'ab_render_details', form_id: Options.form_id, client_time_zone_offset: today.getTimezoneOffset() },
+                data        : { action: 'ab_render_details', form_id: Options.form_id },
                 dataType    : 'json',
                 xhrFields   : { withCredentials: true },
                 success     : function (response) {
@@ -861,7 +875,7 @@
         function fourthStep() {
             $.ajax({
                 url         : Options.ajaxurl,
-                data        : { action: 'ab_render_payment', form_id: Options.form_id, client_time_zone_offset: today.getTimezoneOffset() },
+                data        : { action: 'ab_render_payment', form_id: Options.form_id },
                 xhrFields   : { withCredentials: true },
                 success     : function (response) {
 
@@ -891,11 +905,11 @@
                             $card_payment_button    = $('.ab-card-payment-button', container),
                             $back_button            = $('.ab-to-third-step', container),
                             $apply_coupon_button    = $('#apply-coupon', container),
-                            $coupon_input           =  $('input.ab-user-coupon', container),
+                            $coupon_input           = $('input.ab-user-coupon', container),
                             $coupon_error           = $('.ab-coupon-error', container),
                             $coupon_info_text       = $('#ab-info-text-coupon', container),
                             $ab_payment_nav         = $('#ab-payment-nav', container),
-                            $buttons                = $('.ab-paypal-payment-button,.ab-card-payment-button,form.authorizenet,form.stripe,.ab-local-pay-button', container)
+                            $buttons                = $('.ab-paypal-payment-button,.ab-card-payment-button,form.ab-authorizenet,form.ab-stripe,.ab-local-pay-button', container)
                         ;
 
                         $local_pay.on('click', function () {
@@ -911,13 +925,13 @@
                         $authorizenet_pay.on('click', function () {
                             $buttons.hide();
                             $card_payment_button.show();
-                            $('form.authorizenet').show();
+                            $('form.ab-authorizenet', container).show();
                         });
 
                         $stripe_pay.on('click', function () {
                             $buttons.hide();
                             $card_payment_button.show();
-                            $('form.stripe').show();
+                            $('form.ab-stripe', container).show();
                         });
 
                         $apply_coupon_button.on('click', function(e) {
@@ -928,9 +942,9 @@
                             $coupon_input.removeClass('ab-details-error');
 
                             var data = {
-                                action    : 'ab_apply_coupon',
-                                ab_coupon : $coupon_input.val(),
-                                form_id   : Options.form_id
+                                action  : 'ab_apply_coupon',
+                                form_id : Options.form_id,
+                                coupon  : $coupon_input.val()
                             };
 
                             $.ajax({
@@ -942,13 +956,13 @@
                                 success     : function (response) {
                                     if (response.status == 'success') {
                                         $coupon_info_text.html(response.text);
-                                        $coupon_input.replaceWith(data.ab_coupon);
+                                        $coupon_input.replaceWith(data.coupon);
                                         $apply_coupon_button.replaceWith('✓');
                                         if (response.discount == 100) {
                                             $ab_payment_nav.hide();
                                             $buttons.hide();
                                             $coupon_pay_button.show('fast',function(){
-                                                $('.ab-coupon-free').attr('checked','checked').val(data.ab_coupon);
+                                                $('.ab-coupon-free').attr('checked','checked').val(data.coupon);
                                             });
                                         }
                                     }
@@ -965,6 +979,10 @@
                             });
                         });
 
+                        if ($coupon_input.val()) {
+                            $apply_coupon_button.click();
+                        }
+
                         $('.ab-final-step', container).on('click', function (e) {
                             var ladda = Ladda.create(this);
 
@@ -976,7 +994,7 @@
                             } else if ($('.ab-authorizenet-payment', container).is(':checked') || $('.ab-stripe-payment', container).is(':checked')) { // handle only if was selected AuthorizeNet payment !
                                 var authorize   = $('.ab-authorizenet-payment', container).is(':checked');
                                 var card_action = authorize ? 'ab_authorize_net_aim' : 'ab_stripe';
-                                var card_form   = authorize ? 'authorizenet' : 'stripe';
+                                var card_form   = authorize ? 'ab-authorizenet' : 'ab-stripe';
 
                                 e.preventDefault();
                                 ladda.start();
@@ -1091,8 +1109,8 @@
 
         // insert data into select
         function setSelect($select, data, leave_selected) {
-            var selected    = $select.val();
-            var reset       = true;
+            var selected = $select.val();
+            var reset    = true;
             // reset select
             $('option:not([value=""])', $select).remove();
             // and fill the new data
@@ -1102,10 +1120,10 @@
                 return Object.keys(obj).map(function (key) { return obj[key]; });
             }
 
-            function compare(a,b) {
-                if (a.position < b.position)
+            function compare(a, b) {
+                if (parseInt(a.position) < parseInt(b.position))
                     return -1;
-                if (a.position > b.position)
+                if (parseInt(a.position) > parseInt(b.position))
                     return 1;
                 return 0;
             }
@@ -1131,12 +1149,11 @@
 
         //
         function save() {
-            var payment_type = $('#ab-booking-form-' + Options.form_id).find('input[type="radio"]:checked').val();
             $.ajax({
                 type        : 'POST',
                 url         : Options.ajaxurl,
                 xhrFields   : { withCredentials: true },
-                data        : { action  : 'ab_save_appointment', form_id : Options.form_id, payment_type : payment_type, client_time_zone_offset : today.getTimezoneOffset() }
+                data        : { action  : 'ab_save_appointment', form_id : Options.form_id }
             }).done(function(response) {
                 var $response = $.parseJSON(response);
                 Options.is_available = !!$response.state;

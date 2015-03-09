@@ -117,7 +117,7 @@ jQuery(function ($) {
     }).change();
 
     $('#ab_stripe').change(function() {
-        $('.stripe').toggle(this.value == 1);
+        $('.ab-stripe').toggle(this.value == 1);
     }).change();
 
     $("#ab-payments-reset").on("click", function(event){

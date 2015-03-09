@@ -11,7 +11,7 @@ class AB_CustomerAppointmentForm extends AB_Form {
      * Constructor.
      */
     public function __construct() {
-        parent::$entity_class = 'AB_Customer_Appointment';
+        parent::$entity_class = 'AB_CustomerAppointment';
         parent::__construct();
     }
 

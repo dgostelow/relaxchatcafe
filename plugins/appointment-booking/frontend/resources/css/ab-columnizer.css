@@ -1,5 +1,4 @@
 .ab-second-step {
-    max-width: 625px;
     overflow: hidden;
     position: relative;
     margin-bottom: 20px!important;
@@ -45,6 +44,7 @@
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
 }
+.ab-columnizer .ab-available-hour { background: white!important; }
 .ab-columnizer .ab-available-day {
     background: #f4662f;
     color: white!important;
@@ -85,4 +85,10 @@
 }
 .ab-second-step .ab-columnizer > button { display: none; }
 .ab-second-step .ab-columnizer > .ab-column { display: none; }
+
+.ab-slot-calendar {
+    width: 310px;
+    height: 300px;
+    float: left;
+}
 

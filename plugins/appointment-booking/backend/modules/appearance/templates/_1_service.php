@@ -66,7 +66,7 @@ global $wp_locale;
                     </div>
                 </div>
  */ ?>
-                <button class="ab-right ab-mobile-next-step ab-btn ab-none ladda-button orange zoom-in" onclick="return false">
+                <button class="ab-right ab-mobile-next-step ab-btn ab-none ladda-button" onclick="return false">
                     <span><?php _e( 'Next', 'ab' ) ?></span>
                 </button>
             </div>
@@ -150,10 +150,10 @@ global $wp_locale;
                     </div>
                 </div>
                 <div class="ab-row-fluid ab-nav-steps last-row ab-clear">
-                    <button class="ab-right ab-mobile-prev-step ab-btn ab-none ladda-button orange zoom-in">
+                    <button class="ab-right ab-mobile-prev-step ab-btn ab-none ladda-button">
                         <span><?php _e( 'Back', 'ab' ) ?></span>
                     </button>
-                    <button class="ab-right ab-next-step ab-btn ladda-button orange zoom-in">
+                    <button class="ab-right ab-next-step ab-btn ladda-button">
                         <span><?php _e( 'Next', 'ab' ) ?></span>
                     </button>
                 </div>

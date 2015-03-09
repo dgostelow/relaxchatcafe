@@ -1,9 +1,9 @@
 <?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 /**
- * Class AB_Customer_Appointment
+ * Class AB_CustomerAppointment
  */
-class AB_Customer_Appointment extends AB_Entity {
+class AB_CustomerAppointment extends AB_Entity {
 
     protected static $table_name = 'ab_customer_appointment';
 

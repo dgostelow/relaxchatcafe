@@ -60,6 +60,7 @@ class AB_SettingsController extends AB_Controller {
                     update_option( 'ab_settings_time_slot_length',  $ab_settings_time_slot_length );
                 }
                 update_option( 'ab_settings_minimum_time_prior_booking', (int)$this->getParameter( 'ab_settings_minimum_time_prior_booking' ) );
+                update_option( 'ab_settings_maximum_available_days_for_booking', (int)$this->getParameter( 'ab_settings_maximum_available_days_for_booking' ) );
                 update_option( 'ab_settings_use_client_time_zone', (int)$this->getParameter( 'ab_settings_use_client_time_zone' ) );
                 update_option( 'ab_settings_cancel_page_url', $this->getParameter( 'ab_settings_cancel_page_url' ) );
                 update_option( 'ab_settings_final_step_url', $this->getParameter( 'ab_settings_final_step_url' ) );
@@ -70,6 +71,7 @@ class AB_SettingsController extends AB_Controller {
                 update_option( 'ab_settings_google_client_id', $this->getParameter( 'ab_settings_google_client_id' ) );
                 update_option( 'ab_settings_google_client_secret', $this->getParameter( 'ab_settings_google_client_secret' ) );
                 update_option( 'ab_settings_google_two_way_sync', $this->getParameter( 'ab_settings_google_two_way_sync' ) );
+                update_option( 'ab_settings_google_limit_events', $this->getParameter( 'ab_settings_google_limit_events' ) );
                 $this->message_gc = __( 'Settings saved.', 'ab' );
             }
             // Holidays form

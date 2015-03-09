@@ -29,10 +29,10 @@
         </div>
     </form>
     <div class="ab-row-fluid last-row ab-nav-steps ab-clear">
-        <button class="ab-left ab-to-second-step ab-btn ladda-button orange zoom-in">
+        <button class="ab-left ab-to-second-step ab-btn ladda-button">
             <span><?php _e( 'Back', 'ab' ) ?></span>
         </button>
-        <button class="ab-right ab-to-fourth-step ab-btn ladda-button orange zoom-in">
+        <button class="ab-right ab-to-fourth-step ab-btn ladda-button">
             <span><?php _e( 'Next', 'ab' ) ?></span>
         </button>
     </div>

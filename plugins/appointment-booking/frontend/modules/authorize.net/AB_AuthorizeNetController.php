@@ -31,64 +31,51 @@ class AB_AuthorizeNetController extends AB_Controller {
             $userData = new AB_UserBookingData( $form_id );
             $userData->load();
 
-            if ( $userData->hasData() && $userData->getServiceId() ) {
+            if ( $userData->get( 'service_id' ) ) {
                 define( "AUTHORIZENET_API_LOGIN_ID", get_option( 'ab_authorizenet_api_login_id' ) );
                 define( "AUTHORIZENET_TRANSACTION_KEY", get_option( 'ab_authorizenet_transaction_key' ) );
                 define( "AUTHORIZENET_SANDBOX", (bool)get_option( 'ab_authorizenet_sandbox' ) );
 
-                $employee = new AB_Staff();
-                $employee->load( $userData->getStaffId() );
+                $price = $userData->getFinalServicePrice();
 
-                $service = new AB_Service();
-                $service->load( $userData->getServiceId() );
-
-                $price = $this->getWpdb()->get_var( $this->getWpdb()->prepare(
-                    'SELECT price FROM ab_staff_service WHERE staff_id = %d AND service_id = %d',
-                    $employee->get( 'id' ), $service->get( 'id' )
-                ) );
-
-                if ($userData->getCoupon()) {
-                    $price = AB_Coupon::applyCouponOnPrice($userData->getCoupon(), $price);
-                }
-
-                $sale               = new AuthorizeNetAIM();
-                $sale->amount       = $price;
-                $sale->card_num     = $this->getParameter( 'ab_card_number' );
-                $sale->card_code    = $this->getParameter( 'ab_card_code' );
-                $sale->exp_date     = $this->getParameter( 'ab_card_month' ) . '/' . $this->getParameter( 'ab_card_year' );
-                $sale->first_name   = $userData->getName();
-                $sale->email        = $userData->getEmail();
-                $sale->phone        = $userData->getPhone();
+                $sale             = new AuthorizeNetAIM();
+                $sale->amount     = $price;
+                $sale->card_num   = $this->getParameter( 'ab_card_number' );
+                $sale->card_code  = $this->getParameter( 'ab_card_code' );
+                $sale->exp_date   = $this->getParameter( 'ab_card_month' ) . '/' . $this->getParameter( 'ab_card_year' );
+                $sale->first_name = $userData->get( 'name' );
+                $sale->email      = $userData->get( 'email' );
+                $sale->phone      = $userData->get( 'phone' );
 
                 $response = $sale->authorizeAndCapture();
                 if ($response->approved) {
                     /** @var AB_Appointment $appointment */
                     $appointment = $userData->save();
 
-                    $customer_appointment = new AB_Customer_Appointment();
+                    $customer_appointment = new AB_CustomerAppointment();
                     $customer_appointment->loadBy( array(
                         'appointment_id' => $appointment->get('id'),
-                        'customer_id'    => $userData->getCustomerId()
+                        'customer_id'    => $userData->get( 'customer_id' )
                     ) );
 
                     $payment = new AB_Payment();
                     $payment->set( 'total', $price);
                     $payment->set( 'type', 'authorizeNet' );
                     $payment->set( 'customer_appointment_id', $customer_appointment->get( 'id' ) );
-                    $payment->set( 'created', date('Y-m-d H:i:s') );
+                    $payment->set( 'created', current_time( 'mysql' ) );
 
-                    if ($userData->getCoupon()) {
-                        $payment->set('coupon', $userData->getCoupon());
-                        AB_Coupon::useCoupon($userData->getCoupon());
+                    $coupon = $userData->getCoupon();
+                    if ( $coupon ) {
+                        $payment->set( 'coupon', $coupon->get( 'code' ) );
+                        $coupon->set( 'used', 1 );
+                        $coupon->save();
                     }
 
                     $payment->save();
 
-                    $userData->clean();
-                    $userData->setPaymentId( $payment->get( 'id' ) );
-                    $userData->setBookingFinished( true );
                     echo json_encode ( array ( 'state' => 'true' ) );
-                } else {
+                }
+                else {
                     echo json_encode ( array ( 'error' => $response->response_reason_text ) );
                 }
             }

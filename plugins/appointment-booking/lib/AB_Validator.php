@@ -33,8 +33,8 @@ class AB_Validator {
             $this->errors[$field] = __( '* Please tell us your phone', 'ab' );
         }
     }*/
-
-    /**
+	
+	 /**
      * @param $field
      * @param $string
      * @param $max_length
@@ -42,6 +42,7 @@ class AB_Validator {
      * @param bool $is_name
      * @param int $min_length
      */
+	 
     public function validatePhone( $field, $string, $max_length, $required = false, $is_name = false, $min_length = 0 ) {
         if ( $string ) {
             $long     =  __( 'is too long', 'ab' );
@@ -59,7 +60,6 @@ class AB_Validator {
             $this->errors[$field] = __( '* Required', 'ab' );
         }
     }
-
 
     /**
      * @param $field

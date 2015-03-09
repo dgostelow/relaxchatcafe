@@ -47,24 +47,27 @@ class AB_BookingController extends AB_Controller {
         // Find bookings with any of paypal statuses
         $this->booking_finished = $this->booking_cancelled = false;
         $this->form_id = uniqid();
-        if ( isset($_SESSION[ 'appointment_booking' ] ) ) {
-            foreach ( $_SESSION[ 'appointment_booking' ] as $appointment_id => $appointment ) {
-                if ( isset( $appointment[ 'cancelled' ] ) && $appointment[ 'cancelled' ] ) {
-                    $_SESSION[ 'appointment_booking' ][ $appointment_id ][ 'cancelled' ] = false;
-                    $this->form_id = $appointment_id;
-                    $this->booking_cancelled = true;
-                    break;
-                } elseif ( isset( $appointment[ 'finished' ] ) && $appointment[ 'finished' ] ) {
-                    $_SESSION[ 'appointment_booking' ][ $appointment_id ][ 'finished' ] = false;
-                    $this->form_id = $appointment_id;
-                    $this->booking_finished = true;
-                    break;
+        if ( isset ( $_SESSION[ 'bookly' ] ) ) {
+            foreach ( $_SESSION[ 'bookly' ] as $form_id => $data ) {
+                if ( isset( $data[ 'paypal' ] ) ) {
+                    switch ( $data[ 'paypal' ][ 'status' ] ) {
+                        case 'success':
+                            $this->form_id = $form_id;
+                            $this->booking_finished = true;
+                            break;
+                        case 'cancelled':
+                        case 'error':
+                            $this->form_id = $form_id;
+                            $this->booking_cancelled = true;
+                            break;
+                    }
+                    $_SESSION[ 'bookly' ][ $form_id ][ 'paypal' ][ 'status' ] = null;
+                }
+                else {
+                    unset ( $_SESSION[ 'bookly' ][ $form_id ] );
                 }
             }
         }
-
-        $userData = new AB_UserBookingData( $this->form_id );
-        $userData->load();
 
         $this->attributes = json_encode( array(
             'hide_categories'    => @$attributes[ 'hide_categories' ]    ?: ( @$attributes[ 'ch' ]  ?: false ),
@@ -75,10 +78,6 @@ class AB_BookingController extends AB_Controller {
             'staff_member_id'    => @$attributes[ 'staff_member_id' ]    ?: ( @$attributes[ 'eid' ] ?: false ),
             'hide_date_and_time' => @$attributes[ 'hide_date_and_time' ] ?: ( @$attributes[ 'ha' ]  ?: false ),
         ) );
-
-        if ( $this->booking_finished ) {
-            $userData->clean();
-        }
 
         return $this->render( 'short_code', array(), false );
     }
@@ -95,26 +94,28 @@ class AB_BookingController extends AB_Controller {
 
         if ( $form_id ) {
             $configuration = new AB_BookingConfiguration();
+            $userData = new AB_UserBookingData( $form_id );
+            $userData->load();
 
-            if ( get_option( 'ab_settings_use_client_time_zone' ) && $this->getParameter( 'client_time_zone_offset' ) ) {
-                $configuration->setClientTimeZoneOffset( $this->getParameter( 'client_time_zone_offset' ) / 60 );
+            if ( get_option( 'ab_settings_use_client_time_zone' ) && $this->getParameter( 'time_zone_offset' ) ) {
+                $configuration->setClientTimeZoneOffset( $this->getParameter( 'time_zone_offset' ) / 60 );
+                $userData->saveData( array( 'time_zone_offset' => $this->getParameter( 'time_zone_offset' ) ) );
             }
 
             $this->work_day_time_data = $configuration->fetchAvailableWorkDaysAndTime();
-            $this->userData = new AB_UserBookingData( $form_id );
-            $this->userData->load();
-            $this->_prepareProgressTracker( 1, $this->userData->getServicePrice() );
+
+            $this->_prepareProgressTracker( 1, $userData->getServicePrice() );
             $this->info_text = nl2br( esc_html( get_option( 'ab_appearance_text_info_first_step' ) ) );
             $response = array(
                 'status'     => 'success',
-                'html'       => $this->render( '1_service', array(), false ),
+                'html'       => $this->render( '1_service', array( 'userData' => $userData ), false ),
                 'categories' => $configuration->getCategories(),
                 'staff'      => $configuration->getStaff(),
                 'services'   => $configuration->getServices(),
-                'attributes' => $this->userData->hasData()
+                'attributes' => $userData->get( 'service_id' )
                     ? array(
-                        'service_id'      => $this->userData->getServiceId(),
-                        'staff_member_id' => $this->userData->getStaffId()
+                        'service_id'      => $userData->get( 'service_id' ),
+                        'staff_member_id' => $userData->getStaffId()
                     )
                     : null
             );
@@ -144,24 +145,19 @@ class AB_BookingController extends AB_Controller {
             $userData = new AB_UserBookingData( $form_id );
             $userData->load();
 
-            if ( $userData->hasData() ) {
-                $availableTime = new AB_AvailableTime( $userData );
+            $availableTime = new AB_AvailableTime( $userData );
+            $availableTime->load();
 
-                if ( get_option( 'ab_settings_use_client_time_zone' ) && $this->getParameter( 'client_time_zone_offset' ) ) {
-                    $availableTime->setClientTimeZoneOffset( $this->getParameter( 'client_time_zone_offset' ) );
-                }
+            $this->time = $availableTime->getTime();
+            $this->_prepareProgressTracker( 2, $userData->getServicePrice() );
+            $this->info_text = $this->_prepareInfoText( 2, $userData );
 
-                $availableTime->load();
-                $this->time = $availableTime->getTime();
-                $this->_prepareProgressTracker( 2, $userData->getServicePrice() );
-                $this->info_text = $this->_prepareInfoText( 2, $userData );
-
-                // Set response.
-                $response = array(
-                    'status' => empty ( $this->time ) ? 'error' : 'success',
-                    'html'   => $this->render( '2_time', array(), false )
-                );
-            }
+            // Set response.
+            $response = array(
+                'status'         => empty ( $this->time ) ? 'error' : 'success',
+                'html'           => $this->render( '2_time', array(), false ),
+                'has_more_slots' => $availableTime->hasMoreSlots()
+            );
         }
 
         // Output JSON response.
@@ -188,18 +184,15 @@ class AB_BookingController extends AB_Controller {
             $userData = new AB_UserBookingData( $form_id );
             $userData->load();
 
-            if ( $userData->hasData() ) {
-                $this->userData = $userData;
-                $this->info_text = $this->_prepareInfoText( 3, $userData );
-                $this->_prepareProgressTracker( 3, $userData->getServicePrice() );
-                $response = array(
-                    'status' => 'success',
-                    'html'   => $this->render( '3_details', array(
-                        'custom_fields' => json_decode( get_option( 'ab_custom_fields' ) )
-                    ), false )
-                );
-
-            }
+            $this->info_text = $this->_prepareInfoText( 3, $userData );
+            $this->_prepareProgressTracker( 3, $userData->getServicePrice() );
+            $response = array(
+                'status' => 'success',
+                'html'   => $this->render( '3_details', array(
+                    'userData'      => $userData,
+                    'custom_fields' => json_decode( get_option( 'ab_custom_fields' ) )
+                ), false )
+            );
         }
 
         // Output JSON response.
@@ -225,55 +218,41 @@ class AB_BookingController extends AB_Controller {
         if ( $form_id ) {
             $payment_disabled = AB_BookingConfiguration::isPaymentDisabled();
 
-            $this->userData = new AB_UserBookingData( $form_id );
-            $this->userData->load();
-            if ($this->userData->hasData()) {
-                if ($this->userData->getServicePrice() <= 0) {
-                    $payment_disabled = true;
-                }
+            $userData = new AB_UserBookingData( $form_id );
+            $userData->load();
+            if ($userData->getServicePrice() <= 0) {
+                $payment_disabled = true;
             }
 
             if ( $payment_disabled == false ) {
                 $this->form_id = $form_id;
                 $this->info_text = nl2br( esc_html( get_option( 'ab_appearance_text_info_fourth_step' ) ) );
-                $this->info_text_coupon = $this->_prepareInfoText(4, $this->userData);
+                $this->info_text_coupon = $this->_prepareInfoText(4, $userData);
 
-                if ( $this->userData->hasData() ) {
-                    $employee = new AB_Staff();
-                    $employee->load( $this->userData->getStaffId() );
+                $service = $userData->getService();
+                $price   = $userData->getFinalServicePrice();
 
-                    $service = new AB_Service();
-                    $service->load( $this->userData->getServiceId() );
+                // create a paypal object
+                $paypal = new PayPal();
+                $product = new stdClass();
+                $product->name  = $service->get( 'title' );
+                $product->desc  = $service->getTitleWithDuration();
+                $product->price = $price;
+                $product->qty   = 1;
+                $paypal->addProduct($product);
 
-                    $price = $this->getWpdb()->get_var( $this->getWpdb()->prepare( '
-                        SELECT price FROM ab_staff_service WHERE staff_id = %d AND service_id = %d',
-                        $employee->get( 'id' ), $service->get( 'id' )
-                    ) );
+                // get the products information from the $_POST and create the Product objects
+                $this->paypal = $paypal;
+                $this->_prepareProgressTracker( 4, $price );
 
-                    // create a paypal object
-                    $paypal = new PayPal();
-                    $product = new stdClass();
-                    $product->name  = $service->get( 'title' );
-                    $product->desc  = $service->getTitleWithDuration();
-                    $product->price = $price;
-                    $product->qty   = 1;
-                    $paypal->addProduct($product);
-
-                    // get the products information from the $_POST and create the Product objects
-                    $this->paypal = $paypal;
-                    $this->_prepareProgressTracker( 4, $price );
-
-                    $paypal_error_msg = $this->userData->getBookingPayPalError();
-                    $this->userData->setBookingPayPalError('');
-
-                    // Set response.
-                    $response = array(
-                        'status' => 'success',
-                        'html'   => $this->render( '4_payment', array(
-                                'paypal_error_msg' => $paypal_error_msg
-                            ), false )
-                    );
-                }
+                // Set response.
+                $response = array(
+                    'status' => 'success',
+                    'html'   => $this->render( '4_payment', array(
+                        'userData'      => $userData,
+                        'paypal_status' => $userData->extractPayPalStatus()
+                    ), false )
+                );
             }
         }
 
@@ -298,44 +277,40 @@ class AB_BookingController extends AB_Controller {
             'error' =>  __( '<h3>The selected time is not available anymore. Please, choose another time slot.</h3>', 'ab' )
         );
 
-        $this->progress_tracker = intval( get_option( 'ab_appearance_show_progress_tracker' ) == 1 ) ? true : false;
+        if ($form_id  = $this->getParameter( 'form_id' ) ) {
+            $userData = new AB_UserBookingData($form_id);
+            $userData->load();
 
-        // Show Progress Tracker if enabled in settings
-        if ( $this->progress_tracker ) {
-            $price = null;
-            if ($form_id  = $this->getParameter( 'form_id' ) ) {
-                $userData = new AB_UserBookingData($form_id);
-                $userData->load();
-
+            // Show Progress Tracker if enabled in settings
+            if ( get_option( 'ab_appearance_show_progress_tracker' ) == 1 ) {
                 $price = $userData->getServicePrice();
+
+                $this->_prepareProgressTracker( 5, $price );
+                echo json_encode ( array (
+                    'state' => $state,
+                    'step'  => $this->progress_tracker
+                ) );
             }
-
-            $this->_prepareProgressTracker( 5, $price );
-            echo json_encode ( array (
-                'state' => $state,
-                'step'  => $this->progress_tracker
-            ) );
-        } else {
-            echo json_encode ( array ( 'state' => $state ) );
+            else {
+                echo json_encode ( array ( 'state' => $state ) );
+            }
         }
 
-        if ( isset( $_SESSION[ 'appointment_booking' ] ) ) {
-            unset( $_SESSION[ 'appointment_booking' ] );
-        }
-        if ( isset( $_SESSION[ 'ab_payment_total' ] ) ) {
-            unset( $_SESSION[ 'ab_payment_total' ] );
-        }
-        exit;
+        exit ( 0 );
     }
 
+    /**
+     * Save booking data in session.
+     */
     public function executeSessionSave() {
         $form_id = $this->getParameter( 'form_id' );
         $errors  = array();
         if ( $form_id ) {
-            $userBookingData = new AB_UserBookingData( $form_id );
-            $errors = $userBookingData->validate( $this->getParameters() );
+            $userData = new AB_UserBookingData( $form_id );
+            $userData->load();
+            $errors = $userData->validate( $this->getParameters() );
             if ( empty ( $errors ) ) {
-                $userBookingData->setData( $this->getParameters() );
+                $userData->saveData( $this->getParameters() );
             }
         }
 
@@ -344,37 +319,31 @@ class AB_BookingController extends AB_Controller {
         exit;
     }
 
+    /**
+     * Save appointment (final action).
+     */
     public function executeSaveAppointment() {
         $form_id = $this->getParameter( 'form_id' );
-        $payment_type = $this->getParameter( 'payment_type' );
         $time_is_available = false;
 
-        if ( $form_id && $payment_type != 'paypal' ) { // save appointment only for Local Payment
+        if ( $form_id ) {
             $userData = new AB_UserBookingData( $form_id );
             $userData->load();
 
-            if ( isset( $_SESSION[ 'appointment_booking' ][ $form_id ] ) ) {
-                $user_data = $_SESSION[ 'appointment_booking' ][ $form_id ];
-            }
-
-            if ( ! empty ( $user_data ) ) {
+            if ( AB_BookingConfiguration::isPaymentDisabled() ||
+                get_option( 'ab_settings_pay_locally' ) ||
+                $userData->getFinalServicePrice() == 0
+            ) {
                 // check if appointment's time is still available
-                if ( !$this->findIntersections($userData->getStaffid(), $userData->getServiceId(), $userData->getBookedDatetime()) ) {
+                if ( !$this->findIntersections($userData->getStaffId(), $userData->get( 'service_id' ), $userData->get( 'appointment_datetime' )) ) {
                     // save appointment to DB
-                    $userBookingData = new AB_UserBookingData( $form_id );
-                    $userBookingData->load();
-                    if ($userBookingData->saveValidate()) {
-                        if (get_option('ab_settings_use_client_time_zone') && $this->getParameter('client_time_zone_offset')) {
-                            $userBookingData->setClientTimeOffset($this->getParameter('client_time_zone_offset') / 60 + get_option('gmt_offset'));
-                        }
-                        $userBookingData->save();
-                        $time_is_available = true;
-                    }
+                    $userData->save();
+                    $time_is_available = true;
                 }
             }
         }
 
-        exit(json_encode(array('state' => $time_is_available)));
+        exit ( json_encode( array( 'state' => $time_is_available ) ) );
     }
 
     /**
@@ -446,51 +415,52 @@ class AB_BookingController extends AB_Controller {
             $userData = new AB_UserBookingData( $form_id );
             $userData->load();
 
-            if ( $userData->hasData() ) {
-                $availableTime = new AB_AvailableTime( $userData );
-                $availableTime->setStartDate( $this->getParameter( 'start_date' ) );
+            $availableTime = new AB_AvailableTime( $userData );
+            $availableTime->setStartDate( $this->getParameter( 'start_date' ) );
 
-                if ( get_option( 'ab_settings_use_client_time_zone' ) && $this->getParameter( 'client_time_zone_offset' ) ) {
-                    $availableTime->setClientTimeZoneOffset( $this->getParameter( 'client_time_zone_offset' ) );
-                }
+            $availableTime->load();
 
-                $availableTime->load();
-
-                if ( count( $availableTime->getTime() ) ) { // check, if there are available time
-                    $html = '';
-                    foreach ( $availableTime->getTime() as $date => $hours ) {
-                        foreach ($hours as $object) {
+            if ( count( $availableTime->getTime() ) ) { // check, if there are available time
+                $html = '';
+                foreach ( $availableTime->getTime() as $date => $hours ) {
+                    foreach ($hours as $slot) {
+                        if ( $slot[ 'is_day' ] ) {
                             $button = sprintf(
-                                '<button data-date="%s" data-staff_id="%s" class="%s" value="%s">',
-                                $object->is_day ? '' : $object->clean_date, $object->staff_id,
-                                $object->is_day ? 'ab-available-day' : 'ab-available-hour ladda-button zoom-in',
-                                $object->value
+                                '<button class="ab-available-day" value="%s">%s</button>',
+                                $slot[ 'value' ],
+                                $slot[ 'label' ]
                             );
-                            if ( !$object->is_day ) {
-                                $button .= '<span class="ab_label"><i class="ab-hour-icon"><span></span></i>' . $object->label . '</span><span class="spinner"></span>';
-                            } else {
-                                $button .= $object->label . '</button>';
-                            }
-                            $html .= $button;
                         }
+                        else {
+                            $button = sprintf(
+                                '<button data-date="%s" data-staff_id="%s" class="ab-available-hour ladda-button %s" value="%s" data-style="zoom-in" data-spinner-color="#333"><span class="ladda-label"><i class="ab-hour-icon"><span></span></i>%s</span></button>',
+                                $slot[ 'date' ],
+                                $slot[ 'staff_id' ],
+                                $slot['booked'] ? 'booked' : '',
+                                $slot[ 'value' ],
+                                $slot[ 'label' ]
+                            );
+                        }
+                        $html .= $button;
                     }
-                    // Set response.
-                    $response = array(
-                        'status' => 'success',
-                        'html'   => $html
-                    );
                 }
-                else {
-                    // Set response.
-                    $response = array(
-                        'status' => 'error',
-                        'html'   => sprintf(
-                            '<h3>%s</h3>',
-                            __( 'The selected time is not available anymore. Please, choose another time slot.', 'ab' )
-                        )
-                    );
-                }
-             }
+                // Set response.
+                $response = array(
+                    'status'         => 'success',
+                    'html'           => $html,
+                    'has_more_slots' => $availableTime->hasMoreSlots() // show/hide the next button
+                );
+            }
+            else {
+                // Set response.
+                $response = array(
+                    'status' => 'error',
+                    'html'   => sprintf(
+                        '<h3>%s</h3>',
+                        __( 'The selected time is not available anymore. Please, choose another time slot.', 'ab' )
+                    )
+                );
+            }
         }
 
         // Output JSON response.
@@ -507,7 +477,7 @@ class AB_BookingController extends AB_Controller {
      * Cancel Appointment using token.
      */
     public function executeCancelAppointment() {
-        $customer_appointment = new AB_Customer_Appointment();
+        $customer_appointment = new AB_CustomerAppointment();
 
         if ( $customer_appointment->loadBy( array( 'token' => $this->getParameter( 'token' ) ) ) ) {
             $customer_appointment->delete();
@@ -533,7 +503,7 @@ class AB_BookingController extends AB_Controller {
      */
     public function executeApplyCoupon(){
         $form_id = $this->getParameter( 'form_id' );
-        $ab_coupon = $this->getParameter( 'ab_coupon' );
+        $coupon_code = $this->getParameter( 'coupon' );
 
         $response = null;
 
@@ -541,41 +511,38 @@ class AB_BookingController extends AB_Controller {
             $userData = new AB_UserBookingData($form_id);
             $userData->load();
 
-            if ($userData->hasData()) {
-                $price = $this->getWpdb()->get_var($this->getWpdb()->prepare(
-                    'SELECT price FROM ab_staff_service WHERE staff_id = %d AND service_id = %d',
-                    $userData->getStaffId(), $userData->getServiceId()
-                ));
+            $price = $userData->getServicePrice();
 
-                if ($ab_coupon === ''){
-                    $userData->setCoupon(NULL);
+            if ($coupon_code === ''){
+                $userData->saveData( array( 'coupon' => null ) );
+                $response = array(
+                    'status' => 'reset',
+                    'text'   => $this->_prepareInfoText(4, $userData, $price)
+                );
+            }
+            else {
+                $coupon = new AB_Coupon();
+                $coupon->loadBy( array(
+                    'code' => $coupon_code,
+                    'used' => 0,
+                ) );
+
+                if ( $coupon->isLoaded() ) {
+                    $userData->saveData( array( 'coupon' => $coupon_code ) );
+                    $price = $coupon->apply( $price );
                     $response = array(
-                        'status' => 'reset',
-                        'text'   => $this->_prepareInfoText(4, $userData, $price)
+                        'status'   => 'success',
+                        'text'     => $this->_prepareInfoText(4, $userData, $price),
+                        'discount' => $coupon->get( 'discount' )
                     );
                 }
                 else {
-                    $discount = $this->getWpdb()->get_var($this->getWpdb()->prepare(
-                        'SELECT `discount` FROM `ab_coupons` WHERE UPPER(`code`) = %s AND `used` = 0',
-                        strtoupper($ab_coupon)
-                    ));
-
-                    if ($discount) {
-                        $userData->setCoupon($ab_coupon);
-                        $price -= $price * $discount / 100;
-                        $response = array(
-                            'status' => 'success',
-                            'text'   => $this->_prepareInfoText(4, $userData, $price),
-                            'discount'   => $discount
-                        );
-                    } else {
-                        $userData->setCoupon(NULL);
-                        $response = array(
-                            'status' => 'error',
-                            'error'  => __('* This coupon code is invalid or has been used', 'ab'),
-                            'text'   => $this->_prepareInfoText(4, $userData, $price)
-                        );
-                    }
+                    $userData->saveData( array( 'coupon' => null ) );
+                    $response = array(
+                        'status' => 'error',
+                        'error'  => __('* This coupon code is invalid or has been used', 'ab'),
+                        'text'   => $this->_prepareInfoText(4, $userData, $price)
+                    );
                 }
             }
         }
@@ -594,14 +561,14 @@ class AB_BookingController extends AB_Controller {
      * Render progress tracker into a variable.
      *
      * @param int $booking_step
-     * @param int|null $price
+     * @param int|bool $price
      */
-    private function _prepareProgressTracker( $booking_step, $price = null ) {
+    private function _prepareProgressTracker( $booking_step, $price = false ) {
         $payment_disabled = (
             AB_BookingConfiguration::isPaymentDisabled()
             ||
             // If price is passed and it is zero then do not display payment step.
-            $price !== null &&
+            $price !== false &&
             $price <= 0
         );
 
@@ -621,58 +588,57 @@ class AB_BookingController extends AB_Controller {
      * @return string
      */
     private function _prepareInfoText( $booking_step, $userData, $preset_price = null ) {
-        if ($userData->hasData()) {
-            $service_name = $userData->getServiceName();
-            $category_name = $userData->getCategoryName();
-            $staff_name = $userData->getStaffName();
-            $price = ($preset_price === null)? $userData->getServicePrice() : $preset_price;
+        $service = $userData->getService();
+        $category_name = $userData->getCategoryName();
+        $staff_name = $userData->getStaffName();
+        $price = ($preset_price === null)? $userData->getServicePrice() : $preset_price;
 
-            // Convenient Time
-            if ( $booking_step === 2 ) {
-                $replacement = array(
-                    '[[STAFF_NAME]]'   => '<b>' . $staff_name . '</b>',
-                    '[[SERVICE_NAME]]' => '<b>' . $service_name . '</b>',
-                    '[[CATEGORY_NAME]]' => '<b>' . $category_name . '</b>',
-                );
+        // Convenient Time
+        if ( $booking_step === 2 ) {
+            $replacement = array(
+                '[[STAFF_NAME]]'   => '<b>' . $staff_name . '</b>',
+                '[[SERVICE_NAME]]' => '<b>' . $service->get( 'title' ) . '</b>',
+                '[[CATEGORY_NAME]]' => '<b>' . $category_name . '</b>',
+            );
 
-                return str_replace( array_keys( $replacement ), array_values( $replacement ),
-                    nl2br( esc_html( get_option( 'ab_appearance_text_info_second_step' ) ) )
-                );
+            return str_replace( array_keys( $replacement ), array_values( $replacement ),
+                nl2br( esc_html( get_option( 'ab_appearance_text_info_second_step' ) ) )
+            );
+        }
+
+        // Your Details
+        if ( $booking_step === 3 ) {
+            if ( get_option( 'ab_settings_use_client_time_zone' ) ) {
+                $service_time = date_i18n( get_option( 'time_format' ), strtotime( $userData->get( 'appointment_datetime' ) ) - (($userData->get( 'time_zone_offset' ) + get_option( 'gmt_offset' ) * 60) * 60));
             }
-
-            // Your Details
-            if ( $booking_step === 3 ) {
-                if ( get_option( 'ab_settings_use_client_time_zone' ) && $this->getParameter( 'client_time_zone_offset' ) ) {
-                    $service_time = date_i18n( get_option( 'time_format' ), strtotime( $userData->getBookedDatetime() ) - (($this->getParameter( 'client_time_zone_offset' ) + get_option( 'gmt_offset' ) * 60) * 60));
-                }else{
-                    $service_time = date_i18n( get_option( 'time_format' ), strtotime( $userData->getBookedDatetime() ) );
-                }
-                $service_date = date_i18n( get_option( 'date_format' ), strtotime( $userData->getBookedDatetime() ) );
-
-                $replacement = array(
-                    '[[STAFF_NAME]]'    => '<b>' . $staff_name . '</b>',
-                    '[[SERVICE_NAME]]'  => '<b>' . $service_name . '</b>',
-                    '[[CATEGORY_NAME]]' => '<b>' . $category_name . '</b>',
-                    '[[SERVICE_TIME]]'  => '<b>' . $service_time . '</b>',
-                    '[[SERVICE_DATE]]'  => '<b>' . $service_date . '</b>',
-                    '[[SERVICE_PRICE]]' => '<b>' . AB_CommonUtils::formatPrice( $price ) . '</b>',
-                );
-
-                return str_replace( array_keys( $replacement ), array_values( $replacement ),
-                    nl2br( esc_html( get_option( 'ab_appearance_text_info_third_step' ) ) )
-                );
+            else {
+                $service_time = date_i18n( get_option( 'time_format' ), strtotime( $userData->get( 'appointment_datetime' ) ) );
             }
+            $service_date = date_i18n( get_option( 'date_format' ), strtotime( $userData->get( 'appointment_datetime' ) ) );
 
-            // Coupon Text
-            if ($booking_step === 4) {
-                $replacement = array(
-                    '[[SERVICE_PRICE]]' => '<b>' . AB_CommonUtils::formatPrice($price) . '</b>',
-                );
+            $replacement = array(
+                '[[STAFF_NAME]]'    => '<b>' . $staff_name . '</b>',
+                '[[SERVICE_NAME]]'  => '<b>' . $service->get( 'title' ) . '</b>',
+                '[[CATEGORY_NAME]]' => '<b>' . $category_name . '</b>',
+                '[[SERVICE_TIME]]'  => '<b>' . $service_time . '</b>',
+                '[[SERVICE_DATE]]'  => '<b>' . $service_date . '</b>',
+                '[[SERVICE_PRICE]]' => '<b>' . AB_CommonUtils::formatPrice( $price ) . '</b>',
+            );
 
-                return str_replace(array_keys($replacement), array_values($replacement),
-                    nl2br(esc_html(get_option('ab_appearance_text_info_coupon')))
-                );
-            }
+            return str_replace( array_keys( $replacement ), array_values( $replacement ),
+                nl2br( esc_html( get_option( 'ab_appearance_text_info_third_step' ) ) )
+            );
+        }
+
+        // Coupon Text
+        if ($booking_step === 4) {
+            $replacement = array(
+                '[[SERVICE_PRICE]]' => '<b>' . AB_CommonUtils::formatPrice($price) . '</b>',
+            );
+
+            return str_replace(array_keys($replacement), array_values($replacement),
+                nl2br(esc_html(get_option('ab_appearance_text_info_coupon')))
+            );
         }
 
         return '';

@@ -1,9 +1,9 @@
 <?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 /**
- * Class AB_Email_Notification
+ * Class AB_EmailNotification
  */
-class AB_Email_Notification extends AB_Entity {
+class AB_EmailNotification extends AB_Entity {
 
     protected static $table_name = 'ab_email_notification';
 

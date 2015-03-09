@@ -23,7 +23,7 @@
             <i class="ab-handle icon-move"></i>
             <h2 class="ab-field-title">
                 <?php _e( 'Text Field', 'ab' ) ?>
-                <i class="ab-delete icon-remove"></i>
+                <i class="ab-delete icon-remove" title="<?php echo esc_attr( __( 'Remove field', 'ab' ) ) ?>"></i>
             </h2>
             <div class="input-append">
                 <input class="ab-label" type="text" value="" placeholder="<?php echo esc_attr( __( 'Enter a label', 'ab' ) ) ?>" />

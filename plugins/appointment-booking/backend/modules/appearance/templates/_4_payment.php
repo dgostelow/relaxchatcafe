@@ -42,7 +42,7 @@
                 <?php _e( 'I will pay now with Credit Card', 'ab' ) ?>
                 <img src="<?php echo plugins_url( 'frontend/resources/images/cards.png', AB_PATH . '/main.php' ) ?>" style="margin-left: 10px;" alt="cards" />
             </label>
-            <form class="authorizenet ab-clearBottom" style="display: none; margin-top: 15px;">
+            <form class="ab-authorizenet ab-clearBottom" style="display: none; margin-top: 15px;">
                 <?php include "_card_payment.php" ?>
             </form>
         </div-->
@@ -52,17 +52,17 @@
                 <?php _e( 'I will pay now with Credit Card', 'ab' ) ?>
                 <img style="margin-left: 10px;" src="<?php echo plugins_url( 'frontend/resources/images/cards.png', AB_PATH . '/main.php' ) ?>" alt="cards" />
             </label>
-            <form class="stripe ab-clearBottom" style="margin-top:15px;display: none;">
+            <form class="ab-stripe ab-clearBottom" style="margin-top:15px;display: none;">
                 <?php include "_card_payment.php" ?>
             </form>
         </div>
 
         <!-- buttons -->
         <div class="ab-local-pay-button ab-row-fluid ab-nav-steps last-row">
-            <button class="ab-left ab-to-third-step ab-btn ladda-button orange zoom-in">
+            <button class="ab-left ab-to-third-step ab-btn ladda-button">
                 <span><?php _e( 'Back', 'ab' ) ?></span>
             </button>
-            <button class="ab-right ab-final-step ab-btn ladda-button orange zoom-in">
+            <button class="ab-right ab-final-step ab-btn ladda-button">
                 <span><?php _e( 'Next', 'ab' ) ?></span>
             </button>
         </div>

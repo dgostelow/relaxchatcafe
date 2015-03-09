@@ -303,8 +303,8 @@ class AB_StaffController extends AB_Controller {
             $this->update = true;
         }
         else if( isset ( $_SESSION['google_calendar_error'] ) ) {
+            $staff_errors[] = __('Calendar ID is not valid.', 'ab') . ' (' . $_SESSION['google_calendar_error'] . ')';
             unset($_SESSION['google_calendar_error']);
-            $staff_errors[] = __('Calendar ID is not valid.', 'ab');
         }
 
         if (isset($_SESSION['google_auth_error'])){
@@ -339,7 +339,8 @@ class AB_StaffController extends AB_Controller {
         $this->active_staff_id = $this->getParameter( 'id' );
 
         if ($result === false && array_key_exists('google_calendar', $form->getErrors())){
-            $_SESSION['google_calendar_error'] = true;
+            $errors = $form->getErrors();
+            $_SESSION['google_calendar_error'] = $errors['google_calendar'];
         }else{
             $_SESSION['was_update'] = true;
         }

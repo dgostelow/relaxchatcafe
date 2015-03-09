@@ -16,6 +16,9 @@
                 case 'stripe':
                     echo 'Stripe';
                     break;
+                case 'coupon':
+                    echo __( 'Coupon', 'ab' );
+                    break;
                 default:
                     echo __( 'Local', 'ab' );
                     break;

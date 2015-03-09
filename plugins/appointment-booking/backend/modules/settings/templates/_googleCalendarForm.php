@@ -1,5 +1,5 @@
 <?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly ?>
-<form method="post" action="<?php echo add_query_arg( 'type', '_google_calendar' ) ?>" enctype="multipart/form-data" class="ab-staff-form">
+<form method="post" action="<?php echo add_query_arg( 'type', '_google_calendar' ) ?>" enctype="multipart/form-data" class="ab-settings-form">
 
     <?php if (isset($message_gc)) : ?>
         <div id="message" style="margin: 0px!important;" class="updated below-h2">
@@ -91,6 +91,24 @@
                     alt=""
                     class="ab-popover"
                     data-content="<?php echo esc_attr( __( 'By default Bookly pushes new appointments and any further changes to Google Calendar. If you enable this option then Bookly will fetch events from Google Calendar and remove corresponding time slots before displaying the second step of the booking form (this may lead to a delay when users click Next at the first step).', 'ab' ) ) ?>"
+                    />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label><?php _e( 'Limit number of fetched events', 'ab' ) ?></label>
+            </td>
+            <td>
+                <select name="ab_settings_google_limit_events" style="width: 200px;">
+                    <?php foreach ( array( __( 'Disabled', 'ab' ) => '0', 250 => 250, 500 => 500, 1500 => 1500, 2500 => 2500 ) as $text => $limit ): ?>
+                        <option value="<?php echo $limit ?>" <?php selected( get_option( 'ab_settings_google_limit_events' ), $limit ) ?> ><?php echo $text ?></option>
+                    <?php endforeach ?>
+                </select>
+                <img
+                    src="<?php echo esc_attr( plugins_url( 'backend/resources/images/help.png', AB_PATH . '/main.php' ) ) ?>"
+                    alt=""
+                    class="ab-popover"
+                    data-content="<?php echo esc_attr( __( 'If there is a lot of events in Google Calendar sometimes this leads to a lack of memory in PHP when Bookly tries to fetch all events. You can limit the number of fetched events here. This only works when 2 way sync is enabled.', 'ab' ) ) ?>"
                     />
             </td>
         </tr>

@@ -3,12 +3,18 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 class AB_Updates {
 
-//    function update_4_4() {
+//    function update_4_6() {
 //        /* @var WPDB $wpdb */
 //        global $wpdb;
 //
 //        add_option('ab_appearance_text_label_place', __( 'Places number', 'ab' ), '', 'yes');
+//
+//        add_option('ab_settings_google_limit_events', 0, '', 'yes');
 //    }
+
+    function update_4_4() {
+        add_option('ab_settings_maximum_available_days_for_booking', 365, '', 'yes');
+    }
 
     function update_4_3() {
         /* @var WPDB $wpdb */
